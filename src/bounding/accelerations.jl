@@ -1,5 +1,5 @@
 function l0screening!(
-    solver::Solver,
+    solver::BnbSolver,
     node::BnbNode,
     F::AbstractDatafit,
     A::Matrix{Float64},

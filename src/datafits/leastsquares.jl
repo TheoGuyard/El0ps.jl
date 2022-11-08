@@ -18,3 +18,8 @@ end
 function dual_scale!(F::LeastSquares, y::Vector, u::Vector)
     return nothing
 end
+
+function bind_model!(F::LeastSquares, y::Vector, model::JuMP.Model)
+    @constraint(model, model[:Fcost] >= 0.5 * (y - model[:w])' * (y - model[:w]) / length(y))
+    return nothing
+end

@@ -6,9 +6,9 @@ end
 function bound!(
     bounding_solver::CoordinateDescent, 
     problem::Problem, 
-    solver::Solver, 
+    solver::BnbSolver, 
     node::BnbNode, 
-    options::Options,   
+    options::BnbOptions,   
     bounding_type::BoundingType,
     )
     

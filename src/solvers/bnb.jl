@@ -1,10 +1,3 @@
-@enum TerminationStatus begin
-    OPTIMIZE_NOT_CALLED
-    OPTIMAL
-    TIME_LIMIT
-    NODE_LIMIT
-end
-
 @enum ExplorationStrategy begin
     BFS
     DFS
@@ -15,7 +8,7 @@ end
     RESIDUAL
 end
 
-Base.@kwdef struct Options
+Base.@kwdef struct BnbOptions <: AbstractOptions
     lb_solver::AbstractBoundingSolver   = CoordinateDescent(tolgap=1e-4, maxiter=10_000)
     ub_solver::AbstractBoundingSolver   = CoordinateDescent(tolgap=1e-8, maxiter=10_000)
     exploration::ExplorationStrategy    = DFS
@@ -80,7 +73,7 @@ mutable struct BnbNode
     end
 end
 
-Base.@kwdef mutable struct Trace 
+Base.@kwdef mutable struct BnbTrace 
     ub::Vector{Float64}             = Vector{Float64}()
     lb::Vector{Float64}             = Vector{Float64}()
     node_count::Vector{Int}         = Vector{Int}()
@@ -94,8 +87,8 @@ Base.@kwdef mutable struct Trace
     card_S0::Vector{Int}            = Vector{Int}()
 end
 
-mutable struct Solver
-    status::TerminationStatus
+mutable struct BnbSolver <: AbstractSolver
+    status::MOI.TerminationStatusCode
     ub::Float64
     lb::Float64
     x::Vector{Float64}
@@ -103,11 +96,11 @@ mutable struct Solver
     node_count::Int
     supp_pruned::Float64
     start_time::Float64
-    options::Options
-    trace::Trace
-    function Solver(; kwargs...)
+    options::BnbOptions
+    trace::BnbTrace
+    function BnbSolver(; kwargs...)
         return new(
-            OPTIMIZE_NOT_CALLED,
+            MOI.OPTIMIZE_NOT_CALLED,
             Inf,
             -Inf,
             zeros(0),
@@ -115,21 +108,21 @@ mutable struct Solver
             0,
             0.,
             Dates.time(),
-            Options(; kwargs...),
-            Trace(),
+            BnbOptions(; kwargs...),
+            BnbTrace(),
         )
     end
 end
 
-struct Result
-    termination_status::TerminationStatus
+struct BnbResult <: AbstractResult
+    termination_status::MOI.TerminationStatusCode
     solve_time::Float64
     node_count::Int
     objective_value::Float64
     relative_gap::Float64
     x::Vector{Float64}
-    trace::Trace
-    function Result(solver::Solver, trace::Trace)
+    trace::BnbTrace
+    function BnbResult(solver::BnbSolver, trace::BnbTrace)
         return new(
             solver.status,
             elapsed_time(solver),
@@ -142,19 +135,9 @@ struct Result
     end
 end
 
-Base.show(io::IO, solver::Solver) = print(io, "Bnb solver")
+Base.show(io::IO, solver::BnbSolver) = print(io, "Bnb solver")
 
-function Base.print(io::IO, result::Result)
-    println(io, "Bnb result")
-    println(io, "  Status     : $(result.termination_status)")
-    println(io, "  Objective  : $(round(result.objective_value, digits=5))")
-    println(io, "  Non-zeros  : $(norm(result.x, 0))")
-    println(io, "  Last gap   : $(round(result.relative_gap, digits=5))")
-    println(io, "  Solve time : $(round(result.solve_time, digits=5)) seconds")
-    print(io, "  Node count : $(result.node_count)")
-end
-
-function initialize!(solver::Solver, problem::Problem, x0::Vector{Float64})
+function initialize!(solver::BnbSolver, problem::Problem, x0::Vector{Float64})
     solver.status = OPTIMIZE_NOT_CALLED
     solver.ub = objective(problem, x0)
     solver.lb = -Inf
@@ -163,7 +146,7 @@ function initialize!(solver::Solver, problem::Problem, x0::Vector{Float64})
     solver.node_count = 0
     solver.supp_pruned = 0.
     solver.start_time = Dates.time()
-    solver.trace = Trace()
+    solver.trace = BnbTrace()
     return nothing
 end
 
@@ -190,7 +173,7 @@ function display_head()
     return nothing
 end
 
-function display_trace(solver::Solver, node)
+function display_trace(solver::BnbSolver, node)
     @printf "%7d" solver.node_count
     @printf " %6.2f" elapsed_time(solver)
     @printf " %7.2f" solver.lb
@@ -209,24 +192,24 @@ function display_tail()
 end
 
 depth(node::BnbNode) = sum(node.S0 .| node.S1)
-elapsed_time(solver::Solver) = Dates.time() - solver.start_time
-gap(solver::Solver) = abs(solver.ub - solver.lb) / abs(solver.ub + 1e-10)
-is_terminated(solver::Solver) = (solver.status != OPTIMIZE_NOT_CALLED)
+elapsed_time(solver::BnbSolver) = Dates.time() - solver.start_time
+gap(solver::BnbSolver) = abs(solver.ub - solver.lb) / abs(solver.ub + 1e-10)
+is_terminated(solver::BnbSolver) = (solver.status != OPTIMIZE_NOT_CALLED)
 
-function update_status!(solver::Solver, options::Options)
+function update_status!(solver::BnbSolver, options::BnbOptions)
     if elapsed_time(solver) >= options.maxtime
-        solver.status = TIME_LIMIT
+        solver.status = MOI.TIME_LIMIT
     elseif solver.node_count >= options.maxnode
-        solver.status = ITERATION_LIMIT
+        solver.status = MOI.ITERATION_LIMIT
     elseif gap(solver) <= options.tolgap
-        solver.status = OPTIMAL
+        solver.status = MOI.OPTIMAL
     elseif isempty(solver.queue)
-        solver.status = OPTIMAL
+        solver.status = MOI.OPTIMAL
     end
-    return (solver.status != OPTIMIZE_NOT_CALLED)
+    return (solver.status != MOI.OPTIMIZE_NOT_CALLED)
 end
 
-function next_node!(solver::Solver, options::Options)
+function next_node!(solver::BnbSolver, options::BnbOptions)
     if options.exploration == DFS
         node = pop!(solver.queue)
         solver.node_count += 1
@@ -239,7 +222,7 @@ function next_node!(solver::Solver, options::Options)
     return node
 end
 
-function prune!(solver::Solver, node::BnbNode, options::Options)
+function prune!(solver::BnbSolver, node::BnbNode, options::BnbOptions)
     pruning_test = (node.lb > solver.ub + options.tolprune)
     perfect_test = (options.tolprune < abs(node.ub - node.lb) < options.tolperf) 
     prune = (pruning_test | perfect_test)
@@ -249,7 +232,7 @@ function prune!(solver::Solver, node::BnbNode, options::Options)
     return prune
 end
 
-function branch!(prob::Problem, solver::Solver, node::BnbNode, options::Options)
+function branch!(prob::Problem, solver::BnbSolver, node::BnbNode, options::BnbOptions)
     !any(node.Sb) && return nothing
     if options.branching == LARGEST
         jSb = argmax(abs.(node.x[node.Sb]))
@@ -280,7 +263,7 @@ function fixto!(node::BnbNode, j::Int, jval::Int, prob::Problem)
     return nothing
 end
 
-function update_bounds!(solver::Solver, node::BnbNode, options::Options)
+function update_bounds!(solver::BnbSolver, node::BnbNode, options::BnbOptions)
     if (node.ub ≈ solver.ub) & (norm(node.x_ub, 0) < norm(solver.x, 0))
         solver.ub = copy(node.ub)
         solver.x = copy(node.x_ub)
@@ -299,7 +282,7 @@ function update_bounds!(solver::Solver, node::BnbNode, options::Options)
     end
 end
 
-function update_trace!(trace::Trace, solver::Solver, node::BnbNode, options::Options)
+function update_trace!(trace::BnbTrace, solver::BnbSolver, node::BnbNode, options::BnbOptions)
     push!(trace.ub, solver.ub)
     push!(trace.lb, solver.lb)
     push!(trace.node_count, solver.node_count)
@@ -315,7 +298,7 @@ function update_trace!(trace::Trace, solver::Solver, node::BnbNode, options::Opt
 end
 
 function optimize(
-    solver::Solver,
+    solver::BnbSolver,
     problem::Problem;
     x0::Union{Vector{Float64},Nothing}=nothing,
     )
@@ -343,6 +326,6 @@ function optimize(
     end
     options.verbosity && display_tail()
 
-    return Result(solver, trace)
+    return BnbResult(solver, trace)
 
 end

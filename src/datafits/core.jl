@@ -23,3 +23,7 @@ end
 function dual_scale!(F::AbstractDatafit, y::Vector, u::Vector)
     error("Function 'dual_scaling_factor' is not implemented for the datafit $F")
 end
+
+function bind_model!(F::AbstractDatafit, y::Vector, model::JuMP.Model)
+    error("Function 'bind_model!' is not implemented for the datafit $F")
+end

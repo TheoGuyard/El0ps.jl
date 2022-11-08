@@ -1,4 +1,3 @@
-__precompile__()
 module El0ps
 
 using Dates

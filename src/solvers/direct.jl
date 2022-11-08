@@ -4,7 +4,7 @@ struct DirectResult <: AbstractResult
     node_count::Int
     objective_value::Float64
     relative_gap::Float64
-    x::Vector{Float64}
+    x::Vector
     function DirectResult(model::JuMP.Model)
         return new(
             JuMP.termination_status(model),
@@ -27,7 +27,7 @@ end
 
 Base.show(io::IO, solver::DirectSolver) = print(io, "Direct solver")
 
-function initialize_model(problem::Problem, solver::DirectSolver, x0::Vector{Float64})
+function initialize_model(problem::Problem, solver::DirectSolver, x0::Vector)
 
     model = Model(solver.optimizer)
     
@@ -54,7 +54,7 @@ end
 function optimize(
     solver::DirectSolver,
     problem::Problem;
-    x0::Union{Vector{Float64},Nothing}=nothing,
+    x0::Union{Vector,Nothing}=nothing,
     )
     x0 = isa(x0, Nothing) ? zeros(problem.n) : x0
     @assert length(x0) == problem.n

@@ -33,14 +33,16 @@ export Problem, objective, compute_λmax
 include("solvers/core.jl")
 include("solvers/bnb.jl")
 include("solvers/direct.jl")
+include("bounding/accelerations.jl")
+include("bounding/cd.jl")
 export optimize
 export BnbSolver, BnbResult, BnbTrace
 export BFS, DFS
 export LARGEST, RESIDUAL
 export DirectSolver, DirectResult
 
-include("bounding/accelerations.jl")
-include("bounding/cd.jl")
+include("path.jl")
+export Path, fit_path
 
 include("data.jl")
 export synthetic_data_regression, synthetic_data_classification

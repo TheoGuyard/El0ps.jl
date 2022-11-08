@@ -34,11 +34,11 @@ mutable struct BnbNode
     Sb::BitArray
     lb::Float64
     ub::Float64
-    x::Vector{Float64}
-    w::Vector{Float64}
-    u::Vector{Float64}
-    x_ub::Vector{Float64}
-    u_ub::Vector{Float64}
+    x::Vector
+    w::Vector
+    u::Vector
+    x_ub::Vector
+    u_ub::Vector
     function BnbNode(problem::Problem)
         return new(
             nothing,
@@ -74,24 +74,24 @@ mutable struct BnbNode
 end
 
 Base.@kwdef mutable struct BnbTrace 
-    ub::Vector{Float64}             = Vector{Float64}()
-    lb::Vector{Float64}             = Vector{Float64}()
-    node_count::Vector{Int}         = Vector{Int}()
-    queue_size::Vector{Int}         = Vector{Int}()
-    timer::Vector{Float64}          = Vector{Float64}()
-    supp_pruned::Vector{Float64}    = Vector{Float64}()
-    node_lb::Vector{Float64}        = Vector{Float64}()
-    node_ub::Vector{Float64}        = Vector{Float64}()
-    card_Sb::Vector{Int}            = Vector{Int}()
-    card_S1::Vector{Int}            = Vector{Int}()
-    card_S0::Vector{Int}            = Vector{Int}()
+    ub::Vector              = Vector()
+    lb::Vector              = Vector()
+    node_count::Vector{Int} = Vector{Int}()
+    queue_size::Vector{Int} = Vector{Int}()
+    timer::Vector           = Vector()
+    supp_pruned::Vector     = Vector()
+    node_lb::Vector         = Vector()
+    node_ub::Vector         = Vector()
+    card_Sb::Vector{Int}    = Vector{Int}()
+    card_S1::Vector{Int}    = Vector{Int}()
+    card_S0::Vector{Int}    = Vector{Int}()
 end
 
 mutable struct BnbSolver <: AbstractSolver
     status::MOI.TerminationStatusCode
     ub::Float64
     lb::Float64
-    x::Vector{Float64}
+    x::Vector
     queue::Vector{BnbNode}
     node_count::Int
     supp_pruned::Float64
@@ -120,7 +120,7 @@ struct BnbResult <: AbstractResult
     node_count::Int
     objective_value::Float64
     relative_gap::Float64
-    x::Vector{Float64}
+    x::Vector
     trace::BnbTrace
     function BnbResult(solver::BnbSolver, trace::BnbTrace)
         return new(
@@ -137,7 +137,7 @@ end
 
 Base.show(io::IO, solver::BnbSolver) = print(io, "Bnb solver")
 
-function initialize!(solver::BnbSolver, problem::Problem, x0::Vector{Float64})
+function initialize!(solver::BnbSolver, problem::Problem, x0::Vector)
     solver.status = OPTIMIZE_NOT_CALLED
     solver.ub = objective(problem, x0)
     solver.lb = -Inf
@@ -300,7 +300,7 @@ end
 function optimize(
     solver::BnbSolver,
     problem::Problem;
-    x0::Union{Vector{Float64},Nothing}=nothing,
+    x0::Union{Vector,Nothing}=nothing,
     )
 
     x0 = isa(x0, Nothing) ? zeros(problem.n) : x0

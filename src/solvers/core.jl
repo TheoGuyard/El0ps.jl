@@ -4,7 +4,7 @@ abstract type AbstractResult end
 function optimize(
     solver::AbstractSolver,
     problem::Problem;
-    x0::Union{Vector{Float64},Nothing}=nothing,
+    x0::Union{Vector,Nothing}=nothing,
     )
     error("Function 'optimize' not implemented for solver $solver")
 end

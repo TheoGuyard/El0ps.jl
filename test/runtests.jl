@@ -5,8 +5,9 @@ using JuMP
 using LinearAlgebra
 using SCIP
 
-include("data.jl")
 include("datafits.jl")
 include("penalties.jl")
 include("problem.jl")
 include("solvers.jl")
+include("path.jl")
+include("data.jl")

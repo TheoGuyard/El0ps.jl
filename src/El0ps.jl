@@ -34,10 +34,10 @@ include("solvers/core.jl")
 include("solvers/bnb.jl")
 include("solvers/direct.jl")
 export optimize
-export BnbSolver, BnbOptions, BnbResult, BnbTrace
+export BnbSolver, BnbResult, BnbTrace
 export BFS, DFS
 export LARGEST, RESIDUAL
-export DirectSolver, DirectOptions, DirectResult
+export DirectSolver, DirectResult
 
 include("bounding/accelerations.jl")
 include("bounding/cd.jl")

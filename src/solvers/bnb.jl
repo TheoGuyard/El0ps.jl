@@ -8,7 +8,7 @@ end
     RESIDUAL
 end
 
-Base.@kwdef struct BnbOptions <: AbstractOptions
+Base.@kwdef struct BnbOptions
     lb_solver::AbstractBoundingSolver   = CoordinateDescent(tolgap=1e-4, maxiter=10_000)
     ub_solver::AbstractBoundingSolver   = CoordinateDescent(tolgap=1e-8, maxiter=10_000)
     exploration::ExplorationStrategy    = DFS

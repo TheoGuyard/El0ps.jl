@@ -6,7 +6,7 @@
     σ = 10.
     xtrue, A, y = synthetic_data_regression(k, m, n, ρ, σ, normalize=true)
     F = LeastSquares()
-    G = L2norm(1.)
+    G = Bigm(1.)
     λ = 0.1 * compute_λmax(F, G, A, y)
     problem = Problem(F, G, A, y, λ)
 
@@ -17,7 +17,8 @@
     end
 
     @testset "DirectSolver" begin
-        solver = DirectSolver(CPLEX.Optimizer, verbosity=false, maxtime=60.)
+        options = Dict("display/verblevel" => 0, "limits/gap" => 1e-4)
+        solver = DirectSolver(SCIP.Optimizer, options=options)
         result = optimize(solver, problem)
         @test result.termination_status == MOI.OPTIMAL
     end

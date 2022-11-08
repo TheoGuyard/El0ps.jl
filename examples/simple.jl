@@ -1,5 +1,5 @@
 using El0ps
-using CPLEX
+using SCIP
 
 # Define data parameters
 k = 5
@@ -22,7 +22,7 @@ solver = BnbSolver(verbosity=false)
 result = optimize(solver, problem)
 println(result)
 
-# Solve the problem using a direct method
-solver = DirectSolver(CPLEX.Optimizer, verbosity=false)
+# Solve the problem using a direct method 
+solver = DirectSolver(SCIP.Optimizer, options=Dict("display/verblevel"=>0, "limits/gap"=>1e-4))
 result = optimize(solver, problem)
 println(result)

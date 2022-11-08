@@ -1,9 +1,9 @@
 using El0ps
 using Test
 
-using CPLEX
 using JuMP
 using LinearAlgebra
+using SCIP
 
 include("data.jl")
 include("datafits.jl")

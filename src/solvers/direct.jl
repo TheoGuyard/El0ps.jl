@@ -1,9 +1,3 @@
-Base.@kwdef struct DirectOptions <: AbstractOptions
-    maxtime::Float64    = 60.
-    tolgap::Float64     = 0.
-    verbosity::Bool     = false
-end
-
 struct DirectResult <: AbstractResult
     termination_status::MOI.TerminationStatusCode
     solve_time::Float64
@@ -25,9 +19,8 @@ end
 
 struct DirectSolver <: AbstractSolver
     optimizer
-    options::DirectOptions
-    function DirectSolver(optimizer; kwargs...)
-        options = DirectOptions(; kwargs...)
+    options::Dict
+    function DirectSolver(optimizer; options::Dict=Dict())
         return new(optimizer, options)
     end
 end
@@ -58,13 +51,6 @@ function initialize_model(problem::Problem, solver::DirectSolver, x0::Vector{Flo
     return model
 end
 
-function set_optimizer_options!(model::JuMP.Model, solver::DirectSolver)
-    solver.options.verbosity || set_silent(model)
-    set_optimizer_attribute(model, MOI.RelativeGapTolerance(), solver.options.tolgap)
-    set_optimizer_attribute(model, MOI.TimeLimitSec(), solver.options.maxtime)
-    return nothing
-end
-
 function optimize(
     solver::DirectSolver,
     problem::Problem;
@@ -73,7 +59,9 @@ function optimize(
     x0 = isa(x0, Nothing) ? zeros(problem.n) : x0
     @assert length(x0) == problem.n
     model = initialize_model(problem, solver, x0)
-    set_optimizer_options!(model, solver)
+    for (option_name, option_value) in solver.options
+        set_optimizer_attribute(model, String(option_name), option_value)
+    end
     bind_model!(problem.F, problem.y, model)
     bind_model!(problem.G, model)
     optimize!(model)

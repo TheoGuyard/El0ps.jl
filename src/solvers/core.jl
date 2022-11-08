@@ -1,5 +1,4 @@
 abstract type AbstractSolver end
-abstract type AbstractOptions end
 abstract type AbstractResult end
 
 function optimize(

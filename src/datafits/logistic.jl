@@ -24,3 +24,17 @@ function dual_scale!(F::Logistic, y::Vector, u::Vector)
     end
     return nothing
 end
+
+function bind_model!(F::Logistic, y::Vector, model::JuMP.Model)
+    m = length(y)
+    @variable(model, l[1:m])
+    @variable(model, u[1:m] >= 0)
+    @variable(model, v[1:m] >= 0)
+    for j in eachindex(y, l, u, v, model[:w])
+        @constraint(model, 1. >= u[j] + v[j])
+        @constraint(model, [y[j] * model[:w][j] - l[j]; 1.; u[j]] in MOI.ExponentialCone())
+        @constraint(model, [-l[j]; 1.; v[j]] in MOI.ExponentialCone())
+    end
+    @constraint(model, model[:Fcost] >= sum(l) / m)
+    return nothing
+end

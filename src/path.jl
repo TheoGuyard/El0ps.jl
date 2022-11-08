@@ -1,0 +1,157 @@
+@Base.kwdef mutable struct Path
+    λ::Vector                               = Vector()
+    λratio::Vector                          = Vector()
+    x::Vector{Vector}                       = Vector()
+    converged::Vector{Bool}                 = Vector{Bool}()
+    solve_time::Vector                      = Vector()
+    node_count::Vector{Int}                 = Vector{Int}()
+    objective_value::Vector                 = Vector()
+    datafit_value::Vector                   = Vector()
+    penalty_value::Vector                   = Vector()
+    support_size::Vector{Int}               = Vector{Int}()
+    cv_mean::Vector{Float64}                = Vector{Float64}()
+    cv_std::Vector{Float64}                 = Vector{Float64}()
+end
+
+@Base.kwdef mutable struct PathOptions
+    λratio_max::Float64             = 1.
+    λratio_min::Float64             = 1e-2
+    λratio_num::Int                 = 21
+    max_support_size::Int           = typemax(Int)
+    stop_if_unsolved::Bool          = true
+    compute_cv::Bool                = true
+    nb_folds::Int                   = 10
+    verbosity::Bool                 = true
+end
+
+const PATH_HEAD_STRING = " λ/λmax   Conv    Time     Fval     Gval   Nnz  CV mean ±  CV std"
+
+function display_path_head()
+    println(repeat("=", length(PATH_HEAD_STRING)))
+    println(PATH_HEAD_STRING)
+    println(repeat("=", length(PATH_HEAD_STRING)))
+    return nothing
+end
+
+function display_path_tail()
+    println(repeat("=", length(PATH_HEAD_STRING)))
+end
+
+function display_path_info(path::Path, i::Union{Int,Nothing}=nothing)
+    i = isa(i, Nothing) ? length(path.λratio) : i
+    @printf "%.1e" path.λratio[i]
+    @printf "  %s" string(path.converged[i])
+    @printf "  %7.2f" path.solve_time[i]
+    @printf "  %7.2f" path.datafit_value[i]
+    @printf "  %7.2f" (path.penalty_value[i] + path.support_size[i])
+    @printf "  %4d" path.support_size[i]
+    if isnan(path.cv_mean[i])
+        print("      NaN ±     NaN")
+    else
+        @printf "  %.1e ± %.1e" path.cv_mean[i] path.cv_std[i]
+    end
+    println()
+end
+
+function fill_path!(
+    path::Path, 
+    F::AbstractDatafit,
+    G::AbstractPenalty,
+    A::Matrix,
+    y::Vector,
+    λ::Float64,
+    λratio::Float64, 
+    result::AbstractResult, 
+    options::PathOptions,
+    )
+    if options.compute_cv 
+        cv_mean, cv_std = compute_cv_statistics(result.x, F, A, y, options.nb_folds)
+    else
+        cv_mean, cv_std = NaN, NaN
+    end
+    push!(path.λ, λ)
+    push!(path.λratio, λratio)
+    push!(path.x, result.x)
+    push!(path.converged, result.termination_status == MOI.OPTIMAL)
+    push!(path.solve_time, result.solve_time)
+    push!(path.node_count, result.node_count)
+    push!(path.objective_value, result.objective_value)
+    push!(path.datafit_value, value(F, y, A * result.x))
+    push!(path.penalty_value, value(G, result.x))
+    push!(path.support_size, norm(result.x, 0))
+    push!(path.cv_mean, cv_mean)
+    push!(path.cv_std, cv_std)
+    return nothing
+end
+
+function compute_cv_statistics(
+    x::Vector, 
+    F::AbstractDatafit, 
+    A::Matrix, 
+    y::Vector, 
+    nb_folds::Int,
+    )
+    m, n = size(A)
+    @assert nb_folds <= m
+    m_fold = Int(ceil(m / nb_folds))
+    cv_errors = Vector()
+    for f in 1:nb_folds
+        idx = randperm(m)[1:m_fold]
+        A_idx = A[idx, :]
+        y_idx = y[idx]
+        cv_error = value(F, y_idx, A_idx * x)
+        push!(cv_errors, cv_error)
+    end
+    return mean(cv_errors), std(cv_errors)
+end
+
+function isterminated(path::Path, options::PathOptions)
+    (options.stop_if_unsolved & !path.converged[end]) && return true
+    (path.support_size[end] > options.max_support_size) && return true
+    return false
+end
+
+function fit_path(
+    solver::AbstractSolver,
+    F::AbstractDatafit,
+    G::AbstractPenalty,
+    A::Matrix,
+    y::Vector;
+    kwargs...
+    )
+
+    options = PathOptions(; kwargs...)
+    
+    @assert 0. < options.λratio_min <= options.λratio_max <= 1.
+    @assert 0 < options.λratio_num
+    @assert options.nb_folds > 0
+
+    
+    λratio_sep = (log10(options.λratio_min) - log10(options.λratio_max)) / (options.λratio_num - 1)
+    λratio_val = 10 .^ (log10(options.λratio_max):λratio_sep:log10(options.λratio_min))
+    λmax = compute_λmax(F, G, A, y)
+    x0 = zeros(size(A)[2])
+    path = Path()
+    
+    options.verbosity && display_path_head()
+    for λratio in λratio_val
+        λ = λratio * λmax
+        problem = Problem(F, G, A, y, λ)
+        result = optimize(solver, problem, x0=x0)
+        fill_path!(path, F, G, A, y, λ, λratio, result, options)
+        copy!(x0, result.x)
+        options.verbosity && display_path_info(path)
+        isterminated(path, options) && break
+    end
+    options.verbosity && display_path_tail()
+
+    return path
+end
+
+function Base.show(io::IO, path::Path)
+    display_path_head()
+    for i in 1:length(path.λ)
+        display_path_info(path, i)
+    end
+    display_path_tail()
+end

@@ -1,4 +1,5 @@
 using El0ps
+using SCIP
 
 # Define data parameters
 k = 5
@@ -13,8 +14,15 @@ F = LeastSquares()
 G = Bigm(1.)
 λ = 0.1 * compute_λmax(F, G, A, y)
 
-# Solver the problem
+# Set a problem instance
 problem = Problem(F, G, A, y, λ)
-solver = Solver(verbosity=true)
+
+# Solve the problem using the Bnb method
+solver = BnbSolver(verbosity=false)
 result = optimize(solver, problem)
-print(result)
+println(result)
+
+# Solve the problem using a direct method 
+solver = DirectSolver(SCIP.Optimizer, options=Dict("display/verblevel"=>0, "limits/gap"=>1e-4))
+result = optimize(solver, problem)
+println(result)

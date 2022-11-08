@@ -6,9 +6,9 @@ end
 function bound!(
     bounding_solver::CoordinateDescent, 
     problem::Problem, 
-    solver::Solver, 
+    solver::BnbSolver, 
     node::BnbNode, 
-    options::Options,   
+    options::BnbOptions,   
     bounding_type::BoundingType,
     )
     
@@ -32,8 +32,8 @@ function bound!(
         x = node.x
         w = node.w
         u = node.u
-        v = Vector{Float64}(undef, n)
-        q = Vector{Float64}(undef, n)
+        v = Vector(undef, n)
+        q = Vector(undef, n)
     elseif bounding_type == UPPER
         S0 = copy(node.S0 .| node.Sb)
         S1 = copy(node.S1)
@@ -42,8 +42,8 @@ function bound!(
         x[S1] = copy(node.x[S1])
         w = A[:, S1] * x[S1]
         u = -gradient(F, y, w)
-        v = Vector{Float64}(undef, n)
-        q = Vector{Float64}(undef, n)
+        v = Vector(undef, n)
+        q = Vector(undef, n)
     else
         error("Unknown bounding type $bounding_type")
     end
@@ -122,17 +122,16 @@ function bound!(
         xSb       = x[Sbi .| Sbb]
         xSb_below = xSb[abs.(xSb) .< μ]
         xSb_above = xSb[abs.(xSb) .>= μ]
+        μSbi      = any(Sbi) ? sum(max.(q[Sbi], 0.)) : 0.
+        μSbb      = any(Sbb) ? sum(max.(q[Sbb], 0.)) : 0.
+        μS1       = any(S1) ? sum(q[S1]) : 0.
 
         pv = value(F, y, w) + λ * (
             τ * norm(xSb_below, 1) +
             value(G, xSb_above) + length(xSb_above) +
             value(G, x[S1]) + sum(S1)
         )
-        dv = -conjugate(F, y, -u) - λ * (
-            sum(max.(q[Sbi], 0.)) + 
-            sum(max.(q[Sbb], 0.)) + 
-            sum(q[S1])
-        )
+        dv = -conjugate(F, y, -u) - λ * (μSbi + μSbb + μS1)
         gap = abs(pv - dv)
 
         # ----- Stopping criterion ----- #

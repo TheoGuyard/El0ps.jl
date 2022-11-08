@@ -17,3 +17,19 @@ value_1d(G::L1L2norm, x::Float64) = G.α * abs(x) + (G.β / 2.) * x^2
 conjugate_1d(G::L1L2norm, v::Float64) = max(abs(v) - G.α, 0.)^2 / (2. * G.β)
 prox_1d(G::L1L2norm, x::Float64, η::Float64) = (sign(x) / (1. + η * G.β)) * max(abs(x) - η * G.α, 0.)
 dual_scale!(G::L1L2norm, A::Matrix, u::Vector, λ::Float64) = A' * u
+
+function bind_model!(G::L1L2norm, model::JuMP.Model)
+    n = length(model[:x])
+    @variable(model, xabs[1:n])
+    @variable(model, s[1:n] >= 0.0)
+    @constraint(model, xabs .>= model[:x])
+    @constraint(model, xabs .>= -model[:x])
+    for i in eachindex(s, model[:z], model[:x])
+        @constraint(
+            model,
+            [0.5 * s[i]; model[:z][i]; model[:x][i]] in RotatedSecondOrderCone()
+        )
+    end
+    @constraint(model, model[:Ωcost] >= sum(model[:z]) + G.α *  sum(xabs) + (G.β / 2.) *  sum(s))
+    return nothing
+end

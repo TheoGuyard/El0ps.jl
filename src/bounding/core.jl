@@ -20,6 +20,6 @@ function prox_l1_1d(x::Float64, η::Float64)
     return sign(x) * max(abs(x) - η, 0.0)
 end
 
-function prox_l1(x::Vector{Float64}, η::Float64)
+function prox_l1(x::Vector, η::Float64)
     return @. sign(x) * max(abs(x) - η, 0.0)
 end

@@ -1,4 +1,4 @@
-@testset "Solver" begin
+@testset "Solvers" begin
     k = 3
     m = 20
     n = 30
@@ -6,16 +6,20 @@
     σ = 10.
     xtrue, A, y = synthetic_data_regression(k, m, n, ρ, σ, normalize=true)
     F = LeastSquares()
-    G = L2norm(1.)
+    G = Bigm(1.)
     λ = 0.1 * compute_λmax(F, G, A, y)
     problem = Problem(F, G, A, y, λ)
 
-    solver = Solver(verbosity=false, maxtime=Inf)
-    result = optimize(solver, problem)
-    @test result.termination_status == OPTIMAL
+    @testset "BnbSolver" begin
+        solver = BnbSolver(verbosity=false, maxtime=60.)
+        result = optimize(solver, problem)
+        @test result.termination_status == MOI.OPTIMAL
+    end
 
-    tolgap = 0.1
-    solver = Solver(verbosity=false, maxtime=Inf, tolgap=tolgap)
-    result = optimize(solver, problem)
-    @test result.relative_gap <= tolgap
+    @testset "DirectSolver" begin
+        options = Dict("display/verblevel" => 0, "limits/gap" => 1e-4)
+        solver = DirectSolver(SCIP.Optimizer, options=options)
+        result = optimize(solver, problem)
+        @test result.termination_status == MOI.OPTIMAL
+    end
 end

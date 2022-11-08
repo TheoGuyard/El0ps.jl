@@ -19,3 +19,13 @@ function dual_scale!(G::L1norm, A::Matrix, u::Vector, λ::Float64)
     v *= s
     return v
 end
+
+function bind_model!(G::L1norm, model::JuMP.Model)
+    n = length(model[:x])
+    @variable(model, xabs[1:n])
+    @constraint(model, xabs .* model[:z] .>= model[:x])
+    @constraint(model, xabs .* model[:z] .>= -model[:x])
+    @constraint(model, model[:Ωcost] >= sum(model[:z]) + G.α * sum(xabs))
+    return nothing
+end
+

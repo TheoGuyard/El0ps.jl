@@ -34,3 +34,7 @@ function params_to_dict(G::AbstractPenalty)
     return params
 end
 
+function bind_model!(G::AbstractPenalty, model::JuMP.Model)
+    error("Function 'bind_model!' is not implemented for the penalty $G")
+end
+

@@ -26,8 +26,8 @@ include("penalties/bigm.jl")
 include("penalties/l1norm.jl")
 include("penalties/l2norm.jl")
 include("penalties/l1l2norm.jl")
-include("penalties/BigmL1norm.jl")
-include("penalties/BigmL2norm.jl")
+include("penalties/bigml1norm.jl")
+include("penalties/bigml2norm.jl")
 export Bigm, L1norm, L2norm, L1L2norm, BigmL1norm, BigmL2norm
 
 include("problem.jl")

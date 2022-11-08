@@ -11,6 +11,7 @@ version() = "v0.1"
 authors() = "Theo Guyard"
 contact() = "guyard.theo@gmail.com"
 license() = "AGPL 3.0"
+export version, authors, contact, license
 
 include("datafits/core.jl")
 include("penalties/core.jl")
@@ -25,7 +26,9 @@ include("penalties/bigm.jl")
 include("penalties/l1norm.jl")
 include("penalties/l2norm.jl")
 include("penalties/l1l2norm.jl")
-export Bigm, L1norm, L2norm, L1L2norm
+include("penalties/BigmL1norm.jl")
+include("penalties/BigmL2norm.jl")
+export Bigm, L1norm, L2norm, L1L2norm, BigmL1norm, BigmL2norm
 
 include("problem.jl")
 export Problem, objective, compute_λmax

@@ -30,4 +30,15 @@
         )
         @test all(path.converged .== true)
     end
+
+    @testset "Misc" begin
+        solver = BnbSolver(verbosity=false, maxtime=60.)
+        path = fit_path(solver, F, G, A, y, 
+            λratio_min  = 1e-1, 
+            verbosity   = true,
+            compute_cv  = false,
+        )
+        println(path)
+        @test all(path.converged .== true)
+    end
 end

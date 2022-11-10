@@ -15,7 +15,7 @@ export version, authors, contact, license
 
 include("datafits/core.jl")
 include("penalties/core.jl")
-include("bounding/core.jl")
+export AbstractDatafit, AbstractPenalty
 export lipschitz_constant, value, gradient, conjugate, prox, dual_scale!, params_to_dict
 
 include("datafits/leastsquares.jl")
@@ -34,6 +34,9 @@ include("problem.jl")
 export Problem, objective, compute_λmax
 
 include("solvers/core.jl")
+include("bounding/core.jl")
+export AbstractBoundingSolver, AbstractSolver, AbstractResult
+
 include("solvers/bnb.jl")
 include("solvers/direct.jl")
 include("bounding/accelerations.jl")

@@ -7,7 +7,7 @@ end
 
 function bound!(
     bounding_solver::AbstractBoundingSolver, 
-    problem, 
+    problem::Problem, 
     solver, 
     node, 
     options,   

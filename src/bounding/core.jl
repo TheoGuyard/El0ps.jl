@@ -1,3 +1,8 @@
+"""
+    AbstractBoundingSolver
+
+Solver for the bounding steps in `BnbSolver`.
+"""
 abstract type AbstractBoundingSolver end
 
 @enum BoundingType begin

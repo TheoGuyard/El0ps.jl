@@ -1,3 +1,12 @@
+"""
+    L1norm
+
+L1-norm function G(x) = α * ||x||_1.
+
+# Arguments
+
+- `α::Float64` : L1 regularization strength.
+"""
 struct L1norm <: AbstractPenalty
     α::Float64
     τ::Float64

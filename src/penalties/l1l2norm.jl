@@ -1,3 +1,13 @@
+"""
+    L1L2norm
+
+L1L2-norm function G(x) = α * ||x||_1 + (β/2) * ||x||_2^2.
+
+# Arguments
+
+- `α::Float64` : L1 regularization strength.
+- `β::Float64` : L2 regularization strength.
+"""
 struct L1L2norm <: AbstractPenalty
     α::Float64
     β::Float64

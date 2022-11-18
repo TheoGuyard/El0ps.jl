@@ -1,3 +1,12 @@
+"""
+    Bigm
+
+Big-M function G(x) = Ind(||x||_Inf <= M).
+
+# Arguments
+
+- `M::Float64` : Big-M value.
+"""
 struct Bigm <: AbstractPenalty 
     M::Float64
     τ::Float64

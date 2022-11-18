@@ -1,3 +1,12 @@
+"""
+    Problem
+
+Concrete type for a problem of the form 
+    
+    min F(y,Ax) + λ * (||x||_0 + G(x))
+
+where A ∈ R^{m×n}, y ∈ R^m and λ > 0.
+"""
 struct Problem
     F::AbstractDatafit
     G::AbstractPenalty
@@ -36,14 +45,29 @@ function Base.print(io::IO, problem::Problem)
     println(io, "  λ       : $(round(problem.λ, digits=6)) ($(round(problem.λ / compute_λmax(problem.F, problem.G, problem.A, problem.y), digits=6))λmax)")
 end
 
+"""
+    objective(problem::Problem, x::Vector, Ax::Vector)
+
+Computes the value of F(y,Ax) + λ * (||x||_0 + G(x)) with Ax already given.
+"""
 function objective(problem::Problem, x::Vector, Ax::Vector)
     FAx = value(problem.F, problem.y, Ax)
     Gx = value(problem.G, x)
     return FAx + problem.λ * (norm(x, 0) + Gx)
 end
 
+"""
+    objective(problem::Problem, x::Vector)
+
+Computes the value of F(y,Ax) + λ * (||x||_0 + G(x)).
+"""
 objective(problem::Problem, x::Vector) = objective(problem, x, problem.A * x)
 
+"""
+    compute_λmax(F::AbstractDatafit, G::AbstractPenalty, A::Matrix, y::Vector)
+
+Return a value of λ such that 0 is a solution of min F(y,Ax) + λ * (||x||_0 + G(x)).
+"""
 function compute_λmax(F::AbstractDatafit, G::AbstractPenalty, A::Matrix, y::Vector)
     return norm(A' * gradient(F, y, zeros(length(y))), Inf) / G.τ
 end

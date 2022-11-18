@@ -1,3 +1,8 @@
+"""
+    LeastSquares
+
+Least-squares function F(y,w) = (1/m) * ||y-w||_2^2 where m=size(y).
+"""
 struct LeastSquares <: AbstractDatafit end
 
 Base.show(io::IO, F::LeastSquares) = print(io, "Least-Squares")

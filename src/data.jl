@@ -27,6 +27,28 @@ function correlated_dictionary(
     return A
 end
 
+"""
+    synthetic_data_regression(
+        k::Int,
+        m::Int,
+        n::Int,
+        ρ::Float64,
+        σ::Float64;
+        normalize::Bool=false
+    )
+
+Generate a synthetic regression dataset `y = Ax + ϵ` where `x` is a k-sparse 
+vector.
+
+# Arguments
+
+- `k::Int` : Number of non-zeros in `x`.
+- `m::Int` : Number of rows in `A`.
+- `n::Int` : Number of columns in `A`.
+- `ρ::Float64` : Correlation parameter `ρ ∈ [0,1]` between the columns in `A`.
+- `σ::Float64` : SNR ratio of `ϵ` with respect to `Ax`.
+- `normalize::Bool=false` : Whether to normalize the columns in `A`.
+"""
 function synthetic_data_regression(
     k::Int,
     m::Int,
@@ -51,6 +73,28 @@ function synthetic_data_regression(
     return x, A, y
 end
 
+"""
+    synthetic_data_classification(
+        k::Int,
+        m::Int,
+        n::Int,
+        ρ::Float64,
+        σ::Float64;
+        normalize::Bool=false
+    )
+
+Generate a synthetic classifiaction dataset where `yj = 1` with proba 
+`1 / (1 + exp(-σ * [Ax]_j))` and `yj = -1` otheriwse.
+
+# Arguments
+
+- `k::Int` : Number of non-zeros in `x`.
+- `m::Int` : Number of rows in `A`.
+- `n::Int` : Number of columns in `A`.
+- `ρ::Float64` : Correlation parameter `ρ ∈ [0,1]` between the columns in `A`.
+- `σ::Float64` : Probability parameter.
+- `normalize::Bool=false` : Whether to normalize the columns in `A`.
+"""
 function synthetic_data_classification(
     k::Int,
     m::Int,

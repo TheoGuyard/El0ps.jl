@@ -1,3 +1,10 @@
+"""
+    Logistic
+
+Logistic function F(y,w) = (1/m) * sum(log(1 + exp(- y ⊙ w))) where m=size(y),
+where ⊙ denotes the Hadamard product and where the `log` and the `exp` 
+functions are taken component-wisely.
+"""
 struct Logistic <: AbstractDatafit end
 
 Base.show(io::IO, F::Logistic) = print(io, "Logistic")

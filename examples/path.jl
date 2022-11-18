@@ -9,11 +9,13 @@ s = 10.
 
 # Sample synthetic data
 xtrue, A, y = synthetic_data_regression(k, m, n, ρ, s)
-F = LeastSquares()
-G = L2norm(1.)
 
-# Set a solver
+# Set a loss and a regularizer
+F = LeastSquares()
+G = Bigm(1.)
+
+# Instanciate a solver
 solver = BnbSolver(dualpruning=true, l0screening=true, l1screening=true)
 
-# Fit an L0-regularization path
+# Fit a regularization path
 path = fit_path(solver, F, G, A, y, verbosity=true, compute_cv=true)

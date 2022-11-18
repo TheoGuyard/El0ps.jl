@@ -1,3 +1,8 @@
+"""
+    Path
+
+Regularization path of a `Problem`, ie solutions for different `λ`.
+"""
 @Base.kwdef mutable struct Path
     λ::Vector                               = Vector()
     λratio::Vector                          = Vector()
@@ -13,6 +18,27 @@
     cv_std::Vector{Float64}                 = Vector{Float64}()
 end
 
+"""
+    PathOptions
+
+Options for `Path`. The path is computed over a logarithmically spaced grid 
+`λ ∈ [λratio_max, λratio_min] λmax` with `λratio_num` values and with 
+`λmax = compute_λmax(F, G, A, y)`. 
+
+# Arguments 
+
+- `λratio_max::Float64 = 1.` : Regularization grid parameter.
+- `λratio_min::Float64 = 1e-2` : Regularization grid parameter.
+- `λratio_num::Int = 21` : Regularization grid parameter.
+- `max_support_size::Int = typemax(Int)` : Stop the path fitting when a 
+solution with support size `max_support_size` is recovered.
+- `stop_if_unsolved::Bool=true` : If `true`, stop the path fitting if the 
+problem at some `λ` is unsolved.
+- `compute_cv::Bool=true` : If `true`, compute the cross-validation error over
+`nb_folds` folds for each solution obtained in the path.
+- `nb_folds::Int = 10` : Number of cross-validation folds.
+- `verbosity::Bool = true` : Whether to displays outputs.
+"""
 @Base.kwdef mutable struct PathOptions
     λratio_max::Float64             = 1.
     λratio_min::Float64             = 1e-2
@@ -24,7 +50,7 @@ end
     verbosity::Bool                 = true
 end
 
-const PATH_HEAD_STRING = " λ/λmax   Conv    Time     Fval     Gval   Nnz  CV mean ±  CV std"
+const PATH_HEAD_STRING = " λ/λmax   Conv     Time     Fval     Gval   Nnz  CV mean ±  CV std"
 
 function display_path_head()
     println(repeat("=", length(PATH_HEAD_STRING)))
@@ -40,7 +66,7 @@ end
 function display_path_info(path::Path, i::Union{Int,Nothing}=nothing)
     i = isa(i, Nothing) ? length(path.λratio) : i
     @printf "%.1e" path.λratio[i]
-    @printf "  %s" string(path.converged[i])
+    @printf "   %s" string(path.converged[i])
     @printf "  %7.2f" path.solve_time[i]
     @printf "  %7.2f" path.datafit_value[i]
     @printf "  %7.2f" (path.penalty_value[i] + path.support_size[i])
@@ -111,6 +137,18 @@ function isterminated(path::Path, options::PathOptions)
     return false
 end
 
+"""
+    fit_path(
+        solver::AbstractSolver,
+        F::AbstractDatafit,
+        G::AbstractPenalty,
+        A::Matrix,
+        y::Vector;
+        kwargs...
+    )
+
+Fit a regularization path for the problem min F(y,Ax) + λ * (||x||_0 + G(x)).
+"""
 function fit_path(
     solver::AbstractSolver,
     F::AbstractDatafit,

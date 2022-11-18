@@ -1,3 +1,13 @@
+"""
+    CoordinateDescent
+
+Coordinate Descent solver for the bounding step.
+
+# Arguments
+
+- `tolgap::Float64 = 1e-8` : Absolute tolearance on the duality gap.
+- `maxiter::Int = 10_000` : Maximum number of itrations.
+"""
 Base.@kwdef struct CoordinateDescent <: AbstractBoundingSolver
     tolgap::Float64 = 1e-8
     maxiter::Int    = 10_000

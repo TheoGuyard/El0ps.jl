@@ -1,3 +1,8 @@
+"""
+    DirectResult
+
+Result of `DirectSolver`.
+"""
 struct DirectResult <: AbstractResult
     termination_status::MOI.TerminationStatusCode
     solve_time::Float64
@@ -17,6 +22,17 @@ struct DirectResult <: AbstractResult
     end
 end
 
+"""
+    DirectSolver
+
+Direct solver for a `Problem`. 
+
+# Arguments 
+
+- `optimizer` : An optimizer callable with `JuMP` such as `GLPK.Optimizer`.
+- `options::Dict` : Options name and value to pass to `optimizer` with the 
+method `set_optimizer_attribute`.
+"""
 struct DirectSolver <: AbstractSolver
     optimizer
     options::Dict
@@ -27,6 +43,24 @@ end
 
 Base.show(io::IO, solver::DirectSolver) = print(io, "Direct solver")
 
+"""
+    initialize_model(problem::Problem, solver::DirectSolver, x0::Vector)
+
+Initialize the `JuMP` model 
+
+    ```
+    min Fcost + λ Ωcost
+     st Ax = w
+        x ∈ R^n
+        z ∈ {0,1}^n
+        w ∈ R^m
+        Fcost ∈ R
+        Gcost ∈ R
+    ```
+        
+and set the initial x to x0. To complete the model, one has to formulate the 
+expressions of the function `F` and `G` in the problem using `bind_model!`.
+"""
 function initialize_model(problem::Problem, solver::DirectSolver, x0::Vector)
 
     model = Model(solver.optimizer)
@@ -51,6 +85,15 @@ function initialize_model(problem::Problem, solver::DirectSolver, x0::Vector)
     return model
 end
 
+"""
+    optimize(
+        solver::DirectSolver,
+        problem::Problem;
+        x0::Union{Vector,Nothing}=nothing,
+    )
+
+Optimize `Problem` with a `DirectSolver` using the warm start `x0`. 
+"""
 function optimize(
     solver::DirectSolver,
     problem::Problem;

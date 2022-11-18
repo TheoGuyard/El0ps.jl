@@ -1,13 +1,56 @@
+"""
+    ExplorationStrategy
+
+Exploration strategy of `BnbSolver` :
+
+- `BFS` : Breadth-First Search
+- `DFS` : Depth-First Search
+"""
 @enum ExplorationStrategy begin
     BFS
     DFS
 end
 
+"""
+    BranchingStrategy
+
+Branching strategy of `BnbSolver` :
+
+- LARGEST : Select the largest index in absolute value in the relaxation 
+solution.
+- RESIDUAL : Select the largest index in absolute value in the vector A'u 
+where u is the dual relaxation solution.
+"""
 @enum BranchingStrategy begin
     LARGEST
     RESIDUAL
 end
 
+"""
+    BnbOptions
+
+Options of `BnbSolver`.
+
+# Arguments 
+
+- `lb_solver::AbstractBoundingSolver = CoordinateDescent(tolgap=1e-4, maxiter=10_000)` : Solver for the lower-boudning step.
+- `ub_solver::AbstractBoundingSolver = CoordinateDescent(tolgap=1e-8, maxiter=10_000)` : Solver for the upper-boudning step.
+- `exploration::ExplorationStrategy = DFS` : Tree exploration strategy.
+- `branching::BranchingStrategy = LARGEST` : Tree branching strategy.
+- `maxtime::Float64 = 60.` : Maximum solution time in seconds.
+- `maxnode::Int = typemax(Int)` : Maximum number of nodes.
+- `tolgap::Float64 = 0.` : Relative MIP gap tolerance.
+- `tolperf::Float64 = 0.` : When `node.ub - node.lb < tolperf`, consider that 
+the relaxation of `node` is perfect.
+- `tolint::Float64 = 0.` : Integer tolerance, ie `x = 0` when `|x| < tolint`.
+- `tolprune::Float64 = 0.` : Prune a node when `ub + tolprune < node.lb`.
+- `dualpruning::Bool = false` : Toogle the dual pruning acceleration.
+- `l0screening::Bool = false` : Toogle the L0-screening acceleration.
+- `l1screening::Bool = false` : Toogle the L1-screening acceleration.
+- `verbosity::Bool = false` : Toogle the verbosity.
+- `showevery::Int = 1` : Displays logs every `showevery` nodes.
+- `keeptrace::Bool = true` : Whether to keep the solver trace or not.
+"""
 Base.@kwdef struct BnbOptions
     lb_solver::AbstractBoundingSolver   = CoordinateDescent(tolgap=1e-4, maxiter=10_000)
     ub_solver::AbstractBoundingSolver   = CoordinateDescent(tolgap=1e-8, maxiter=10_000)
@@ -73,6 +116,11 @@ mutable struct BnbNode
     end
 end
 
+"""
+    BnbTrace
+
+Trace of `BnbSolver`.
+"""
 Base.@kwdef mutable struct BnbTrace 
     ub::Vector              = Vector()
     lb::Vector              = Vector()
@@ -87,6 +135,12 @@ Base.@kwdef mutable struct BnbTrace
     card_S0::Vector{Int}    = Vector{Int}()
 end
 
+"""
+    BnbSolver
+
+Branch-and-Bound algorithm to solve `Problem`. Keyword arguments are passed to
+`BnbOptions`.
+"""
 mutable struct BnbSolver <: AbstractSolver
     status::MOI.TerminationStatusCode
     ub::Float64
@@ -114,6 +168,11 @@ mutable struct BnbSolver <: AbstractSolver
     end
 end
 
+"""
+    BnbResult
+
+Result of `BnbSolver`.
+"""
 struct BnbResult <: AbstractResult
     termination_status::MOI.TerminationStatusCode
     solve_time::Float64
@@ -297,6 +356,15 @@ function update_trace!(trace::BnbTrace, solver::BnbSolver, node::BnbNode, option
     return nothing
 end
 
+"""
+    optimize(
+        solver::BnbSolver,
+        problem::Problem;
+        x0::Union{Vector,Nothing}=nothing,
+    )
+
+Optimize `Problem` with a `BnbSolver` using the warm start `x0`. 
+"""
 function optimize(
     solver::BnbSolver,
     problem::Problem;

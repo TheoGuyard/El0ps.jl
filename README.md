@@ -9,7 +9,7 @@ An Exact L0-penalized Problem Solver.
 
 This packages provides optimizers for the L0-penalized problem
 
-$$ (\mathcal{P}) \quad \min_{\mathbf{x}} \ F(\mathbf{y},\mathbf{A}\mathbf{x}) + \lambda \|\|\mathbf{x}\|\|_0 \ \ \text{s.t.} \ \ \|\|\mathbf{x}\|\|_{\infty} \leq M$$
+$(\mathcal{P}) \quad \min_{\mathbf{x}} \ F(\mathbf{y},\mathbf{A}\mathbf{x}) + \lambda \|\|\mathbf{x}\|\|_0 \ \ \text{s.t.} \ \ \|\|\mathbf{x}\|\|_{\infty} \leq M$
 
 that aim to decompose some vector $\mathbf{y} \in \mathbf{R}^{m}$ using the columns of the matrix $\mathbf{A} \in \mathbf{R}^{n \times m}$ through some model encoded into the loss function $F$.
 The $\ell_0$-norm enforces sparsity in the optimizers.

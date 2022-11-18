@@ -34,7 +34,7 @@ Please raise an issue if you want to add others.
 
 ## Installation
 
-`El0ps.jl` can be installed using Julia's `Pkg` module.
+`El0ps.jl` runs on `Julia v1.7+` and can be installed using Julia's `Pkg` module.
 
 ```julia
 pkg> add "https://github.com/TheoGuyard/El0ps.jl"
@@ -57,5 +57,5 @@ The directory `examples` shows classical use-cases of this package :
 
 ## Citations
 
-This package is linked to a paper submitted to the [ROADEF 2023](https://roadef2023.sciencesconf.org) conference.
-The quote will be published soon.
+This package is linked to a paper submitted to the [ROADEF](https://www.roadef.org/) 2023 conference.
+The citation will be published soon.

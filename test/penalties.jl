@@ -1,11 +1,11 @@
 @testset "Penalties" begin
     candidates = [
         (Bigm, (1.)),
-        # (L1norm, (1.)),
-        # (L2norm, (1.)),
-        # (L1L2norm, (1., 1.)),
-        # (BigmL1norm, (1., 1.)),
-        # (BigmL2norm, (1., 1.)),
+        (L1norm, (1.)),
+        (L2norm, (1.)),
+        (L1L2norm, (1., 1.)),
+        (BigmL1norm, (1., 1.)),
+        (BigmL2norm, (1., 1.)),
     ]
 
     for (test_type, test_params) in candidates
@@ -24,6 +24,7 @@
             @test conjugate(G, x) ≈ conjugate(G, -x)
             @test El0ps.value(G, x) + conjugate(G, v) >= x' * v
             @test length(prox(G, x, η)) == length(x)
+            @test isa(params_to_dict(G), Dict)
         end
     end
 end

@@ -1,3 +1,5 @@
+## Penalties
+
 ```@autodocs
 Modules = [El0ps]
 Pages   = [

@@ -5,6 +5,10 @@ makedocs(
     sitename = "El0ps.jl",
     pages    = [
         "Home" => "index.md",
+        "Examples" => [
+            "Solve a problem" => "examples/optimize.md",
+            "Fit a regularization path" => "examples/path.md",
+        ],
         "Library" => [
             "Data generation" => "library/data.md",
             "Problem" => "library/problem.md",

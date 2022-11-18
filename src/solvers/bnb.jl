@@ -65,7 +65,7 @@ Base.@kwdef struct BnbOptions
     dualpruning::Bool                   = false
     l0screening::Bool                   = false
     l1screening::Bool                   = false
-    verbosity::Bool                     = false
+    verbosity::Bool                     = true
     showevery::Int                      = 1
     keeptrace::Bool                     = true
 end

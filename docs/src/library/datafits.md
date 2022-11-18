@@ -1,3 +1,5 @@
+## Datafits
+
 ```@autodocs
 Modules = [El0ps]
 Pages   = [

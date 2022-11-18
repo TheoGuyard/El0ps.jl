@@ -1,3 +1,5 @@
+## Solvers
+
 ```@autodocs
 Modules = [El0ps]
 Pages   = [

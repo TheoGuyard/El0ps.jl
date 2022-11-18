@@ -54,10 +54,7 @@ in order to be able to use the [SCIP](https://github.com/scipopt/SCIP.jl) solver
 
 ## Examples
 
-The directory `examples` shows classical use-cases of this package :
-
-- `optimize.jl` : Solve a problem using the direct and the Branch-and-Bound solver.
-- `path.jl` : Fit a regularization path.
+Examples are provided in the [documentation](https://theoguyard.github.io/El0ps.jl/dev).
 
 ## Citations
 

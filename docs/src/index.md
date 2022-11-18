@@ -2,6 +2,10 @@
 
 [![Build Status](https://github.com/TheoGuyard/El0ps.jl/workflows/CI/badge.svg)](https://github.com//TheoGuyard/El0ps.jl/actions)
 [![Coverage](https://codecov.io/gh/TheoGuyard/El0ps.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/TheoGuyard/El0ps.jl)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://theoguyard.github.io/El0ps.jl/dev)
+<!-- [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://theoguyard.github.io/El0ps.jl/stable) -->
+
+
 
 An Exact L0-penalized Problem Solver.
 

@@ -9,7 +9,7 @@ An Exact L0-penalized Problem Solver.
 
 This packages provides optimizers for the L0-penalized problem
 
-$$ (\mathcal{P}) \quad \min_{\mathbf{x}} \ F(\mathbf{y},\mathbf{A}\mathbf{x}) + \lambda \|\mathbf{x}\|_0 \ \ \text{s.t.} \ \ \|\mathbf{x}\|_{\infty} \leq M$$
+$$ (\mathcal{P}) \quad \min_{\mathbf{x}} \ F(\mathbf{y},\mathbf{A}\mathbf{x}) + \lambda \|\|\mathbf{x}\|\|_0 \ \ \text{s.t.} \ \ \|\|\mathbf{x}\|\|_{\infty} \leq M$$
 
 that aim to decompose some vector $\mathbf{y} \in \mathbf{R}^{m}$ using the columns of the matrix $\mathbf{A} \in \mathbf{R}^{n \times m}$ through some model encoded into the loss function $F$.
 The $\ell_0$-norm enforces sparsity in the optimizers.
@@ -27,7 +27,7 @@ This package provides :
 Moreover, we provide a flexible framework to define the loss function $F$. One only has to define a function to compute its value, its gradient, its conjugate function and how to model it in a MIP.
 Currently supported losses are :
 
-- Least-squares : $F(\mathbf{y},\mathbf{w}) = \tfrac{1}{m}\|\mathbf{y} -\mathbf{w}\|_2^2$
+- Least-squares : $F(\mathbf{y},\mathbf{w}) = \tfrac{1}{m}\|\|\mathbf{y} -\mathbf{w}\|\|_2^2$
 - Logistic : $F(\mathbf{y},\mathbf{w}) = \tfrac{1}{m}\mathbf{1}^{\top}\log(\mathbf{1} + \exp(-\mathbf{y} \odot \mathbf{w}))$
 
 Please raise an issue if you want to add others.

@@ -14,7 +14,7 @@ struct DirectResult <: AbstractResult
         return new(
             JuMP.termination_status(model),
             JuMP.solve_time(model),
-            JuMP.node_count(model),
+            try JuMP.node_count(model) catch; 0 end,
             has_values(model) ? JuMP.objective_value(model) : Inf,
             has_values(model) ? JuMP.relative_gap(model) : Inf,
             has_values(model) ? JuMP.value.(model[:x]) : zeros(length(model[:x])),
@@ -63,7 +63,12 @@ expressions of the function `F` and `G` in the problem using `bind_model!`.
 """
 function initialize_model(problem::Problem, solver::DirectSolver, x0::Vector)
 
-    model = Model(solver.optimizer)
+    model = Model(
+        optimizer_with_attributes(
+            solver.optimizer,
+            solver.options...
+        )
+    )
     
     A = problem.A
     y = problem.y
@@ -102,9 +107,6 @@ function optimize(
     x0 = isa(x0, Nothing) ? zeros(problem.n) : x0
     @assert length(x0) == problem.n
     model = initialize_model(problem, solver, x0)
-    for (option_name, option_value) in solver.options
-        set_optimizer_attribute(model, String(option_name), option_value)
-    end
     bind_model!(problem.F, problem.y, model)
     bind_model!(problem.G, model)
     optimize!(model)

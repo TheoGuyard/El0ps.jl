@@ -22,13 +22,14 @@ include("datafits/leastsquares.jl")
 include("datafits/logistic.jl")
 export LeastSquares, Logistic
 
+include("penalties/zeropenalty.jl")
 include("penalties/bigm.jl")
 include("penalties/l1norm.jl")
 include("penalties/l2norm.jl")
 include("penalties/l1l2norm.jl")
 include("penalties/bigml1norm.jl")
 include("penalties/bigml2norm.jl")
-export Bigm, L1norm, L2norm, L1L2norm, BigmL1norm, BigmL2norm
+export ZeroPenalty, Bigm, L1norm, L2norm, L1L2norm, BigmL1norm, BigmL2norm
 
 include("problem.jl")
 export Problem, objective, compute_λmax

@@ -13,7 +13,7 @@
     k, m, n, ρ, σ = 2, 10, 15, 0.1, 10.
     x, A, y = synthetic_data_classification(k, m, n, ρ, σ, normalize=true)
     F = LeastSquares()
-    options = Dict("display/verblevel" => 0)
+    options = Dict("display/verblevel" => 0, "limits/gap" => 1e-4)
     solver = DirectSolver(SCIP.Optimizer, options=options)
 
     for (test_type, test_params) in candidates

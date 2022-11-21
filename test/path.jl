@@ -19,10 +19,8 @@
     end
 
     @testset "DirectSolver" begin
-        options = 
-        solver = DirectSolver(SCIP.Optimizer, 
-            options = Dict("display/verblevel" => 0)
-        )
+        options = Dict("display/verblevel" => 0)
+        solver = DirectSolver(SCIP.Optimizer, options=options)
         path = fit_path(solver, F, G, A, y, 
             λratio_min  = 1e-1, 
             verbosity   = false,

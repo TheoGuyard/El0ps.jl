@@ -371,6 +371,7 @@ function optimize(
     x0::Union{Vector,Nothing}=nothing,
     )
 
+    @assert !isa(problem.G, ZeroPenalty)
     x0 = isa(x0, Nothing) ? zeros(problem.n) : x0
     @assert length(x0) == problem.n
     initialize!(solver, problem, x0)

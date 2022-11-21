@@ -41,7 +41,7 @@
     end
 
     @testset "DirectSolver" begin
-        options = Dict("display/verblevel" => 0, "limits/gap" => 1e-4)
+        options = Dict("display/verblevel" => 0)
         solver = DirectSolver(SCIP.Optimizer, options=options)
         result = optimize(solver, problem)
         @test result.termination_status == MOI.OPTIMAL

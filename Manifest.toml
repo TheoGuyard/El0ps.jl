@@ -2,7 +2,7 @@
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "8911ac675bf8525fcb38c92b6ed9e98d79d6e5f5"
+project_hash = "b1f6512282f44f8b4e64740420b81ba7f3a01d14"
 
 [[deps.ANSIColoredPrinters]]
 git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
@@ -445,9 +445,9 @@ version = "0.3.0+0"
 
 [[deps.SCIP]]
 deps = ["Ipopt_jll", "Libdl", "LinearAlgebra", "MathOptInterface", "SCIP_PaPILO_jll", "SCIP_jll"]
-git-tree-sha1 = "60d5d10daa0a6eeb5befc3fb44a14fe8d9da3a5f"
+git-tree-sha1 = "31efb32a39a2aae576e87c0ff682721e216c60f4"
 uuid = "82193955-e24f-5292-bf16-6f2c5261a85f"
-version = "0.11.8"
+version = "0.11.9"
 
 [[deps.SCIP_PaPILO_jll]]
 deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "GMP_jll", "Ipopt_jll", "JLLWrappers", "Libdl", "OpenBLAS32_jll", "Pkg", "Readline_jll", "Zlib_jll", "bliss_jll", "boost_jll", "oneTBB_jll"]

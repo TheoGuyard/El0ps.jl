@@ -1,16 +1,22 @@
 """
     CoordinateDescent
 
-Coordinate Descent solver for the bounding step.
+Coordinate Descent solver for the lower and upper bounding steps in the 
+[`BnbSolver`](@ref).
 
 # Arguments
 
-- `tolgap::Float64 = 1e-8` : Absolute tolearance on the duality gap.
-- `maxiter::Int = 10_000` : Maximum number of itrations.
+- `tolgap::Float64` : Absolute tolearance on the duality gap.
+- `maxiter::Int` : Maximum number of itrations.
 """
-Base.@kwdef struct CoordinateDescent <: AbstractBoundingSolver
-    tolgap::Float64 = 1e-8
-    maxiter::Int    = 10_000
+struct CoordinateDescent <: AbstractBoundingSolver
+    tolgap::Float64
+    maxiter::Int
+    function CoordinateDescent(; tolgap::Float64=1e-8, maxiter::Int=10_000)
+        @assert tolgap >= 1e-16
+        @assert maxiter >= 0
+        return new(tolgap, maxiter)
+    end
 end
 
 function bound!(
@@ -179,4 +185,3 @@ function bound!(
 
     return nothing
 end
-

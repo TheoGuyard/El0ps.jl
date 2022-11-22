@@ -1,14 +1,20 @@
 """
-    Logistic
+    Logistic <: AbstractDatafit
 
-Logistic function F(y,w) = (1/m) * sum(log(1 + exp(- y ⊙ w))) where m=size(y),
-where ⊙ denotes the Hadamard product and where the `log` and the `exp` 
-functions are taken component-wisely.
+Logistic function 
+    
+``F(\\mathbf{y},\\mathbf{w}) = \\tfrac{1}{m} \\sum(\\log(\\mathbf{1} + \\exp(- \\mathbf{y} \\odot \\mathbf{w})))``
+
+where `m = length(y)`, where ``\\odot`` denotes the Hadamard product and where 
+the `log` and the `exp` functions are taken component-wisely.
 """
 struct Logistic <: AbstractDatafit end
 
 Base.show(io::IO, F::Logistic) = print(io, "Logistic")
-lipschitz_constant(F::Logistic, y::Vector) = 0.25 / length(y)
+
+function lipschitz_constant(F::Logistic, y::Vector)
+    return 0.25 / length(y)
+end
 
 function value(F::Logistic, y::Vector, w::Vector)
     return sum(log.(1.0 .+ exp.(-y .* w))) / length(y)
@@ -39,7 +45,10 @@ function bind_model!(F::Logistic, y::Vector, model::JuMP.Model)
     @variable(model, v[1:m] >= 0)
     for j in eachindex(y, l, u, v, model[:w])
         @constraint(model, 1. >= u[j] + v[j])
-        @constraint(model, [y[j] * model[:w][j] - l[j]; 1.; u[j]] in MOI.ExponentialCone())
+        @constraint(
+            model, 
+            [y[j] * model[:w][j] - l[j]; 1.; u[j]] in MOI.ExponentialCone()
+        )
         @constraint(model, [-l[j]; 1.; v[j]] in MOI.ExponentialCone())
     end
     @constraint(model, model[:Fcost] >= sum(l) / m)

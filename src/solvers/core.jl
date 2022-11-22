@@ -1,14 +1,14 @@
 """
     AbstractSolver
 
-Abstract type for solver tailored to the problem min F(y,Ax) + λ * (||x||_0 + G(x)). 
+Abstract type for a solver tailored to a [`Problem`](@ref).
 """
 abstract type AbstractSolver end
 
 """
     AbstractResult
 
-Abstract type to store results of an `AbstractSolver`. 
+Abstract type to store results of an [`AbstractSolver`](@ref). 
 """
 abstract type AbstractResult end
 
@@ -19,7 +19,8 @@ abstract type AbstractResult end
         x0::Union{Vector,Nothing}=nothing,
     )
 
-Optimize `Problem` with the solver `solver` using the warm start `x0`. 
+Optimize a [`Problem`](@ref) with an [`AbstractSolver`](@ref). The argument `x0` 
+is used as a warm start.  
 """
 function optimize(
     solver::AbstractSolver,

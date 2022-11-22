@@ -1,7 +1,7 @@
 """
     AbstractBoundingSolver
 
-Solver for the bounding steps in `BnbSolver`.
+Solver for the lower and upper bounding steps in the [`BnbSolver`](@ref).
 """
 abstract type AbstractBoundingSolver end
 

@@ -21,16 +21,21 @@
         @testset "$G utilities" begin
             x = randn(n)
             z = zeros(n)
-            v = randn(n)
+            u = randn(m)
+            r = randn(n)
             η = randn()
+            λ = 0.1
+            v = dual_scale!(G, A, u, λ)
             @test El0ps.value(G, x) >= 0.
             @test El0ps.value(G, z) == 0.
             @test El0ps.value(G, x) ≈ El0ps.value(G, -x)
-            @test conjugate(G, x) >= 0.
-            @test conjugate(G, z) == 0.
-            @test conjugate(G, x) ≈ conjugate(G, -x)
-            @test El0ps.value(G, x) + conjugate(G, v) >= x' * v
+            @test El0ps.conjugate(G, x) >= 0.
+            @test El0ps.conjugate(G, z) == 0.
+            @test El0ps.conjugate(G, x) ≈ El0ps.conjugate(G, -x)
+            @test El0ps.value(G, x) + El0ps.conjugate(G, r) >= x' * r
             @test length(prox(G, x, η)) == length(x)
+            @test all(A' * u .≈ v)
+            @test El0ps.conjugate(G, v / λ) < Inf
             @test isa(params_to_dict(G), Dict)
         end
 

@@ -88,8 +88,7 @@ end
 """
     params_to_dict(G::AbstractPenalty)
 
-Returns a dictionary with the parameters names of the function G(.) and their 
-value. The dictionary is empty is G(.) has no parameters.
+Returns a dictionary with the parameters name and value of the function `G`.
 """
 function params_to_dict(G::AbstractPenalty)
     Gtype = typeof(G)
@@ -102,8 +101,8 @@ end
 """
     bind_model!(G::AbstractPenalty, model::JuMP.Model)
 
-Formulate the function G(.) in `model` using an epigraph method. See
-`initialize_model` for more details.
+Formulate the function `G` in `model`. See [`initialize_model`](@ref) for more 
+details about the argument `model`.
 """
 function bind_model!(G::AbstractPenalty, model::JuMP.Model)
     error("Function 'bind_model!' is not implemented for the penalty $G")

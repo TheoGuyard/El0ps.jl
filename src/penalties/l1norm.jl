@@ -37,4 +37,3 @@ function bind_model!(G::L1norm, model::JuMP.Model)
     @constraint(model, model[:Ωcost] >= sum(model[:z]) + G.α * sum(xabs))
     return nothing
 end
-

@@ -19,7 +19,11 @@ Base.show(io::IO, G::ZeroPenalty) = print(io, "Zero penalty")
 value_1d(G::ZeroPenalty, x::Float64) = 0.
 conjugate_1d(G::ZeroPenalty, v::Float64) = (v == 0.) ? 0. : +Inf
 prox_1d(G::ZeroPenalty, x::Float64, η::Float64) = x
-dual_scale!(G::ZeroPenalty, A::Matrix, u::Vector, λ::Float64) = A' * u
+
+function dual_scale!(G::ZeroPenalty, A::Matrix, u::Vector, λ::Float64)
+    copy!(u, zeros(size(u)))
+    return A' * u
+end
 
 function bind_model!(G::ZeroPenalty, model::JuMP.Model)
     for i in eachindex(model[:x], model[:z])

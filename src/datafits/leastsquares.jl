@@ -1,12 +1,19 @@
 """
-    LeastSquares
+    LeastSquares <: AbstractDatafit
 
-Least-squares function F(y,w) = (1/m) * ||y-w||_2^2 where m=size(y).
+Least-squares function 
+
+``F(\\mathbf{y},\\mathbf{w}) = \\tfrac{1}{m} \\|\\mathbf{y}-\\mathbf{w}\\|_2^2``
+
+where `m = length(y)`.
 """
 struct LeastSquares <: AbstractDatafit end
 
 Base.show(io::IO, F::LeastSquares) = print(io, "Least-Squares")
-lipschitz_constant(F::LeastSquares, y::Vector) = 1.0 / length(y)
+
+function lipschitz_constant(F::LeastSquares, y::Vector)
+    return 1.0 / length(y)
+end
 
 function value(F::LeastSquares, y::Vector, w::Vector)
     return norm(w - y, 2)^2 / (2. * length(y))
@@ -25,6 +32,9 @@ function dual_scale!(F::LeastSquares, y::Vector, u::Vector)
 end
 
 function bind_model!(F::LeastSquares, y::Vector, model::JuMP.Model)
-    @constraint(model, model[:Fcost] >= 0.5 * (y - model[:w])' * (y - model[:w]) / length(y))
+    @constraint(
+        model, 
+        model[:Fcost] >= 0.5 * (y - model[:w])' * (y - model[:w]) / length(y)
+    )
     return nothing
 end

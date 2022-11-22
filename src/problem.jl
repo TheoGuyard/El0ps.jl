@@ -1,11 +1,12 @@
 """
     Problem
 
-Concrete type for a problem of the form 
+Problem of the form 
     
-    min F(y,Ax) + λ * (||x||_0 + G(x))
+``\\min F(\\mathbf{y},\\mathbf{Ax}) + \\lambda (\\|x\\|_0 + G(\\mathbf{x}))``
 
-where A ∈ R^{m×n}, y ∈ R^m and λ > 0.
+where ``\\mathbf{A} \\in \\mathbf{R}^{m \\times n}``, 
+``\\mathbf{y} \\in \\mathbf{R}^{m}`` and ``\\lambda > 0``.
 """
 struct Problem
     F::AbstractDatafit
@@ -21,17 +22,14 @@ struct Problem
         G::AbstractPenalty,
         A::Matrix,
         y::Vector,
-        λ::Float64;
+        λ::Float64,
     )
 
         m, n = size(A)
-
-        # Consistency checks
-        (length(y) == m) || throw(ArgumentError("Shape of A and y missmatch"))
-        (λ >= 0.0) || throw(ArgumentError("The parameter λ must be positive"))
-
-        # Precompute the column norms of A
+        @assert length(y) == m
+        @assert λ >= 0.0
         a = [norm(ai, 2)^2 for ai in eachcol(A)]
+        @assert !any(a .≈ 0.)
 
         return new(F, G, A, y, λ, a, m, n)
     end
@@ -48,7 +46,8 @@ end
 """
     objective(problem::Problem, x::Vector, Ax::Vector)
 
-Computes the value of F(y,Ax) + λ * (||x||_0 + G(x)) with Ax already given.
+Returns the value of the objective of a [`Problem`](@ref) when `Ax` is already
+computed.
 """
 function objective(problem::Problem, x::Vector, Ax::Vector)
     FAx = value(problem.F, problem.y, Ax)
@@ -59,14 +58,14 @@ end
 """
     objective(problem::Problem, x::Vector)
 
-Computes the value of F(y,Ax) + λ * (||x||_0 + G(x)).
+Returns the value of the objective of a [`Problem`](@ref).
 """
 objective(problem::Problem, x::Vector) = objective(problem, x, problem.A * x)
 
 """
     compute_λmax(F::AbstractDatafit, G::AbstractPenalty, A::Matrix, y::Vector)
 
-Return a value of λ such that 0 is a solution of min F(y,Ax) + λ * (||x||_0 + G(x)).
+Return a value of `λ` such that `0` is a solution of a [`Problem`](@ref).
 """
 function compute_λmax(F::AbstractDatafit, G::AbstractPenalty, A::Matrix, y::Vector)
     return norm(A' * gradient(F, y, zeros(length(y))), Inf) / G.τ

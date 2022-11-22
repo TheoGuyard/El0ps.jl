@@ -1,8 +1,12 @@
 """
-    ZeroPenalty
+    ZeroPenalty <: AbstractPenalty 
 
-Penalty function G(x) = 0, i.e., no penalty. This penalty is to be used with a
-[`DirectSolver`](@ref) only in order to force the use of a SOS formulation.
+Zero-function
+
+``G(\\mathbf{x}) = 0``
+
+This penalty is to be used with a [`DirectSolver`](@ref) only in order to force 
+the use of a SOS formulation.
 """
 struct ZeroPenalty <: AbstractPenalty 
     τ::Float64

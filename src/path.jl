@@ -1,53 +1,82 @@
 """
     Path
 
-Regularization path of a `Problem`, ie solutions for different `λ`.
+Regularization path of a [`Problem`](@ref), i.e., solutions for different 
+values of `λ`.
 """
 @Base.kwdef mutable struct Path
-    λ::Vector                               = Vector()
-    λratio::Vector                          = Vector()
-    x::Vector{Vector}                       = Vector()
-    converged::Vector{Bool}                 = Vector{Bool}()
-    solve_time::Vector                      = Vector()
-    node_count::Vector{Int}                 = Vector{Int}()
-    objective_value::Vector                 = Vector()
-    datafit_value::Vector                   = Vector()
-    penalty_value::Vector                   = Vector()
-    support_size::Vector{Int}               = Vector{Int}()
-    cv_mean::Vector{Float64}                = Vector{Float64}()
-    cv_std::Vector{Float64}                 = Vector{Float64}()
+    λ::Vector                   = Vector()
+    λratio::Vector              = Vector()
+    x::Vector{Vector}           = Vector()
+    converged::Vector{Bool}     = Vector{Bool}()
+    solve_time::Vector          = Vector()
+    node_count::Vector{Int}     = Vector{Int}()
+    objective_value::Vector     = Vector()
+    datafit_value::Vector       = Vector()
+    penalty_value::Vector       = Vector()
+    support_size::Vector{Int}   = Vector{Int}()
+    cv_mean::Vector{Float64}    = Vector{Float64}()
+    cv_std::Vector{Float64}     = Vector{Float64}()
 end
 
 """
     PathOptions
 
-Options for `Path`. The path is computed over a logarithmically spaced grid 
-`λ ∈ [λratio_max, λratio_min] λmax` with `λratio_num` values and with 
-`λmax = compute_λmax(F, G, A, y)`. 
+Options for a [`Path`](@ref). The path is computed over a 
+logarithmically-spaced grid `λ ∈ [λratio_max, λratio_min] * λmax` of 
+`λratio_num` different values. The value of `λmax` is computed using 
+[`compute_λmax`](@ref). 
 
 # Arguments 
 
-- `λratio_max::Float64 = 1.` : Regularization grid parameter.
-- `λratio_min::Float64 = 1e-2` : Regularization grid parameter.
-- `λratio_num::Int = 21` : Regularization grid parameter.
-- `max_support_size::Int = typemax(Int)` : Stop the path fitting when a 
-solution with support size `max_support_size` is recovered.
-- `stop_if_unsolved::Bool=true` : If `true`, stop the path fitting if the 
-problem at some `λ` is unsolved.
-- `compute_cv::Bool=true` : If `true`, compute the cross-validation error over
-`nb_folds` folds for each solution obtained in the path.
-- `nb_folds::Int = 10` : Number of cross-validation folds.
-- `verbosity::Bool = true` : Whether to displays outputs.
+- `λratio_max::Float64` : Maximum value of `λ/λmax`.
+- `λratio_min::Float64` : Minimum value of `λ/λmax`.
+- `λratio_num::Int` : Number of values of `λ` in the regularization path.
+- `max_support_size::Int` : Stop the path fitting when a solution with support 
+size `max_support_size` is recovered.
+- `stop_if_unsolved::Bool` : If `true`, stop the path fitting if the 
+[`Problem`](@ref) at some `λ` is unsolved.
+- `compute_cv::Bool` : If `true`, compute the cross-validation error over
+`nb_folds` folds for each solution obtained in the [`Path`](@ref).
+- `nb_folds::Int` : Number of cross-validation folds.
+- `verbosity::Bool` : Whether to displays outputs.
 """
-@Base.kwdef mutable struct PathOptions
-    λratio_max::Float64             = 1.
-    λratio_min::Float64             = 1e-2
-    λratio_num::Int                 = 21
-    max_support_size::Int           = typemax(Int)
-    stop_if_unsolved::Bool          = true
-    compute_cv::Bool                = true
-    nb_folds::Int                   = 10
-    verbosity::Bool                 = true
+struct PathOptions
+    λratio_max::Float64
+    λratio_min::Float64
+    λratio_num::Int
+    max_support_size::Int
+    stop_if_unsolved::Bool
+    compute_cv::Bool
+    nb_folds::Int
+    verbosity::Bool
+    function PathOptions(;
+        λratio_max::Float64     = 1.,
+        λratio_min::Float64     = 1e-2,
+        λratio_num::Int         = 21,
+        max_support_size::Int   = typemax(Int),
+        stop_if_unsolved::Bool  = true,
+        compute_cv::Bool        = true,
+        nb_folds::Int           = 10,
+        verbosity::Bool         = true,
+    )
+
+        @assert 0. <= λratio_min <= λratio_max <= 1.
+        @assert 0 <= λratio_num
+        @assert 0 <= max_support_size
+        @assert 0 <= nb_folds
+
+        return new(
+            λratio_max,
+            λratio_min,
+            λratio_num,
+            max_support_size,
+            stop_if_unsolved,
+            compute_cv,
+            nb_folds,
+            verbosity,
+        )
+    end
 end
 
 const PATH_HEAD_STRING = " λ/λmax   Conv     Time     Fval     Gval   Nnz  CV mean ±  CV std"
@@ -147,7 +176,8 @@ end
         kwargs...
     )
 
-Fit a regularization path for the problem min F(y,Ax) + λ * (||x||_0 + G(x)).
+Fit a regularization [`Path`](@ref) for a [`Problem`](@ref). Additional keyword
+arguments in `kwargs` are passed to a [`PathOptions`](@ref) instance.
 """
 function fit_path(
     solver::AbstractSolver,
@@ -164,7 +194,6 @@ function fit_path(
     @assert 0 < options.λratio_num
     @assert options.nb_folds > 0
 
-    
     λratio_sep = (log10(options.λratio_min) - log10(options.λratio_max)) / (options.λratio_num - 1)
     λratio_val = 10 .^ (log10(options.λratio_max):λratio_sep:log10(options.λratio_min))
     λmax = compute_λmax(F, G, A, y)

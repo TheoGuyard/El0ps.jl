@@ -1,7 +1,7 @@
 """
     AbstractDatafit
 
-Abstract type for the function F(y,.) in `Problem`.
+Abstract type for the function `F` in a [`Problem`](@ref).
 """
 abstract type AbstractDatafit end
 
@@ -12,7 +12,7 @@ end
 """
     lipschitz_constant(F::AbstractDatafit, y::Vector)
 
-Lischitz constant of F(y,.).
+Lischitz constant of the gradient of `F` with respect to its second argument.
 """
 function lipschitz_constant(F::AbstractDatafit, y::Vector)
     error("Function 'lipschitz_constant' is not implemented for the datafit $F")
@@ -21,7 +21,7 @@ end
 """
     value(F::AbstractDatafit, y::Vector, w::Vector)
 
-Value of F(y,.).
+Value of `F`.
 """
 function value(F::AbstractDatafit, y::Vector, w::Vector)
     error("Function 'value' is not implemented for the datafit $F")
@@ -30,7 +30,7 @@ end
 """
     gradient(F::AbstractDatafit, y::Vector, w::Vector)
 
-Gradient of F(y,.).
+Gradient of `F` with respect to its second argument.
 """
 function gradient(F::AbstractDatafit, y::Vector, w::Vector)
     error("Function 'gradient' is not implemented for the datafit $F")
@@ -39,7 +39,7 @@ end
 """
     conjugate(F::AbstractDatafit, y::Vector, w::Vector)
 
-Fenchel conjugate of F(y,.).
+Fenchel conjugate of `F` with respect to its second argument.
 """
 function conjugate(F::AbstractDatafit, y::Vector, u::Vector)
     error("Function 'conjugate' is not implemented for the datafit $F")
@@ -48,7 +48,7 @@ end
 """
     dual_scale!(F::AbstractDatafit, y::Vector, u::Vector)
 
-In-place transform a vector u into a feasible one for the conjugate of F(y,.).
+In-place transforms a vector `u` into a feasible one for the conjugate of `F`.
 """
 function dual_scale!(F::AbstractDatafit, y::Vector, u::Vector)
     error("Function 'dual_scaling_factor' is not implemented for the datafit $F")
@@ -57,8 +57,8 @@ end
 """
     bind_model!(F::AbstractDatafit, y::Vector, model::JuMP.Model)
 
-Formulate the function F(y,.) in `model` using an epigraph method. See
-`initialize_model` for more details.
+Formulate the function `F` in `model`. See [`initialize_model`](@ref) for more 
+details about the argument `model`.
 """
 function bind_model!(F::AbstractDatafit, y::Vector, model::JuMP.Model)
     error("Function 'bind_model!' is not implemented for the datafit $F")

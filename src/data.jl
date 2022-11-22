@@ -37,15 +37,15 @@ end
         normalize::Bool=false
     )
 
-Generate a synthetic regression dataset `y = Ax + ϵ` where `x` is a k-sparse 
-vector.
+Generate a synthetic regression instance of a [`Problem`](@ref) with 
+`y = Ax + ϵ` where `x` is a k-sparse vector.
 
 # Arguments
 
 - `k::Int` : Number of non-zeros in `x`.
 - `m::Int` : Number of rows in `A`.
 - `n::Int` : Number of columns in `A`.
-- `ρ::Float64` : Correlation parameter `ρ ∈ [0,1]` between the columns in `A`.
+- `ρ::Float64` : Correlation between the columns in `A`.
 - `σ::Float64` : SNR ratio of `ϵ` with respect to `Ax`.
 - `normalize::Bool=false` : Whether to normalize the columns in `A`.
 """
@@ -58,10 +58,9 @@ function synthetic_data_regression(
     normalize::Bool=false
 )
 
-    # Consistence checks
-    (0 <= k <= n) || throw(ArgumentError("Parameter k must be between 0 and n"))
-    (0.0 <= ρ <= 1.0) || throw(ArgumentError("Parameter ρ must be between 0 and 1"))
-    (0.0 <= σ) || throw(ArgumentError("Parameter σ must be positive"))
+    @assert 0 <= k <= n
+    @assert 0.0 <= ρ <= 1.0
+    @assert 0.0 <= σ
 
     x = sparse_vector(n, k)
     A = correlated_dictionary(m, n, ρ, normalize=normalize)
@@ -83,15 +82,16 @@ end
         normalize::Bool=false
     )
 
-Generate a synthetic classifiaction dataset where `yj = 1` with proba 
-`1 / (1 + exp(-σ * [Ax]_j))` and `yj = -1` otheriwse.
+Generate a synthetic classification instance of a [`Problem`](@ref) with 
+`y ≈ Bernoulli(p)` where `y[j] = 1` with probability 
+`p[j] = 1 / (1 + exp(-σ[Ax]_j))` and `y[j] = -1` otherwise.
 
 # Arguments
 
 - `k::Int` : Number of non-zeros in `x`.
 - `m::Int` : Number of rows in `A`.
 - `n::Int` : Number of columns in `A`.
-- `ρ::Float64` : Correlation parameter `ρ ∈ [0,1]` between the columns in `A`.
+- `ρ::Float64` : Correlation between the columns in `A`.
 - `σ::Float64` : Probability parameter.
 - `normalize::Bool=false` : Whether to normalize the columns in `A`.
 """
@@ -104,10 +104,9 @@ function synthetic_data_classification(
     normalize::Bool=false
 )
 
-    # Consistence checks
-    (0 <= k <= n) || throw(ArgumentError("Parameter k must be between 0 and n"))
-    (0.0 <= ρ <= 1.0) || throw(ArgumentError("Parameter ρ must be between 0 and 1"))
-    (0.0 <= σ) || throw(ArgumentError("Parameter σ must be positive"))
+    @assert 0 <= k <= n
+    @assert 0.0 <= ρ <= 1.0
+    @assert 0.0 <= σ
 
     x = sparse_vector(n, k)
     A = correlated_dictionary(m, n, ρ, normalize=normalize)

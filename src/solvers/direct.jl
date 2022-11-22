@@ -1,7 +1,7 @@
 """
-    DirectResult
+    DirectResult <: AbstractResult
 
-Result of `DirectSolver`.
+Result of a [`DirectSolver`](@ref).
 """
 struct DirectResult <: AbstractResult
     termination_status::MOI.TerminationStatusCode
@@ -23,20 +23,25 @@ struct DirectResult <: AbstractResult
 end
 
 """
-    DirectSolver
+    DirectSolver <: AbstractSolver
 
-Direct solver for a `Problem`. 
+Formulate a [`Problem`](@ref) as a Mixed-Integer-Program and solve it using the
+specified `optimizer`. 
 
 # Arguments 
 
-- `optimizer` : An optimizer callable with `JuMP` such as `GLPK.Optimizer`.
-- `options::Dict` : Options name and value to pass to `optimizer` with the 
-method `set_optimizer_attribute`.
+- `optimizer` : The `MOI.AbstractOptimizer` of the specified optimizer (example 
+: `GLPK.Optimizer`).
+- `options::Dict` : Options name and value to pass to the 
+`optimizer` with the method `set_optimizer_attribute` from 
+[`MathOptInterface`](https://github.com/jump-dev/MathOptInterface.jl).
 """
 struct DirectSolver <: AbstractSolver
     optimizer
     options::Dict
-    function DirectSolver(optimizer; options::Dict=Dict())
+    function DirectSolver(optimizer; 
+        options::Dict=Dict()
+    )
         return new(optimizer, options)
     end
 end
@@ -46,20 +51,20 @@ Base.show(io::IO, solver::DirectSolver) = print(io, "Direct solver")
 """
     initialize_model(problem::Problem, solver::DirectSolver, x0::Vector)
 
-Initialize the `JuMP` model 
-
-    ```
-    min Fcost + λ Ωcost
-     st Ax = w
-        x ∈ R^n
-        z ∈ {0,1}^n
-        w ∈ R^m
-        Fcost ∈ R
-        Gcost ∈ R
-    ```
-        
-and set the initial x to x0. To complete the model, one has to formulate the 
-expressions of the function `F` and `G` in the problem using `bind_model!`.
+Initialize the [`JuMP`](https://github.com/jump-dev/JuMP.jl) model 
+```
+min Fcost + λ Ωcost
+st  Ax = w
+    x ∈ R^n
+    z ∈ {0,1}^n
+    w ∈ R^m
+    Fcost ∈ R
+    Gcost ∈ R
+```   
+and set the initial value of `x` to `x0`. To complete the model, one has to 
+construct the epigraph formulations of the functions `F` and `G` in the 
+[`Problem`](@ref) using [`bind_model!`](@ref) and the scalar values `Fcost` and
+`Gcost` that represent the epigraph value.
 """
 function initialize_model(problem::Problem, solver::DirectSolver, x0::Vector)
 
@@ -97,7 +102,8 @@ end
         x0::Union{Vector,Nothing}=nothing,
     )
 
-Optimize `Problem` with a `DirectSolver` using the warm start `x0`. 
+Optimize a [`Problem`](@ref) with a [`DirectSolver`](@ref). The argument `x0` is
+used as a warm start. 
 """
 function optimize(
     solver::DirectSolver,

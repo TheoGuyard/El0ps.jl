@@ -1,7 +1,11 @@
 """
-    Bigm
+    Bigm <: AbstractPenalty 
 
-Big-M function G(x) = Ind(||x||_Inf <= M).
+Convex indicator of a Big-M constraint
+
+``G(\\mathbf{x}) = \\mathrm{Ind}(\\|\\mathbf{x}\\|_{\\infty} \\leq M)``
+
+where `M > 0`.
 
 # Arguments
 

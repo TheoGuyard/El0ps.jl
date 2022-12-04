@@ -17,12 +17,9 @@ end
 Branching strategy of a [`BnbSolver`](@ref).
 
 - LARGEST : Select the largest index in absolute value in the relaxed solution.
-- RESIDUAL : Select the largest index in absolute value in the vector `A'u` 
-where `u` is the dual relaxed solution.
 """
 @enum BranchingStrategy begin
     LARGEST
-    RESIDUAL
 end
 
 """
@@ -125,7 +122,6 @@ mutable struct BnbNode
     w::Vector
     u::Vector
     x_ub::Vector
-    u_ub::Vector
     function BnbNode(problem::Problem)
         return new(
             nothing,
@@ -138,7 +134,6 @@ mutable struct BnbNode
             zeros(problem.m),
             -gradient(problem.F, problem.y, zeros(problem.m)),
             zeros(problem.n),
-            zeros(problem.m),
         )
     end
     function BnbNode(parent::BnbNode, j::Int, jval::Int, prob::Problem)
@@ -153,7 +148,6 @@ mutable struct BnbNode
             copy(parent.w),
             copy(parent.u),
             copy(parent.x_ub),
-            copy(parent.u_ub),
         )
         fixto!(child, j, jval, prob)
         return child
@@ -339,8 +333,6 @@ function branch!(prob::Problem, solver::BnbSolver, node::BnbNode, options::BnbOp
     !any(node.Sb) && return nothing
     if options.branching == LARGEST
         jSb = argmax(abs.(node.x[node.Sb]))
-    elseif options.branching == RESIDUAL
-        jSb = argmax(abs.(prob.A[:, node.Sb]' * node.u_ub))
     end
     j = (1:prob.n)[node.Sb][jSb]
     node_j0 = BnbNode(node, j, 0, prob)

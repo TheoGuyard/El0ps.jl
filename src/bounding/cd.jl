@@ -178,7 +178,6 @@ function bound!(
     elseif bounding_type == UPPER
         node.ub = pv
         node.x_ub = copy(x)
-        node.u_ub = copy(u)
     else
         error("Unknown bounding type $bounding_type")
     end

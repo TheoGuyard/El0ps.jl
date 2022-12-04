@@ -47,7 +47,7 @@ export BnbSolver, BnbResult, BnbTrace
 export BFS, DFS
 export LARGEST, RESIDUAL
 export DirectSolver, DirectResult
-export CoordinateDescent
+export CD
 
 include("path.jl")
 export Path, fit_path

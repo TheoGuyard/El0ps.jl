@@ -67,8 +67,8 @@ struct BnbOptions
     showevery::Int
     keeptrace::Bool
     function BnbOptions(;
-        lb_solver::AbstractBoundingSolver   = CoordinateDescent(tolgap=1e-4, maxiter=10_000),
-        ub_solver::AbstractBoundingSolver   = CoordinateDescent(tolgap=1e-8, maxiter=10_000),
+        lb_solver::AbstractBoundingSolver   = CD(tolgap=1e-4, maxiter=10_000),
+        ub_solver::AbstractBoundingSolver   = CD(tolgap=1e-8, maxiter=10_000),
         exploration::ExplorationStrategy    = DFS,
         branching::BranchingStrategy        = LARGEST,
         maxtime::Float64                    = 60.,

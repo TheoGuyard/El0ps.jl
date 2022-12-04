@@ -1,5 +1,5 @@
 """
-    CoordinateDescent
+    CD
 
 Coordinate Descent solver for the lower and upper bounding steps in the 
 [`BnbSolver`](@ref).
@@ -9,10 +9,10 @@ Coordinate Descent solver for the lower and upper bounding steps in the
 - `tolgap::Float64` : Absolute tolearance on the duality gap.
 - `maxiter::Int` : Maximum number of itrations.
 """
-struct CoordinateDescent <: AbstractBoundingSolver
+struct CD <: AbstractBoundingSolver
     tolgap::Float64
     maxiter::Int
-    function CoordinateDescent(; tolgap::Float64=1e-8, maxiter::Int=10_000)
+    function CD(; tolgap::Float64=1e-8, maxiter::Int=10_000)
         @assert tolgap >= 1e-16
         @assert maxiter >= 0
         return new(tolgap, maxiter)
@@ -20,7 +20,7 @@ struct CoordinateDescent <: AbstractBoundingSolver
 end
 
 function bound!(
-    bounding_solver::CoordinateDescent, 
+    bounding_solver::CD, 
     problem::Problem, 
     solver::BnbSolver, 
     node::BnbNode, 

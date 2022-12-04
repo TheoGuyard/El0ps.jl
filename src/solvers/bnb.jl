@@ -39,7 +39,6 @@ Options of a [`BnbSolver`](@ref).
 - `maxtime::Float64` : Maximum solution time in seconds.
 - `maxnode::Int` : Maximum number of nodes.
 - `tolgap::Float64` : Relative MIP gap tolerance.
-- `tolperf::Float64` : Consider that the relaxation of a `node` is perfect when `node.ub - node.lb < tolperf`, 
 - `tolint::Float64` : Integer tolerance, i.e., `x = 0` when `|x| < tolint`.
 - `tolprune::Float64` : Prune a `node` in the `bnb` tree when `bnb.ub + tolprune < node.lb`.
 - `dualpruning::Bool` : Toogle the dual-pruning acceleration.
@@ -57,7 +56,6 @@ struct BnbOptions
     maxtime::Float64
     maxnode::Int
     tolgap::Float64
-    tolperf::Float64
     tolint::Float64
     tolprune::Float64
     dualpruning::Bool
@@ -73,9 +71,8 @@ struct BnbOptions
         branching::BranchingStrategy        = LARGEST,
         maxtime::Float64                    = 60.,
         maxnode::Int                        = typemax(Int),
-        tolgap::Float64                     = 1e-16,
-        tolperf::Float64                    = 1e-16,
-        tolint::Float64                     = 1e-16,
+        tolgap::Float64                     = 1e-8,
+        tolint::Float64                     = 1e-8,
         tolprune::Float64                   = 0.,
         dualpruning::Bool                   = false,
         l0screening::Bool                   = false,
@@ -87,9 +84,8 @@ struct BnbOptions
 
         @assert maxtime >= 0.
         @assert maxnode >= 0
-        @assert tolgap >= 1e-16
-        @assert tolperf >= 1e-16
-        @assert tolint >= 1e-16
+        @assert tolgap >= 0.
+        @assert tolint >= 0.
         @assert tolprune >= 0.
         @assert showevery >= 0
 
@@ -101,7 +97,6 @@ struct BnbOptions
             maxtime,
             maxnode,
             tolgap,
-            tolperf,
             tolint,
             tolprune,
             dualpruning,
@@ -296,7 +291,7 @@ end
 
 depth(node::BnbNode) = sum(node.S0 .| node.S1)
 elapsed_time(solver::BnbSolver) = Dates.time() - solver.start_time
-gap(solver::BnbSolver) = abs(solver.ub - solver.lb) / abs(solver.ub + 1e-10)
+gap(solver::BnbSolver) = abs(solver.ub - solver.lb) / (abs(solver.ub) + 1e-10)
 is_terminated(solver::BnbSolver) = (solver.status != OPTIMIZE_NOT_CALLED)
 
 function update_status!(solver::BnbSolver, options::BnbOptions)
@@ -327,7 +322,7 @@ end
 
 function prune!(solver::BnbSolver, node::BnbNode, options::BnbOptions)
     pruning_test = (node.lb > solver.ub + options.tolprune)
-    perfect_test = (options.tolprune < abs(node.ub - node.lb) < options.tolperf) 
+    perfect_test = (options.tolprune <= abs(node.ub - node.lb) / (abs(node.ub) + 1e-10) < options.tolgap) 
     prune = (pruning_test | perfect_test)
     if prune
         solver.supp_pruned += 2. ^ (-depth(node))

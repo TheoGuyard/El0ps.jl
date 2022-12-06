@@ -13,7 +13,7 @@ struct CD <: AbstractBoundingSolver
     tolgap::Float64
     maxiter::Int
     function CD(; tolgap::Float64=1e-8, maxiter::Int=10_000)
-        @assert tolgap >= 1e-16
+        @assert tolgap >= 0.
         @assert maxiter >= 0
         return new(tolgap, maxiter)
     end
@@ -48,8 +48,6 @@ function bound!(
         x = node.x
         w = node.w
         u = node.u
-        v = Vector(undef, n)
-        q = Vector(undef, n)
     elseif bounding_type == UPPER
         S0 = copy(node.S0 .| node.Sb)
         S1 = copy(node.S1)
@@ -58,8 +56,6 @@ function bound!(
         x[S1] = copy(node.x[S1])
         w = A[:, S1] * x[S1]
         u = -gradient(F, y, w)
-        v = Vector(undef, n)
-        q = Vector(undef, n)
     else
         error("Unknown bounding type $bounding_type")
     end
@@ -132,15 +128,17 @@ function bound!(
         # ----- Gap computation ----- #
 
         dual_scale!(F, y, u)
+        v = fill(NaN, n)
+        p = fill(NaN, n)
         v[idx] = dual_scale!(G, A[:, idx], u, λ)
-        q[idx] = conjugate_vectorized(G, v[idx] ./ λ) .- 1.
+        p[idx] = conjugate_vectorized(G, v[idx] ./ λ) .- 1.
 
         xSb       = x[Sbi .| Sbb]
         xSb_below = xSb[abs.(xSb) .< μ]
         xSb_above = xSb[abs.(xSb) .>= μ]
-        μSbi      = any(Sbi) ? sum(max.(q[Sbi], 0.)) : 0.
-        μSbb      = any(Sbb) ? sum(max.(q[Sbb], 0.)) : 0.
-        μS1       = any(S1) ? sum(q[S1]) : 0.
+        μSbi      = any(Sbi) ? sum(max.(p[Sbi], 0.)) : 0.
+        μSbb      = any(Sbb) ? sum(max.(p[Sbb], 0.)) : 0.
+        μS1       = any(S1) ? sum(p[S1]) : 0.
 
         pv = value(F, y, w) + λ * (
             τ * norm(xSb_below, 1) +
@@ -152,21 +150,15 @@ function bound!(
 
         # ----- Stopping criterion ----- #
 
-        if gap < tolgap
-            break
-        elseif it > maxiter
-            println("maxiter reached, last gap : $(gap)")
-            break
-        elseif elapsed_time(solver) >= maxtime
-            println("maxtime reached, last gap : $(gap)")
-            break
-        end
+        (gap / (pv + 1e-10) < tolgap) && break
+        (it > maxiter) && break
+        (elapsed_time(solver) >= maxtime) && break
         
         # --- Accelerations --- #
         
         if bounding_type == LOWER
             dualpruning && (dv >= ub + tolprune) && break
-            l0screening && l0screening!(solver, node, F, A, y, λ, x, w, u, q, ub, dv, tolprune, S0, S1, Sb, Sbi, Sbb, S1i)
+            l0screening && l0screening!(solver, node, F, A, y, λ, x, w, u, p, ub, dv, tolprune, S0, S1, Sb, Sbi, Sbb, S1i)
             l1screening && l1screening!(F, A, y, λ, x, w, u, v, α, τ, gap, Sb0, Sbi, Sbb)
         end
     end

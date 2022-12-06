@@ -8,7 +8,7 @@ function l0screening!(
     x::Vector, 
     w::Vector, 
     u::Vector, 
-    q::Vector, 
+    p::Vector, 
     ub::Float64,
     dv::Float64, 
     tolprune::Float64,
@@ -20,8 +20,9 @@ function l0screening!(
     S1i::BitArray,
     )
 
-    for i in findall(Sbi .| Sbb)
-        if dv + λ * max(-q[i], 0.0) > ub + tolprune
+    idx_to_test = findall(@. Sb & (!isnan(p)))
+    for i in idx_to_test
+        if dv + λ * max(-p[i], 0.0) > ub + tolprune
             # Move i from Sbi or Sbb to S0
             Sbi[i] = false
             Sbb[i] = false
@@ -33,7 +34,7 @@ function l0screening!(
                 x[i] = 0.0
             end
             solver.supp_pruned += 2. ^ (-depth(node))
-        elseif dv + λ * max(q[i], 0.0) > ub + tolprune
+        elseif dv + λ * max(p[i], 0.0) > ub + tolprune
             # Move i from Sbi or Sbb to S1i
             Sbi[i] = false
             Sbb[i] = false
@@ -64,7 +65,8 @@ function l1screening!(
     )
 
     radius = sqrt(2.0 * gap * α)
-    for i in findall(Sbi)
+    idx_to_test = findall(@. Sbi & !isnan(v))
+    for i in idx_to_test
         vi = v[i]
         if abs(vi) + radius < τ * λ           
             # Move i from Sbi to Sb0

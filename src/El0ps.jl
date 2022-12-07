@@ -44,7 +44,7 @@ include("bounding/accelerations.jl")
 include("bounding/cd.jl")
 include("bounding/cdas.jl")
 export optimize
-export BnbSolver, BnbResult, BnbTrace
+export BnbSolver, BnbOptions, BnbResult, BnbTrace
 export BFS, DFS
 export LARGEST, RESIDUAL
 export DirectSolver, DirectResult

@@ -36,7 +36,6 @@ Options of a [`BnbSolver`](@ref).
 - `maxtime::Float64` : Maximum solution time in seconds.
 - `maxnode::Int` : Maximum number of nodes.
 - `tolgap::Float64` : Relative MIP gap tolerance.
-- `tolperf::Float64` : Consider that the relaxation of a `node` is perfect when `node.ub - node.lb < tolperf`, 
 - `tolint::Float64` : Integer tolerance, i.e., `x = 0` when `|x| < tolint`.
 - `tolprune::Float64` : Prune a `node` in the `bnb` tree when `bnb.ub + tolprune < node.lb`.
 - `dualpruning::Bool` : Toogle the dual-pruning acceleration.

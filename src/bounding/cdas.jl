@@ -217,6 +217,8 @@ function bound!(
     while true
 
         it_as += 1
+        v .= NaN
+        p .= NaN
         
         # ----- Inner CD solver ----- #
 

@@ -16,7 +16,7 @@ export version, authors, contact, license
 include("datafits/core.jl")
 include("penalties/core.jl")
 export AbstractDatafit, AbstractPenalty
-export lipschitz_constant, value, gradient, conjugate, prox, dual_scale!, params_to_dict
+export lipschitz_constant, value, gradient, conjugate, prox, dual_scale!, params_to_dict, bind_model!
 
 include("datafits/leastsquares.jl")
 include("datafits/logistic.jl")

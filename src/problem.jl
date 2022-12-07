@@ -35,12 +35,12 @@ struct Problem
     end
 end
 
-function Base.print(io::IO, problem::Problem)
+function Base.show(io::IO, problem::Problem)
     println(io, "L0-penalized problem")
     println(io, "  Datafit : $(problem.F)")
     println(io, "  Penalty : $(problem.G)")
     println(io, "  Dims    : $(problem.m) x $(problem.n)")
-    println(io, "  λ       : $(round(problem.λ, digits=6)) ($(round(problem.λ / compute_λmax(problem.F, problem.G, problem.A, problem.y), digits=6))λmax)")
+    print(io, "  λ       : $(round(problem.λ, digits=6)) ($(round(problem.λ / compute_λmax(problem.F, problem.G, problem.A, problem.y), digits=6))λmax)")
 end
 
 """

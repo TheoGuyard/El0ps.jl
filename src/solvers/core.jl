@@ -30,7 +30,7 @@ function optimize(
     error("Function 'optimize' not implemented for solver $solver")
 end
 
-function Base.print(io::IO, result::AbstractResult)
+function Base.show(io::IO, result::AbstractResult)
     println(io, "Result")
     println(io, "  Status     : $(result.termination_status)")
     println(io, "  Objective  : $(result.objective_value)")

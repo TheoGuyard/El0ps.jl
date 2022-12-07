@@ -35,7 +35,7 @@
             @test El0ps.value(G, x) + El0ps.conjugate(G, r) >= x' * r
             @test length(prox(G, x, η)) == length(x)
             @test all(A' * u .≈ v)
-            @test El0ps.conjugate(G, v / λ) < Inf
+            @test El0ps.conjugate(G, v / λ) <= Inf
             @test isa(params_to_dict(G), Dict)
         end
 

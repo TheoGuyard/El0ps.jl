@@ -42,12 +42,13 @@ include("solvers/bnb.jl")
 include("solvers/direct.jl")
 include("bounding/accelerations.jl")
 include("bounding/cd.jl")
+include("bounding/cdas.jl")
 export optimize
 export BnbSolver, BnbResult, BnbTrace
 export BFS, DFS
 export LARGEST, RESIDUAL
 export DirectSolver, DirectResult
-export CoordinateDescent
+export CD, CDAS
 
 include("path.jl")
 export Path, fit_path

@@ -17,12 +17,9 @@ end
 Branching strategy of a [`BnbSolver`](@ref).
 
 - LARGEST : Select the largest index in absolute value in the relaxed solution.
-- RESIDUAL : Select the largest index in absolute value in the vector `A'u` 
-where `u` is the dual relaxed solution.
 """
 @enum BranchingStrategy begin
     LARGEST
-    RESIDUAL
 end
 
 """
@@ -32,8 +29,8 @@ Options of a [`BnbSolver`](@ref).
 
 # Arguments 
 
-- `lb_solver::AbstractBoundingSolver` : Solver for the lower-boudning step.
-- `ub_solver::AbstractBoundingSolver` : Solver for the upper-boudning step.
+- `lb_solver::AbstractBoundingSolver` : Solver for the lower-bounding step.
+- `ub_solver::AbstractBoundingSolver` : Solver for the upper-bounding step.
 - `exploration::ExplorationStrategy` : Tree exploration strategy.
 - `branching::BranchingStrategy` : Tree branching strategy.
 - `maxtime::Float64` : Maximum solution time in seconds.
@@ -65,8 +62,8 @@ struct BnbOptions
     showevery::Int
     keeptrace::Bool
     function BnbOptions(;
-        lb_solver::AbstractBoundingSolver   = CoordinateDescent(tolgap=1e-4, maxiter=10_000),
-        ub_solver::AbstractBoundingSolver   = CoordinateDescent(tolgap=1e-8, maxiter=10_000),
+        lb_solver::AbstractBoundingSolver   = CDAS(),
+        ub_solver::AbstractBoundingSolver   = CDAS(),
         exploration::ExplorationStrategy    = DFS,
         branching::BranchingStrategy        = LARGEST,
         maxtime::Float64                    = 60.,
@@ -120,7 +117,6 @@ mutable struct BnbNode
     w::Vector
     u::Vector
     x_ub::Vector
-    u_ub::Vector
     function BnbNode(problem::Problem)
         return new(
             nothing,
@@ -133,7 +129,6 @@ mutable struct BnbNode
             zeros(problem.m),
             -gradient(problem.F, problem.y, zeros(problem.m)),
             zeros(problem.n),
-            zeros(problem.m),
         )
     end
     function BnbNode(parent::BnbNode, j::Int, jval::Int, prob::Problem)
@@ -148,7 +143,6 @@ mutable struct BnbNode
             copy(parent.w),
             copy(parent.u),
             copy(parent.x_ub),
-            copy(parent.u_ub),
         )
         fixto!(child, j, jval, prob)
         return child
@@ -292,6 +286,7 @@ end
 depth(node::BnbNode) = sum(node.S0 .| node.S1)
 elapsed_time(solver::BnbSolver) = Dates.time() - solver.start_time
 gap(solver::BnbSolver) = abs(solver.ub - solver.lb) / (abs(solver.ub) + 1e-10)
+gap(node::BnbNode) = abs(node.ub - node.lb) / (abs(node.ub) + 1e-10)
 is_terminated(solver::BnbSolver) = (solver.status != OPTIMIZE_NOT_CALLED)
 
 function update_status!(solver::BnbSolver, options::BnbOptions)
@@ -322,7 +317,7 @@ end
 
 function prune!(solver::BnbSolver, node::BnbNode, options::BnbOptions)
     pruning_test = (node.lb > solver.ub + options.tolprune)
-    perfect_test = (options.tolprune <= abs(node.ub - node.lb) / (abs(node.ub) + 1e-10) < options.tolgap) 
+    perfect_test = (options.tolprune <= gap(node) < options.tolgap)
     prune = (pruning_test | perfect_test)
     if prune
         solver.supp_pruned += 2. ^ (-depth(node))
@@ -334,8 +329,8 @@ function branch!(prob::Problem, solver::BnbSolver, node::BnbNode, options::BnbOp
     !any(node.Sb) && return nothing
     if options.branching == LARGEST
         jSb = argmax(abs.(node.x[node.Sb]))
-    elseif options.branching == RESIDUAL
-        jSb = argmax(abs.(prob.A[:, node.Sb]' * node.u_ub))
+    else
+        error("Unsupported branching strategy $(options.branching)")
     end
     j = (1:prob.n)[node.Sb][jSb]
     node_j0 = BnbNode(node, j, 0, prob)
@@ -366,12 +361,10 @@ function update_bounds!(solver::BnbSolver, node::BnbNode, options::BnbOptions)
         solver.ub = copy(node.ub)
         solver.x = copy(node.x_ub)
         filter!(queue_node -> !prune!(solver, queue_node, options), solver.queue)
-        # filter!(queue_node -> queue_node.lb < solver.ub + options.tolprune, solver.queue)
     elseif node.ub < solver.ub
         solver.ub = copy(node.ub)
         solver.x = copy(node.x_ub)
         filter!(queue_node -> !prune!(solver, queue_node, options), solver.queue)
-        # filter!(queue_node -> queue_node.lb < solver.ub + options.tolprune, solver.queue)
     end
     if isempty(solver.queue)
         solver.lb = min(node.lb, solver.ub)

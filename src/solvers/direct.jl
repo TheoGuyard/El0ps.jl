@@ -66,7 +66,13 @@ construct the epigraph formulations of the functions `F` and `G` in the
 [`Problem`](@ref) using [`bind_model!`](@ref) and the scalar values `Fcost` and
 `Gcost` that represent the epigraph value.
 """
-function initialize_model(problem::Problem, solver::DirectSolver, x0::Vector)
+function initialize_model(
+    problem::Problem, 
+    solver::DirectSolver, 
+    x0::Union{Vector,Nothing},
+    S0::Vector{Int},
+    S1::Vector{Int},
+    )
 
     model = Model(
         optimizer_with_attributes(
@@ -88,8 +94,16 @@ function initialize_model(problem::Problem, solver::DirectSolver, x0::Vector)
     @variable(model, Fcost)
     @variable(model, Ωcost)
     @objective(model, Min, Fcost + λ * Ωcost)
-    for i in eachindex(x, x0)
-        set_start_value(x[i], x0[i])
+    if !isa(x0, Nothing)
+        for i in eachindex(x, x0)
+            set_start_value(x[i], x0[i])
+        end
+    end
+    for i in S0
+        @constraint(model, z[i] == 0)
+    end
+    for i in S1
+        @constraint(model, z[i] == 1)
     end
 
     return model
@@ -103,16 +117,20 @@ end
     )
 
 Optimize a [`Problem`](@ref) with a [`DirectSolver`](@ref). The argument `x0` is
-used as a warm start. 
+used as a warm start. The arguments `S0` and `S1` can be used to impose zero
+and non-zero constraints directly in the root node. They must match `x0`.
 """
 function optimize(
     solver::DirectSolver,
     problem::Problem;
     x0::Union{Vector,Nothing}=nothing,
+    S0::Vector{Int}=Vector{Int}(),
+    S1::Vector{Int}=Vector{Int}(),
     )
-    x0 = isa(x0, Nothing) ? zeros(problem.n) : x0
-    @assert length(x0) == problem.n
-    model = initialize_model(problem, solver, x0)
+    !isa(x0, Nothing) && @assert (length(x0) == problem.n)
+    !isa(x0, Nothing) && @assert all(x0[S0] .== 0.)
+    !isa(x0, Nothing) && @assert all(x0[S1] .!= 0.)
+    model = initialize_model(problem, solver, x0, S0, S1)
     bind_model!(problem.F, problem.y, model)
     bind_model!(problem.G, model)
     optimize!(model)

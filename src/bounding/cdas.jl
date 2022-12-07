@@ -172,7 +172,7 @@ function bound!(
         error("Unknown bounding type $bounding_type")
     end
 
-    S = (x .!= 0.)
+    S = @. (x != 0.) | S1
 
     # Parameter values
     maxtime = options.maxtime

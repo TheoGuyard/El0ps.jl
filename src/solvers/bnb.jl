@@ -229,12 +229,25 @@ end
 
 Base.show(io::IO, solver::BnbSolver) = print(io, "Bnb solver")
 
-function initialize!(solver::BnbSolver, problem::Problem, x0::Vector)
+function initialize!(
+    solver::BnbSolver, 
+    problem::Problem, 
+    x0::Union{Vector,Nothing}, 
+    S0::Vector{Int}, 
+    S1::Vector{Int},
+    )
     solver.status = OPTIMIZE_NOT_CALLED
-    solver.ub = objective(problem, x0)
+    solver.ub = isa(x0, Nothing) ? Inf : objective(problem, x0)
     solver.lb = -Inf
-    solver.x = x0
-    push!(solver.queue, BnbNode(problem))
+    solver.x = isa(x0, Nothing) ? zeros(problem.m) : x0
+    root = BnbNode(problem)
+    for i in S0
+        fixto!(root, i, 0, problem)
+    end
+    for i in S1
+        fixto!(root, i, 1, problem)
+    end
+    push!(solver.queue, root)
     solver.node_count = 0
     solver.supp_pruned = 0.
     solver.start_time = Dates.time()
@@ -393,21 +406,27 @@ end
         solver::BnbSolver,
         problem::Problem;
         x0::Union{Vector,Nothing}=nothing,
+        S0::Vector{Int}=Vector{Int}(),
+        S1::Vector{Int}=Vector{Int}(),
     )
 
 Optimize a [`Problem`](@ref) with a [`BnbSolver`](@ref). The argument `x0` is
-used as a warm start. 
+used as a warm start. The arguments `S0` and `S1` can be used to impose zero
+and non-zero constraints directly in the root node. They must match `x0`.
 """
 function optimize(
     solver::BnbSolver,
     problem::Problem;
     x0::Union{Vector,Nothing}=nothing,
+    S0::Vector{Int}=Vector{Int}(),
+    S1::Vector{Int}=Vector{Int}(),
     )
 
     @assert !isa(problem.G, ZeroPenalty)
-    x0 = isa(x0, Nothing) ? zeros(problem.n) : x0
-    @assert length(x0) == problem.n
-    initialize!(solver, problem, x0)
+    !isa(x0, Nothing) && @assert (length(x0) == problem.n)
+    !isa(x0, Nothing) && @assert all(x0[S0] .== 0.)
+    !isa(x0, Nothing) && @assert all(x0[S1] .!= 0.)
+    initialize!(solver, problem, x0, S0, S1)
 
     options = solver.options
     trace = solver.trace

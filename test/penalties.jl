@@ -36,7 +36,7 @@
             @test length(prox(G, x, η)) == length(x)
             @test all(A' * u .≈ v)
             @test El0ps.conjugate(G, v / λ) <= Inf
-            @test isa(params_to_dict(G), Dict)
+            @test isa(params_to_dict(G), OrderedDict)
         end
 
         # Do not test the bind_model!() function for penalties involving SOCP 

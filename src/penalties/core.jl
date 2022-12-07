@@ -93,7 +93,7 @@ Returns a dictionary with the parameters name and value of the function `G`.
 function params_to_dict(G::AbstractPenalty)
     Gtype = typeof(G)
     Gfields = fieldnames(Gtype)
-    params = Dict(Gfields .=> getfield.(Ref(G), Gfields))
+    params = OrderedDict(Gfields .=> getfield.(Ref(G), Gfields))
     filter!(kv -> !(first(kv) in [:μ,:τ]), params)
     return params
 end

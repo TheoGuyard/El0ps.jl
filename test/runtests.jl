@@ -3,6 +3,7 @@ using Test
 
 using JuMP
 using LinearAlgebra
+using OrderedCollections
 using SCIP
 
 @testset "Package info" begin

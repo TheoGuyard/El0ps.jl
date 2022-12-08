@@ -74,9 +74,9 @@ struct BnbOptions
         dualpruning::Bool                   = false,
         l0screening::Bool                   = false,
         l1screening::Bool                   = false,
-        verbosity::Bool                     = true,
+        verbosity::Bool                     = false,
         showevery::Int                      = 1,
-        keeptrace::Bool                     = true,
+        keeptrace::Bool                     = false,
     )
 
         @assert maxtime >= 0.

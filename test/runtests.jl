@@ -5,6 +5,7 @@ using JuMP
 using LinearAlgebra
 using OrderedCollections
 using SCIP
+using Statistics
 
 @testset "Package info" begin
     println(version())

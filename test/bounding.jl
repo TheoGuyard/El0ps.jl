@@ -4,7 +4,7 @@
     n = 30
     ρ = 0.1
     σ = 10.
-    xtrue, A, y = synthetic_data_regression(k, m, n, ρ, σ, normalize=true)
+    xtrue, A, y = synthetic_data_regression(k, m, n, ρ, σ)
     F = LeastSquares()
     G = Bigm(1.)
     λ = 0.1 * compute_λmax(F, G, A, y)

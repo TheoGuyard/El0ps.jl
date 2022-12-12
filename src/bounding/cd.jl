@@ -167,6 +167,11 @@ function bound!(
 
     if bounding_type == LOWER
         node.lb = dv
+        node.lb_it = it
+        node.lb_l1screening_Sb0 = sum(Sb0)
+        node.lb_l1screening_Sbb = sum(Sbb)
+        node.lb_l0screening_S0 = sum(S0) - (isa(node.parent, Nothing) ? 1 : (sum(node.parent.S0) + 1))
+        node.lb_l0screening_S1 = sum(S1) - (isa(node.parent, Nothing) ? 1 : (sum(node.parent.S1) + 1))
     elseif bounding_type == UPPER
         node.ub = pv
         node.x_ub = copy(x)

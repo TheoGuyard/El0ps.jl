@@ -40,6 +40,19 @@
         @test result.termination_status == MOI.OPTIMAL
     end
 
+    @testset "BnbSolver with trace" begin
+        solver = BnbSolver(
+            verbosity   = false, 
+            maxtime     = 60., 
+            dualpruning = true,
+            l0screening = true,
+            l1screening = true,
+            keeptrace   = true,
+        )
+        result = optimize(solver, problem)
+        @test result.termination_status == MOI.OPTIMAL
+    end
+
     @testset "BnbSolver with initial S0 and S1" begin
         solver = BnbSolver(
             verbosity   = false, 

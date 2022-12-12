@@ -117,6 +117,11 @@ mutable struct BnbNode
     w::Vector
     u::Vector
     x_ub::Vector
+    lb_it::Int
+    lb_l1screening_Sb0::Int
+    lb_l1screening_Sbb::Int
+    lb_l0screening_S0::Int
+    lb_l0screening_S1::Int
     function BnbNode(problem::Problem)
         return new(
             nothing,
@@ -129,6 +134,11 @@ mutable struct BnbNode
             zeros(problem.m),
             -gradient(problem.F, problem.y, zeros(problem.m)),
             zeros(problem.n),
+            0,
+            0,
+            0,
+            0,
+            0,
         )
     end
     function BnbNode(parent::BnbNode, j::Int, jval::Int, prob::Problem)
@@ -143,6 +153,11 @@ mutable struct BnbNode
             copy(parent.w),
             copy(parent.u),
             copy(parent.x_ub),
+            0,
+            0,
+            0,
+            0,
+            0,
         )
         fixto!(child, j, jval, prob)
         return child
@@ -155,17 +170,22 @@ end
 Trace of a [`BnbSolver`](@ref).
 """
 Base.@kwdef mutable struct BnbTrace 
-    ub::Vector              = Vector()
-    lb::Vector              = Vector()
-    node_count::Vector{Int} = Vector{Int}()
-    queue_size::Vector{Int} = Vector{Int}()
-    timer::Vector           = Vector()
-    supp_pruned::Vector     = Vector()
-    node_lb::Vector         = Vector()
-    node_ub::Vector         = Vector()
-    card_Sb::Vector{Int}    = Vector{Int}()
-    card_S1::Vector{Int}    = Vector{Int}()
-    card_S0::Vector{Int}    = Vector{Int}()
+    ub::Vector                              = Vector()
+    lb::Vector                              = Vector()
+    node_count::Vector{Int}                 = Vector{Int}()
+    queue_size::Vector{Int}                 = Vector{Int}()
+    timer::Vector                           = Vector()
+    supp_pruned::Vector                     = Vector()
+    node_lb::Vector                         = Vector()
+    node_ub::Vector                         = Vector()
+    node_card_S0::Vector{Int}               = Vector{Int}()
+    node_card_S1::Vector{Int}               = Vector{Int}()
+    node_card_Sb::Vector{Int}               = Vector{Int}()
+    node_lb_it::Vector{Int}                 = Vector{Int}()
+    node_lb_l1screening_Sb0::Vector{Int}    = Vector{Int}()
+    node_lb_l1screening_Sbb::Vector{Int}    = Vector{Int}()
+    node_lb_l0screening_S0::Vector{Int}     = Vector{Int}()
+    node_lb_l0screening_S1::Vector{Int}     = Vector{Int}()
 end
 
 """
@@ -395,9 +415,14 @@ function update_trace!(trace::BnbTrace, solver::BnbSolver, node::BnbNode, option
     push!(trace.supp_pruned, solver.supp_pruned)
     push!(trace.node_lb, node.lb)
     push!(trace.node_ub, node.ub)
-    push!(trace.card_Sb, sum(node.Sb))
-    push!(trace.card_S0, sum(node.S0))
-    push!(trace.card_S1, sum(node.S1))
+    push!(trace.node_card_S0, sum(node.S0))
+    push!(trace.node_card_S1, sum(node.S1))
+    push!(trace.node_card_Sb, sum(node.Sb))
+    push!(trace.node_lb_it, sum(node.lb_it))
+    push!(trace.node_lb_l1screening_Sb0, sum(node.lb_l1screening_Sb0))
+    push!(trace.node_lb_l1screening_Sbb, sum(node.lb_l1screening_Sbb))
+    push!(trace.node_lb_l0screening_S0, sum(node.lb_l0screening_S0))
+    push!(trace.node_lb_l0screening_S1, sum(node.lb_l0screening_S1))
     return nothing
 end
 

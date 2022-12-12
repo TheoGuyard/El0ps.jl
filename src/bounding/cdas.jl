@@ -172,8 +172,6 @@ function bound!(
         error("Unknown bounding type $bounding_type")
     end
 
-    S = @. (x != 0.) | S1
-
     # Parameter values
     maxtime = options.maxtime
     tolgap = options.tolgap
@@ -203,6 +201,7 @@ function bound!(
     Sbb = falses(n)
     S1i = copy(S1) 
     S1b = falses(n)
+    S = @. (x != 0.) | S1
     # TODO : maybe keep S1 unsplitted
 
     # Objective values
@@ -263,6 +262,11 @@ function bound!(
 
     if bounding_type == LOWER
         node.lb = compute_dual_value(F, G, A, y, λ, u, v, p, S, Sb)
+        node.lb_it = it_cd
+        node.lb_l1screening_Sb0 = sum(Sb0)
+        node.lb_l1screening_Sbb = sum(Sbb)
+        node.lb_l0screening_S0 = sum(S0) - (isa(node.parent, Nothing) ? 1 : (sum(node.parent.S0) + 1))
+        node.lb_l0screening_S1 = sum(S1) - (isa(node.parent, Nothing) ? 1 : (sum(node.parent.S1) + 1))
     else
         node.ub = pv
         node.x_ub = copy(x)

@@ -62,8 +62,8 @@ struct BnbOptions
     showevery::Int
     keeptrace::Bool
     function BnbOptions(;
-        lb_solver::AbstractBoundingSolver   = CDAS(),
-        ub_solver::AbstractBoundingSolver   = CDAS(),
+        lb_solver::AbstractBoundingSolver   = CDAS(reltol=1e-4),
+        ub_solver::AbstractBoundingSolver   = CDAS(reltol=1e-8),
         exploration::ExplorationStrategy    = DFS,
         branching::BranchingStrategy        = LARGEST,
         maxtime::Float64                    = 60.,
@@ -85,6 +85,7 @@ struct BnbOptions
         @assert tolint >= 0.
         @assert tolprune >= 0.
         @assert showevery >= 0
+        @assert ub_solver.reltol <= tolgap
 
         return new(
             lb_solver,

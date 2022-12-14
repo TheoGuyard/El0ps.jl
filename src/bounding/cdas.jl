@@ -6,7 +6,7 @@ bounding steps in the [`BnbSolver`](@ref).
 
 # Arguments
 
-- `reltol::Float64` : Relative objective improvment tolearance for lower bouning.
+- `reltol::Float64` : Relative tolearance for lower bouning.
 - `maxiter_cd::Int` : Maximum number of cooridinate descent updates.
 - `maxiter_as::Int` : Maximum number of active-set updates.
 """
@@ -180,6 +180,7 @@ function bound!(
     l0screening = options.l0screening
     l1screening = options.l1screening
     reltol = bounding_solver.reltol
+    cdltol = 0.1 * reltol
     maxiter_cd = bounding_solver.maxiter_cd
     maxiter_as = bounding_solver.maxiter_as
    
@@ -207,7 +208,7 @@ function bound!(
     # Objective values
     ub = solver.ub
     pv = Inf
-    dv = -Inf
+    dv = NaN
 
     # ----- Main loop ----- #
 
@@ -218,6 +219,7 @@ function bound!(
         it_as += 1
         v .= NaN
         p .= NaN
+        dv = NaN
         
         # ----- Inner CD solver ----- #
 
@@ -227,8 +229,8 @@ function bound!(
             cd_loop!(F, G, A, y, x, w, u, ν, ρ, η, δ, S, Sb)
             pv = compute_primal_value(F, G, y, λ, x, w, τ, μ, S, Sb)
             if bounding_type == LOWER
-                (abs(pv - pv_old) / (abs(pv) + 1e-10) < reltol) && break
-            elseif bounding_type == UPPER         
+                (abs(pv - pv_old) / (abs(pv) + 1e-10) < cdltol) && break
+            elseif bounding_type == UPPER
                 dv = compute_dual_value(F, G, A, y, λ, u, v, p, S, Sb)
                 (abs(pv - dv) / (abs(pv) + 1e-10) < tolgap) && break
             end
@@ -239,17 +241,22 @@ function bound!(
 
         (bounding_type == UPPER) && break
         V = update_active_set!(G, A, λ, u, v, p, τ, S, Sbi) 
-        (length(V) > 0) || break
         (it_as >= maxiter_as) && break
         (elapsed_time(solver) >= maxtime) && break
+        if length(V) == 0
+            dv = compute_dual_value(F, G, A, y, λ, u, v, p, S, Sb)
+            (abs(pv - dv) / (abs(pv) + 1e-10) < reltol) && break
+            (cdltol <= 1e-8) && break
+            cdltol *= 1e-2
+        end
 
         # --- Accelerations --- #
 
         if (bounding_type == LOWER) & (l1screening | l0screening | dualpruning)
-            dv = compute_dual_value(F, G, A, y, λ, u, v, p, S, Sb)
+            dv = isnan(dv) ? compute_dual_value(F, G, A, y, λ, u, v, p, S, Sb) : dv
             gap = abs(pv - dv)
-            l1screening && l1screening!(F, A, y, λ, x, w, u, v, α, τ, gap, Sb0, Sbi, Sbb)
             dualpruning && (dv >= ub + tolprune) && break
+            l1screening && l1screening!(F, A, y, λ, x, w, u, v, α, τ, gap, Sb0, Sbi, Sbb)
             l0screening && l0screening!(solver, node, F, A, y, λ, x, w, u, p, ub, dv, tolprune, S0, S1, Sb, Sbi, Sbb, S1i)
             S .|= S1
             S .|= Sbb
@@ -261,7 +268,7 @@ function bound!(
     # ----- Post-processing ----- #
 
     if bounding_type == LOWER
-        node.lb = compute_dual_value(F, G, A, y, λ, u, v, p, S, Sb)
+        node.lb = isnan(dv) ? compute_dual_value(F, G, A, y, λ, u, v, p, S, Sb) : dv
         node.lb_it = it_cd
         node.lb_l1screening_Sb0 = sum(Sb0)
         node.lb_l1screening_Sbb = sum(Sbb)

@@ -29,7 +29,7 @@ In particular, `El0ps.jl` implements a Branch-and-Bound algorithm that exploits 
 Our implementation is designed to be flexible regarding to the expression of the functions $f$ and $h$.
 The user can define his own.
 It is only necessary to indicate how to evaluate some of the operators associated with them (see the [docs](https://theoguyard.github.io/El0ps.jl/dev) for more details).
-The package already supports the following function $f$ and $g$.
+The package already supports the following function $f$ and $h$.
 
 | Loss / Perturbation        | Expression | Parameters
 |--------------|-----|---|

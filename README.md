@@ -12,38 +12,39 @@
 pkg> add "https://github.com/TheoGuyard/El0ps.jl"
 ```
 
-This package is tested against Julia `1.7` and `1.8`.
-
-
 ## Summary
 
-This packages provides an efficient Branch-and-Bound algorithm tailored solve
+This package provides a solution method to address problems of the form
 
-$$(\mathcal{P}) \quad \min_{\mathbf{x}} \ f(\mathbf{A}\mathbf{x}) + \lambda g(\mathbf{x})$$
+$$\min_{\mathbf{x}} \ f(\mathbf{A}\mathbf{x}) + \lambda g(\mathbf{x})$$
 
-where $g(x) = \|\mathbf{x}\|_0 + h(x)$.
-This problem aims to fit some model, encoded in the loss function $f$, while forcing the sparsity of the optimizers through the $\ell_0$-norm which counts the number of non-zero entries in its argument.
-The function $h$ is a perturbation term allowing to construct convex and bounded relaxations of $(\mathcal{P})$ across the Branch-and-Bound tree.
-Our package is designed to be flexible regarding the choice of the functions $f$ and $h$.
-The following ones are already provided by the package.
+where $g(x) = \|\|\mathbf{x}\|\|_0 + h(x)$.
+They aims to fit a model, encoded in the loss function $f$, while forcing sparsity in the optimizers through the $\ell_0$-norm, which counts the number of non-zero entries in its argument.
+The function $h$ is a perturbation term required to build-up efficient numerical procedures.
+In particular, `El0ps.jl` implements a Branch-and-Bound algorithm that exploits the structure of the problem to achieve competitive performances.
+
+
+## Loss and perturbation functions
+
+Our implementation is designed to be flexible regarding the choice of the functions $f$ and $h$.
+The user can define his own, it is only necessary to indicate how to evaluate some of the operators associated with them (see the [docs](https://theoguyard.github.io/El0ps.jl/dev)).
+The package already supports the following function $f$ and $g$:
 
 | Loss / Perturbation        | Expression | Parameters
 |--------------|-----|---|
 | Least-Squares |  $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{2}\|\|\mathbf{y} - \mathbf{A}\mathbf{x}\|\|_2^2$ | None |
 | Logistic      |  $f(\mathbf{A}\mathbf{x}) = \mathbf{1}^{\top}\log(\mathbf{1} + \exp(-\mathbf{y}\odot\mathbf{A}\mathbf{x}))$ | None |
-| Big-M constraint |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M)$ | $M > 0$ |
+| Big-M |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M)$ | $M > 0$ |
 | Big-M + $\ell_1$-norm      |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M) + \alpha\|\|\mathbf{x}\|\|_1$ | $M,\alpha > 0$ |
 | Big-M + $\ell_2$-norm      |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M) + \beta\|\|\mathbf{x}\|\|_2^2$ | $M,\beta > 0$ |
 | $\ell_1$-norm      |  $h(\mathbf{x}) = \alpha\|\|\mathbf{x}\|\|_1$ | $\alpha > 0$ |
 | $\ell_2$-norm      |  $h(\mathbf{x}) = \beta\|\|\mathbf{x}\|\|_2^2$ | $\beta > 0$ |
 | $\ell_1\ell_2$-norm      |  $h(\mathbf{x}) = \alpha\|\|\mathbf{x}\|\|_1 + \beta\|\|\mathbf{x}\|\|_2^2$ | $\alpha,\beta > 0$ |
 
-In the above table, the function $\mathbb{I}(\mathcal{C})$ denotes the convex indicator of some constraint $\mathcal{C}$.
+In the above table, the function $\mathbb{I}(\mathcal{C})$ denotes the convex indicator of the constraint $\mathcal{C}$.
 Please raise an [issue](https://github.com/TheoGuyard/El0ps.jl/issues) or create a [pull request](https://github.com/TheoGuyard/El0ps.jl/pulls) to request support for other loss and perturbation functions.
-Refer to the [docs](https://theoguyard.github.io/El0ps.jl/dev) for the required assumptions on these functions.
-Otherwise, you can also defined your own functions $f$ and $h$, as explained [here](https://theoguyard.github.io/El0ps.jl/dev).
 
-## Citations
+## Citation
 
 To cite `El0ps.jl`, please refer to the following [paper](https://hal.science/hal-03960204/document) (in french) :
 

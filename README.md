@@ -26,9 +26,10 @@ In particular, `El0ps.jl` implements a Branch-and-Bound algorithm that exploits 
 
 ## Loss and perturbation functions
 
-Our implementation is designed to be flexible regarding the choice of the functions $f$ and $h$.
-The user can define his own, it is only necessary to indicate how to evaluate some of the operators associated with them (see the [docs](https://theoguyard.github.io/El0ps.jl/dev)).
-The package already supports the following function $f$ and $g$:
+Our implementation is designed to be flexible regarding to the expression of the functions $f$ and $h$.
+The user can define his own.
+It is only necessary to indicate how to evaluate some of the operators associated with them (see the [docs](https://theoguyard.github.io/El0ps.jl/dev) for more details).
+The package already supports the following function $f$ and $g$.
 
 | Loss / Perturbation        | Expression | Parameters
 |--------------|-----|---|
@@ -42,7 +43,7 @@ The package already supports the following function $f$ and $g$:
 | $\ell_1\ell_2$-norm      |  $h(\mathbf{x}) = \alpha\|\|\mathbf{x}\|\|_1 + \beta\|\|\mathbf{x}\|\|_2^2$ | $\alpha,\beta > 0$ |
 
 In the above table, the function $\mathbb{I}(\mathcal{C})$ denotes the convex indicator of the constraint $\mathcal{C}$.
-Please raise an [issue](https://github.com/TheoGuyard/El0ps.jl/issues) or create a [pull request](https://github.com/TheoGuyard/El0ps.jl/pulls) to request support for other loss and perturbation functions.
+Please raise an [issue](https://github.com/TheoGuyard/El0ps.jl/issues) or create a [pull request](https://github.com/TheoGuyard/El0ps.jl/pulls) to ask for the support of other loss and perturbation functions.
 
 ## Citation
 

@@ -16,10 +16,10 @@ pkg> add "https://github.com/TheoGuyard/El0ps.jl"
 
 This package provides a solution method to address problems of the form
 
-$$\min_{\mathbf{x}} \ f(\mathbf{A}\mathbf{x}) + \lambda g(\mathbf{x})$$
+$$\min_{\mathbf{x}} \ f(\mathbf{y},\mathbf{A}\mathbf{x}) + \lambda g(\mathbf{x})$$
 
 where $g(x) = \|\|\mathbf{x}\|\|_0 + h(x)$.
-They aims to fit a model, encoded in the loss function $f$, while forcing sparsity in the optimizers through the $\ell_0$-norm, which counts the number of non-zero entries in its argument.
+They aims to fit $\mathbf{y}$ with a model depending on $\mathbf{A}$, encoded in the loss function $f$, while forcing sparsity in the optimizers through the $\ell_0$-norm, which counts the number of non-zero entries in its argument.
 The function $h$ is a perturbation term required to build-up efficient numerical procedures.
 In particular, `El0ps.jl` implements a Branch-and-Bound algorithm that exploits the structure of the problem to achieve competitive performances.
 

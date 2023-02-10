@@ -38,10 +38,10 @@ The result specifies different statistics about the solution process:
   * `TIME_LIMIT` when the maximum time allowed is reached
   * `ITERATION_LIMIT` when the maximum number of nodes allowed is reached
 * The best objective value obtained
-* The number of non-zero elements in the solution of the problem
+* The number of non-zero elements in the solution
 * The last MIP gap, which should be zero at optimality
 * The overall solution time
-* The number of nodes processed
+* The number of BnB nodes processed
 
 The solution of the problem can be accessed via
 ```@example optimize
@@ -57,7 +57,7 @@ When creating a [`BnbSolver`](@ref), different parameters can be specified.
 First, there exists parameters to control and limit the execution of the solver:
 * `exploration` : the BnB exploration strategy (`BFS` or `DFS`)
 * `branching` : the BnB branching strategy (`LARGEST` or `RESIDUAL`)
-* `maxtime` : the maximum solution time allowed
+* `maxtime` : the maximum solution time allowed (in seconds)
 * `maxnode` : the maximum number of nodes 
 * `tolgap` : the targeted MIP duality gap in the BnB
 * `tolint` : the integrality tolerance in the BnB
@@ -74,13 +74,28 @@ Finally, the BnB displays and logs can also be controlled via:
 * `showevery` : difference in nodes between two consecutive displays
 * `keeptrace` : return a trace of the exploration in the result
 
+They can be passed to the solver as follows:
+```@example optimize
+solver = BnbSolver(maxtime=60., verbosity=false)
+```
+
 More information is given in the documentation of the [`BnbOptions`](@ref) structure that collects the keywords passed to [`BnbSolver`](@ref).
 
 ## Warm start
 
-When calling [`optimize`](@ref), a warm start `x0` can be specified as follows:
+When calling [`optimize`](@ref), a warm start can be specified as follows:
 ```@example optimize
-x0 = randn(30)
-result = optimize(solver, problem, x0=x0)
+x0 = rand(30)
+optimize(solver, problem, x0=x0)
 ```
 The BnB algorithm will construct its first upper bound based on the evaluation of `x0` in the objective of the problem.
+Moreover, it is also possible to force indices of the problem variable to zero or non-zero from the beginning of the algorithm.
+This can be done with
+```@example optimize
+idx_zer = [1,2,3]
+idx_nnz = [4,5,6]
+result = optimize(solver, problem, S0=idx_zer, S1=idx_nnz)
+println(result.x[idx_zer])
+println(result.x[idx_nnz])
+```
+One notices that `result.x[idx_zer]` and `result.x[idx_nnz]` indeed correspond to zero and non-zero values, respectively.

@@ -1,7 +1,6 @@
 # Regularization path
 
 In this section, we consider some [`Problem`](@ref) data for which we want to fit a regularization path, i.e., solving the problem for a range of `λ` values.
-For each `λ` value, the [`BnbSolver`](@ref) will be called.
 
 ```@example path
 using El0ps
@@ -25,7 +24,7 @@ The path if fitted using the [`fit_path`](@ref) function as follows:
 path = fit_path(solver, f, h, A, y)
 ```
 
-This operation returns the fitted path with several information:
+This operation returns a [`Path`](@ref) instance with several information:
 * `λ/λmax`: the ratio between the current `λ` and the value `λmax` above which the solution to the problem is necessarily the all-zero vector
 * `Conv`: whether the solver has converged
 * `Time`: solution time
@@ -50,3 +49,6 @@ When fitting the path, the following parameters can be specified:
 * `compute_cv`: whether to compute the cross validation error
 * `nb_folds`: number of folds in the cross validation evaluation
 * `verbosity`: toggle displays during the fitting
+
+They are passed to the [`fit_path`](@ref) function as keyword arguments.
+More information is given in the documentation of the [`PathOptions`](@ref) struct which handle the path parameters.

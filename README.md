@@ -14,22 +14,23 @@ pkg> add "https://github.com/TheoGuyard/El0ps.jl"
 
 ## Summary
 
-This package provides a solution method to address problems of the form
+This package provides solution methods to address the problem
 
 $$\min_{\mathbf{x}} \ f(\mathbf{y},\mathbf{A}\mathbf{x}) + \lambda g(\mathbf{x})$$
 
-where $g(x) = \|\|\mathbf{x}\|\|_0 + h(x)$.
-They aims to fit $\mathbf{y}$ with a model depending on $\mathbf{A}$, encoded in the loss function $f$, while forcing sparsity in the optimizers through the $\ell_0$-norm, which counts the number of non-zero entries in its argument.
+where $g(x) = \|\mathbf{x}\|_0 + h(x)$.
+It aims to fit $\mathbf{y}$ through a model of $\mathbf{Ax}$, encoded in the loss function $f$.
+It also enforces sparsity in the optimizers with the $\ell_0$-norm, which counts the number of non-zero entries in its argument.
 The function $h$ is a perturbation term required to build-up efficient numerical procedures.
 In particular, `El0ps.jl` implements a Branch-and-Bound algorithm that exploits the structure of the problem to achieve competitive performances.
+
 
 
 ## Loss and perturbation functions
 
 Our implementation is designed to be flexible regarding to the expression of the functions $f$ and $h$.
-The user can define his own.
-It is only necessary to indicate how to evaluate some of the operators associated with them (see the [docs](https://theoguyard.github.io/El0ps.jl/dev) for more details).
-The package already supports the following function $f$ and $h$.
+The user can define his own, it is only required to indicate how to evaluate some of the operators associated with these functions (see the [docs](https://theoguyard.github.io/El0ps.jl/dev) for more details).
+The package already supports the following functions $f$ and $h$.
 
 | Loss / Perturbation        | Expression | Parameters
 |--------------|-----|---|
@@ -47,7 +48,7 @@ Please raise an [issue](https://github.com/TheoGuyard/El0ps.jl/issues) or create
 
 ## Citation
 
-To cite `El0ps.jl`, please refer to the following [paper](https://hal.science/hal-03960204/document) (in french) :
+To cite `El0ps.jl`, please refer to the following [paper](https://hal.science/hal-03960204/document) (in french):
 
 ```{bibtex}
 @inproceedings{guyard2023solveur,

@@ -51,7 +51,7 @@ These latter can be removed without modifying the problem solution.
 Finally, the parameter `λ` must be strictly positive.
 
 When displaying a [`Problem`](@ref), `λmax` corresponds to the value of `λ` above which the solution is always the all-zero vector.
-However, setting `λ < λmax` does not necessarily ensures to obtain a solution with some non-zero elements.
+However, setting `λ < λmax` does not necessarily ensure to obtain a solution with some non-zero elements.
 The value of `λmax` can be computed from the problem data as follows:
 ```@example quickstart
 λmax = compute_λmax(f, h, A, y)

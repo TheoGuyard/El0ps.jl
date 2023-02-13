@@ -34,10 +34,6 @@ This operation returns a [`Path`](@ref) instance with several information:
 * `CV mean`: mean cross validation error on the term $f(\mathbf{y},\mathbf{Ax})$
 * `CV std`: standard deviation of the cross validation error on the term $f(\mathbf{y},\mathbf{Ax})$
 
-## Cross-validation
-
-TODO
-
 ## Specifying parameters
 
 When fitting the path, the following parameters can be specified:
@@ -51,4 +47,8 @@ When fitting the path, the following parameters can be specified:
 * `verbosity`: toggle displays during the fitting
 
 They are passed to the [`fit_path`](@ref) function as keyword arguments.
+```@example path
+solver = BnbSolver(max_support_size=5, compute_cv=false)
+```
+
 More information is given in the documentation of the [`PathOptions`](@ref) struct which handle the path parameters.

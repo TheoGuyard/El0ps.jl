@@ -16,7 +16,6 @@ makedocs(
             "Datafits" => "library/datafits.md",
             "Penalties" => "library/penalties.md",
             "Solvers" => "library/solvers.md",
-            "Bounding step" => "library/bounding.md",
             "Regularization path" => "library/path.md",
         ]
     ]

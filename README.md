@@ -19,7 +19,7 @@ This package provides solution methods to address the problem
 $$\min_{\mathbf{x}} \ f(\mathbf{y},\mathbf{A}\mathbf{x}) + \lambda g(\mathbf{x})$$
 
 where $g(x) = \|\mathbf{x}\|_0 + h(x)$.
-It aims to fit $\mathbf{y}$ through a model of $\mathbf{Ax}$, encoded in the loss function $f$.
+It aims to fit an input $\mathbf{y}$ through some model of $\mathbf{Ax}$ encoded in the loss function $f$.
 It also enforces sparsity in the optimizers with the $\ell_0$-norm, which counts the number of non-zero entries in its argument.
 The function $h$ is a perturbation term required to build-up efficient numerical procedures.
 In particular, `El0ps.jl` implements a Branch-and-Bound algorithm that exploits the structure of the problem to achieve competitive performances.
@@ -34,8 +34,8 @@ The package already supports the following functions $f$ and $h$.
 
 | Loss / Perturbation        | Expression | Parameters
 |--------------|-----|---|
-| Least-Squares |  $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{2}\|\|\mathbf{y} - \mathbf{A}\mathbf{x}\|\|_2^2$ | None |
-| Logistic      |  $f(\mathbf{A}\mathbf{x}) = \mathbf{1}^{\top}\log(\mathbf{1} + \exp(-\mathbf{y}\odot\mathbf{A}\mathbf{x}))$ | None |
+| Least-Squares |  $f(\mathbf{y},\mathbf{A}\mathbf{x}) = \tfrac{1}{2}\|\|\mathbf{y} - \mathbf{A}\mathbf{x}\|\|_2^2$ | None |
+| Logistic      |  $f(\mathbf{y},\mathbf{A}\mathbf{x}) = \mathbf{1}^{\top}\log(\mathbf{1} + \exp(-\mathbf{y}\odot\mathbf{A}\mathbf{x}))$ | None |
 | Big-M |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M)$ | $M > 0$ |
 | Big-M + $\ell_1$-norm      |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M) + \alpha\|\|\mathbf{x}\|\|_1$ | $M,\alpha > 0$ |
 | Big-M + $\ell_2$-norm      |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M) + \beta\|\|\mathbf{x}\|\|_2^2$ | $M,\beta > 0$ |

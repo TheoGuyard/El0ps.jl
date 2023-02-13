@@ -74,7 +74,7 @@ Finally, the BnB displays and logs can also be controlled via:
 * `showevery` : difference in nodes between two consecutive displays
 * `keeptrace` : return a trace of the exploration in the result
 
-They can be passed to the solver as follows:
+They can be passed to the solver as keywords arguments:
 ```@example optimize
 solver = BnbSolver(maxtime=60., verbosity=false)
 ```

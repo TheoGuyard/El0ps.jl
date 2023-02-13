@@ -34,6 +34,6 @@ function bind_model!(h::L2norm, model::JuMP.Model)
             [0.5 * s[i]; model[:z][i]; model[:x][i]] in RotatedSecondOrderCone()
         )
     end
-    @constraint(model, model[:Ωcost] >= sum(model[:z]) + h.α *  sum(s))
+    @constraint(model, model[:Gcost] >= sum(model[:z]) + h.α *  sum(s))
     return nothing
 end

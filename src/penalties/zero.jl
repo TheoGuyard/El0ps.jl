@@ -29,5 +29,5 @@ function bind_model!(h::Zero, model::JuMP.Model)
     for i in eachindex(model[:x], model[:z])
         @constraint(model, [model[:x][i], model[:z][i]] in SOS1())
     end
-    @constraint(model, model[:Ωcost] >= sum(model[:z]))
+    @constraint(model, model[:Gcost] >= sum(model[:z]))
 end

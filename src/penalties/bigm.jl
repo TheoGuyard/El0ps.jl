@@ -27,5 +27,5 @@ dual_scale!(h::Bigm, A::Matrix, u::Vector, λ::Float64) = A' * u
 function bind_model!(h::Bigm, model::JuMP.Model)
     @constraint(model, model[:x] .<= h.M .* model[:z])
     @constraint(model, model[:x] .>= -h.M .* model[:z])
-    @constraint(model, model[:Ωcost] >= sum(model[:z]))
+    @constraint(model, model[:Gcost] >= sum(model[:z]))
 end

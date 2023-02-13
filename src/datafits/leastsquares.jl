@@ -34,7 +34,7 @@ end
 function bind_model!(f::LeastSquares, y::Vector, model::JuMP.Model)
     @constraint(
         model, 
-        model[:Fcost] >= 0.5 * (y - model[:w])' * (y - model[:w]) / length(y)
+        model[:fcost] >= 0.5 * (y - model[:w])' * (y - model[:w]) / length(y)
     )
     return nothing
 end

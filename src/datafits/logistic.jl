@@ -51,6 +51,6 @@ function bind_model!(f::Logistic, y::Vector, model::JuMP.Model)
         )
         @constraint(model, [-l[j]; 1.; v[j]] in MOI.ExponentialCone())
     end
-    @constraint(model, model[:Fcost] >= sum(l) / m)
+    @constraint(model, model[:fcost] >= sum(l) / m)
     return nothing
 end

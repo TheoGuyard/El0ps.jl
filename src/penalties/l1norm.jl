@@ -35,6 +35,6 @@ function bind_model!(h::L1norm, model::JuMP.Model)
     @variable(model, xabs[1:n])
     @constraint(model, xabs .* model[:z] .>= model[:x])
     @constraint(model, xabs .* model[:z] .>= -model[:x])
-    @constraint(model, model[:Ωcost] >= sum(model[:z]) + h.α * sum(xabs))
+    @constraint(model, model[:Gcost] >= sum(model[:z]) + h.α * sum(xabs))
     return nothing
 end

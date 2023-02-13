@@ -42,6 +42,6 @@ function bind_model!(h::BigmL2norm, model::JuMP.Model)
     end
     @constraint(model, model[:x] .>= -h.M .* model[:z])
     @constraint(model, model[:x] .<= h.M .* model[:z])
-    @constraint(model, model[:Ωcost] >= sum(model[:z]) + h.α * sum(s))
+    @constraint(model, model[:Gcost] >= sum(model[:z]) + h.α * sum(s))
     return nothing
 end

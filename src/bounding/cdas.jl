@@ -27,8 +27,8 @@ struct CDAS <: AbstractBoundingSolver
 end
 
 function cd_loop!(
-    F::AbstractDatafit, 
-    G::AbstractPenalty, 
+    f::AbstractDatafit, 
+    h::AbstractPerturbation, 
     A::Matrix, 
     y::Vector, 
     x::Vector,
@@ -48,19 +48,19 @@ function cd_loop!(
         if Sb[i] & (abs(ci) <= δ[i])
             x[i] = prox_l1_1d(ci, η[i])     # O(1)
         else
-            x[i] = prox_1d(G, ci, ρ[i])     # O(1)
+            x[i] = prox_1d(h, ci, ρ[i])     # O(1)
         end
         if x[i] != xi
             axpy!(x[i] - xi, ai, w)         # O(m)
-            copy!(u, -gradient(F, y, w))    # O(m)
+            copy!(u, -gradient(f, y, w))    # O(m)
         end
     end
     return nothing
 end
 
 function compute_primal_value(
-    F::AbstractDatafit, 
-    G::AbstractPenalty, 
+    f::AbstractDatafit, 
+    h::AbstractPerturbation, 
     y::Vector, 
     λ::Float64,
     x::Vector,
@@ -70,22 +70,22 @@ function compute_primal_value(
     S::BitArray,
     Sb::BitArray,
 )
-    Fval = value(F, y, w)                   # O(m)
-    Gval = 0.
+    Fval = value(f, y, w)                   # O(m)
+    hval = 0.
     for i in findall(S)
         xi = x[i]
         if Sb[i] & (abs(xi) <= μ)
-            Gval += τ * abs(xi)             # O(1)
+            hval += τ * abs(xi)             # O(1)
         else
-            Gval += value_1d(G, xi) + 1.    # O(1)
+            hval += value_1d(h, xi) + 1.    # O(1)
         end
     end
-    return Fval + λ * Gval
+    return Fval + λ * hval
 end
 
 function compute_dual_value(
-    F::AbstractDatafit, 
-    G::AbstractPenalty, 
+    f::AbstractDatafit, 
+    h::AbstractPerturbation, 
     A::Matrix,
     y::Vector, 
     λ::Float64,
@@ -97,17 +97,17 @@ function compute_dual_value(
 )
     nz = findall(S)
     v[nz] = A[:, nz]' * u                               # O(m|nz|)
-    p[nz] = conjugate_vectorized(G, v[nz] / λ) .- 1.
-    cFval = conjugate(F, y, -u)
-    cGval = 0.
+    p[nz] = conjugate_vectorized(h, v[nz] / λ) .- 1.
+    cFval = conjugate(f, y, -u)
+    chval = 0.
     for i in nz
-        cGval += Sb[i] ? max(p[i], 0.) : p[i]           # O(1)
+        chval += Sb[i] ? max(p[i], 0.) : p[i]           # O(1)
     end
-    return -cFval - λ * cGval
+    return -cFval - λ * chval
 end
 
 function update_active_set!(
-    G::AbstractPenalty,
+    h::AbstractPerturbation,
     A::Matrix,
     λ::Float64,
     u::Vector,
@@ -122,7 +122,7 @@ function update_active_set!(
     violations = Vector{Int}()
     for i in findall(@. !S & Sbi)
         v[i] = A[:, i]' * u
-        p[i] = conjugate_1d(G, v[i] / λ) .- 1.
+        p[i] = conjugate_1d(h, v[i] / λ) .- 1.
         if abs(v[i]) > τ * λ
             push!(violations, i)
             S[i] = true
@@ -143,8 +143,8 @@ function bound!(
     # ----- Initialization ----- #
 
     # Problem data
-    F = problem.F
-    G = problem.G
+    f = problem.f
+    h = problem.h
     A = problem.A
     y = problem.y
     λ = problem.λ
@@ -167,7 +167,7 @@ function bound!(
         x = zeros(n)
         x[S1] = copy(node.x[S1])
         w = A[:, S1] * x[S1]
-        u = -gradient(F, y, w)
+        u = -gradient(f, y, w)
     else
         error("Unknown bounding type $bounding_type")
     end
@@ -185,9 +185,9 @@ function bound!(
     maxiter_as = bounding_solver.maxiter_as
    
     # Constants and working values
-    τ = G.τ
-    μ = G.μ
-    α = lipschitz_constant(F, y)
+    τ = h.τ
+    μ = h.μ
+    α = lipschitz_constant(f, y)
     κ = α .* a
     ν = 1. ./ κ
     ρ = λ ./ κ
@@ -226,12 +226,12 @@ function bound!(
         while true
             it_cd += 1
             pv_old = pv
-            cd_loop!(F, G, A, y, x, w, u, ν, ρ, η, δ, S, Sb)
-            pv = compute_primal_value(F, G, y, λ, x, w, τ, μ, S, Sb)
+            cd_loop!(f, h, A, y, x, w, u, ν, ρ, η, δ, S, Sb)
+            pv = compute_primal_value(f, h, y, λ, x, w, τ, μ, S, Sb)
             if bounding_type == LOWER
                 (abs(pv - pv_old) / (abs(pv) + 1e-10) < cdltol) && break
             elseif bounding_type == UPPER
-                dv = compute_dual_value(F, G, A, y, λ, u, v, p, S, Sb)
+                dv = compute_dual_value(f, h, A, y, λ, u, v, p, S, Sb)
                 (abs(pv - dv) / (abs(pv) + 1e-10) < tolgap) && break
             end
             (it_cd >= maxiter_cd) && break
@@ -240,11 +240,11 @@ function bound!(
         # --- Active-set update and termination check --- #
 
         (bounding_type == UPPER) && break
-        V = update_active_set!(G, A, λ, u, v, p, τ, S, Sbi) 
+        V = update_active_set!(h, A, λ, u, v, p, τ, S, Sbi) 
         (it_as >= maxiter_as) && break
         (elapsed_time(solver) >= maxtime) && break
         if length(V) == 0
-            dv = compute_dual_value(F, G, A, y, λ, u, v, p, S, Sb)
+            dv = compute_dual_value(f, h, A, y, λ, u, v, p, S, Sb)
             (abs(pv - dv) / (abs(pv) + 1e-10) < reltol) && break
             (cdltol <= 1e-8) && break
             cdltol *= 1e-2
@@ -253,11 +253,11 @@ function bound!(
         # --- Accelerations --- #
 
         if (bounding_type == LOWER) & (l1screening | l0screening | dualpruning)
-            dv = isnan(dv) ? compute_dual_value(F, G, A, y, λ, u, v, p, S, Sb) : dv
+            dv = isnan(dv) ? compute_dual_value(f, h, A, y, λ, u, v, p, S, Sb) : dv
             gap = abs(pv - dv)
             dualpruning && (dv >= ub + tolprune) && break
-            l1screening && l1screening!(F, A, y, λ, x, w, u, v, α, τ, gap, Sb0, Sbi, Sbb)
-            l0screening && l0screening!(solver, node, F, A, y, λ, x, w, u, p, ub, dv, tolprune, S0, S1, Sb, Sbi, Sbb, S1i)
+            l1screening && l1screening!(f, A, y, λ, x, w, u, v, α, τ, gap, Sb0, Sbi, Sbb)
+            l0screening && l0screening!(solver, node, f, A, y, λ, x, w, u, p, ub, dv, tolprune, S0, S1, Sb, Sbi, Sbb, S1i)
             S .|= S1
             S .|= Sbb
             S .&= (.!S0)
@@ -268,7 +268,7 @@ function bound!(
     # ----- Post-processing ----- #
 
     if bounding_type == LOWER
-        node.lb = isnan(dv) ? compute_dual_value(F, G, A, y, λ, u, v, p, S, Sb) : dv
+        node.lb = isnan(dv) ? compute_dual_value(f, h, A, y, λ, u, v, p, S, Sb) : dv
         node.lb_it = it_cd
         node.lb_l1screening_Sb0 = sum(Sb0)
         node.lb_l1screening_Sbb = sum(Sbb)

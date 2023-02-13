@@ -132,7 +132,7 @@ mutable struct BnbNode
             Inf,
             zeros(problem.n),
             zeros(problem.m),
-            -gradient(problem.F, problem.y, zeros(problem.m)),
+            -gradient(problem.f, problem.y, zeros(problem.m)),
             zeros(problem.n),
             0,
             0,
@@ -247,7 +247,7 @@ struct BnbResult <: AbstractResult
     end
 end
 
-Base.show(io::IO, solver::BnbSolver) = print(io, "Bnb solver")
+Base.show(io::IO, solver::BnbSolver) = print(io, "BnB solver")
 
 function initialize!(
     solver::BnbSolver, 
@@ -380,7 +380,7 @@ function fixto!(node::BnbNode, j::Int, jval::Int, prob::Problem)
         node.S0[j] = true
         if node.x[j] != 0.0
             axpy!(-node.x[j], prob.A[:, j], node.w)
-            copy!(node.u, -gradient(prob.F, prob.y, node.w))
+            copy!(node.u, -gradient(prob.f, prob.y, node.w))
             node.x[j] = 0.0
         end
     elseif jval == 1
@@ -447,7 +447,7 @@ function optimize(
     S1::Vector{Int}=Vector{Int}(),
     )
 
-    @assert !isa(problem.G, ZeroPenalty)
+    @assert !isa(problem.h, Zero)
     !isa(x0, Nothing) && @assert (length(x0) == problem.n)
     !isa(x0, Nothing) && @assert all(x0[S0] .== 0.)
     !isa(x0, Nothing) && @assert all(x0[S1] .!= 0.)

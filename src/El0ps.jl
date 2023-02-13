@@ -16,21 +16,21 @@ export version, authors, contact, license
 
 include("datafits/core.jl")
 include("penalties/core.jl")
-export AbstractDatafit, AbstractPenalty
+export AbstractDatafit, AbstractPerturbation
 export lipschitz_constant, value, gradient, conjugate, prox, dual_scale!, params_to_dict, bind_model!
 
 include("datafits/leastsquares.jl")
 include("datafits/logistic.jl")
 export LeastSquares, Logistic
 
-include("penalties/zeropenalty.jl")
+include("penalties/zero.jl")
 include("penalties/bigm.jl")
 include("penalties/l1norm.jl")
 include("penalties/l2norm.jl")
 include("penalties/l1l2norm.jl")
 include("penalties/bigml1norm.jl")
 include("penalties/bigml2norm.jl")
-export ZeroPenalty, Bigm, L1norm, L2norm, L1L2norm, BigmL1norm, BigmL2norm
+export Zero, Bigm, L1norm, L2norm, L1L2norm, BigmL1norm, BigmL2norm
 
 include("problem.jl")
 export Problem, objective, compute_λmax

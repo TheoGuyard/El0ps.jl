@@ -7,8 +7,8 @@
     ]
 
     for (test_type, test_modelling) in candidates
-        F = test_type()
-        @testset "$F" begin
+        f = test_type()
+        @testset "$f" begin
             m = 100
             w = randn(m)
             u = randn(m)
@@ -17,9 +17,9 @@
             elseif test_modelling == "classification"
                 y = 2. .* (randn(m) .<= 0.5) .- 1.
             end
-            @test lipschitz_constant(F, y) >= 0.
-            @test El0ps.value(F, y, w) >= El0ps.value(F, y, u) + gradient(F, y, u)' * (w - u)
-            @test El0ps.value(F, y, w) + conjugate(F, y, u) >= w' * u
+            @test lipschitz_constant(f, y) >= 0.
+            @test El0ps.value(f, y, w) >= El0ps.value(f, y, u) + gradient(f, y, u)' * (w - u)
+            @test El0ps.value(f, y, w) + conjugate(f, y, u) >= w' * u
         end
     end
 end

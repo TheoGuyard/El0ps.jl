@@ -31,8 +31,8 @@ function bound!(
     # ----- Initialization ----- #
 
     # Problem data
-    F = problem.F
-    G = problem.G
+    f = problem.f
+    h = problem.h
     A = problem.A
     y = problem.y
     λ = problem.λ
@@ -55,7 +55,7 @@ function bound!(
         x = zeros(n)
         x[S1] = copy(node.x[S1])
         w = A[:, S1] * x[S1]
-        u = -gradient(F, y, w)
+        u = -gradient(f, y, w)
     else
         error("Unknown bounding type $bounding_type")
     end
@@ -79,9 +79,9 @@ function bound!(
     maxiter = bounding_solver.maxiter
 
     # Useful constants
-    τ = G.τ
-    μ = G.μ
-    α = lipschitz_constant(F, y)
+    τ = h.τ
+    μ = h.μ
+    α = lipschitz_constant(f, y)
     κ = α .* a
     ν = 1. ./ κ
     ρ = λ ./ κ
@@ -113,25 +113,25 @@ function bound!(
                 if abs(ci) < δ[i]
                     x[i] = prox_l1_1d(ci, η[i])
                 else
-                    x[i] = prox_1d(G, ci, ρ[i])
+                    x[i] = prox_1d(h, ci, ρ[i])
                 end
             else
-                x[i] = prox_1d(G, ci, ρ[i])
+                x[i] = prox_1d(h, ci, ρ[i])
             end
             if x[i] != xi
                 axpy!(x[i] - xi, ai, w)
-                copy!(u, -gradient(F, y, w))
+                copy!(u, -gradient(f, y, w))
             end
         end
 
 
         # ----- Gap computation ----- #
 
-        dual_scale!(F, y, u)
+        dual_scale!(f, y, u)
         v = fill(NaN, n)
         p = fill(NaN, n)
-        v[idx] = dual_scale!(G, A[:, idx], u, λ)
-        p[idx] = conjugate_vectorized(G, v[idx] ./ λ) .- 1.
+        v[idx] = dual_scale!(h, A[:, idx], u, λ)
+        p[idx] = conjugate_vectorized(h, v[idx] ./ λ) .- 1.
 
         xSb       = x[Sbi .| Sbb]
         xSb_below = xSb[abs.(xSb) .< μ]
@@ -140,12 +140,12 @@ function bound!(
         μSbb      = any(Sbb) ? sum(max.(p[Sbb], 0.)) : 0.
         μS1       = any(S1) ? sum(p[S1]) : 0.
 
-        pv = value(F, y, w) + λ * (
+        pv = value(f, y, w) + λ * (
             τ * norm(xSb_below, 1) +
-            value(G, xSb_above) + length(xSb_above) +
-            value(G, x[S1]) + sum(S1)
+            value(h, xSb_above) + length(xSb_above) +
+            value(h, x[S1]) + sum(S1)
         )
-        dv = -conjugate(F, y, -u) - λ * (μSbi + μSbb + μS1)
+        dv = -conjugate(f, y, -u) - λ * (μSbi + μSbb + μS1)
         gap = abs(pv - dv)
 
         # ----- Stopping criterion ----- #
@@ -158,8 +158,8 @@ function bound!(
         
         if bounding_type == LOWER
             dualpruning && (dv >= ub + tolprune) && break
-            l0screening && l0screening!(solver, node, F, A, y, λ, x, w, u, p, ub, dv, tolprune, S0, S1, Sb, Sbi, Sbb, S1i)
-            l1screening && l1screening!(F, A, y, λ, x, w, u, v, α, τ, gap, Sb0, Sbi, Sbb)
+            l0screening && l0screening!(solver, node, f, A, y, λ, x, w, u, p, ub, dv, tolprune, S0, S1, Sb, Sbi, Sbb, S1i)
+            l1screening && l1screening!(f, A, y, λ, x, w, u, v, α, τ, gap, Sb0, Sbi, Sbb)
         end
     end
 

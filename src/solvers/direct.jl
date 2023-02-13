@@ -53,18 +53,18 @@ Base.show(io::IO, solver::DirectSolver) = print(io, "Direct solver")
 
 Initialize the [`JuMP`](https://github.com/jump-dev/JuMP.jl) model 
 ```
-min Fcost + λ Ωcost
+min fcost + λ Gcost
 st  Ax = w
     x ∈ R^n
     z ∈ {0,1}^n
     w ∈ R^m
-    Fcost ∈ R
-    Gcost ∈ R
+    fcost ∈ R
+    hcost ∈ R
 ```   
 and set the initial value of `x` to `x0`. To complete the model, one has to 
-construct the epigraph formulations of the functions `F` and `G` in the 
-[`Problem`](@ref) using [`bind_model!`](@ref) and the scalar values `Fcost` and
-`Gcost` that represent the epigraph value.
+construct the epigraph formulations of the functions `f` and `h` in the 
+[`Problem`](@ref) using [`bind_model!`](@ref) and the scalar values `fcost` and
+`hcost` that represent the epigraph value.
 """
 function initialize_model(
     problem::Problem, 
@@ -91,9 +91,9 @@ function initialize_model(
     @variable(model, z[1:n], Bin)
     @variable(model, w[1:m])
     @constraint(model, A * x .== w)
-    @variable(model, Fcost)
-    @variable(model, Ωcost)
-    @objective(model, Min, Fcost + λ * Ωcost)
+    @variable(model, fcost)
+    @variable(model, Gcost)
+    @objective(model, Min, fcost + λ * Gcost)
     if !isa(x0, Nothing)
         for i in eachindex(x, x0)
             set_start_value(x[i], x0[i])
@@ -131,8 +131,8 @@ function optimize(
     !isa(x0, Nothing) && @assert all(x0[S0] .== 0.)
     !isa(x0, Nothing) && @assert all(x0[S1] .!= 0.)
     model = initialize_model(problem, solver, x0, S0, S1)
-    bind_model!(problem.F, problem.y, model)
-    bind_model!(problem.G, model)
+    bind_model!(problem.f, problem.y, model)
+    bind_model!(problem.h, model)
     optimize!(model)
     return DirectResult(model)
 end

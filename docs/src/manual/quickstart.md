@@ -20,7 +20,8 @@ The package can then be loaded with
 using El0ps
 ```
 
-!!! note `El0ps.jl` is tested against Julia `1.7` and `1.8`.
+!!! note 
+    `El0ps.jl` is tested against Julia `1.7` and `1.8`.
 
 ## Problem instantiation
 

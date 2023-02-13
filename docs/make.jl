@@ -5,17 +5,17 @@ makedocs(
     sitename = "El0ps.jl",
     pages    = [
         "Home" => "index.md",
-        "Examples" => [
-            "Solve a problem" => "examples/optimize.md",
-            "Fit a regularization path" => "examples/path.md",
+        "Manual" => [
+            "Quick start" => "manual/quickstart.md",
+            "Solving problems" => "manual/optimize.md",
+            "Fitting paths" => "manual/path.md",
+            "Custom functions" => "manual/custom.md",
         ],
         "Library" => [
-            "Data generation" => "library/data.md",
             "Problem" => "library/problem.md",
             "Datafits" => "library/datafits.md",
             "Penalties" => "library/penalties.md",
             "Solvers" => "library/solvers.md",
-            "Bounding step" => "library/bounding.md",
             "Regularization path" => "library/path.md",
         ]
     ]

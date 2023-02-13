@@ -18,7 +18,7 @@ This package provides solution methods to address the problem
 
 $$\min_{\mathbf{x}} \ f(\mathbf{y},\mathbf{A}\mathbf{x}) + \lambda g(\mathbf{x})$$
 
-where $g(x) = \|\mathbf{x}\|_0 + h(x)$.
+where $g(x) = \|\|\mathbf{x}\|\|_0 + h(x)$.
 It aims to fit an input $\mathbf{y}$ through some model of $\mathbf{Ax}$ encoded in the loss function $f$.
 It also enforces sparsity in the optimizers with the $\ell_0$-norm, which counts the number of non-zero entries in its argument.
 The function $h$ is a perturbation term required to build-up efficient numerical procedures.

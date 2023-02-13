@@ -21,7 +21,8 @@ solver = BnbSolver()
 The path if fitted using the [`fit_path`](@ref) function as follows:
 
 ```@example path
-path = fit_path(solver, f, h, A, y)
+path = fit_path(solver, f, h, A, y, verbosity=false)
+println(path)
 ```
 
 This operation returns a [`Path`](@ref) instance with several information:
@@ -29,7 +30,7 @@ This operation returns a [`Path`](@ref) instance with several information:
 * `Conv`: whether the solver has converged
 * `Time`: solution time
 * `Fval`: value of $f(\mathbf{y},\mathbf{Ax})$
-* `Gval`: value of $g(\mathbf{x}) = \|\mathbf{x}\|_0 + h(\mathbf{x})$
+* `hval`: value of $g(\mathbf{x}) = \|\mathbf{x}\|_0 + h(\mathbf{x})$
 * `Nnz`: number of non-zeros in the solution
 * `CV mean`: mean cross validation error on the term $f(\mathbf{y},\mathbf{Ax})$
 * `CV std`: standard deviation of the cross validation error on the term $f(\mathbf{y},\mathbf{Ax})$
@@ -47,8 +48,8 @@ When fitting the path, the following parameters can be specified:
 * `verbosity`: toggle displays during the fitting
 
 They are passed to the [`fit_path`](@ref) function as keyword arguments.
-```@example path
-solver = BnbSolver(max_support_size=5, compute_cv=false)
+```julia
+path = fit_path(solver, f, h, A, y, max_support_size=5, compute_cv=false)
 ```
 
 More information is given in the documentation of the [`PathOptions`](@ref) struct which handle the path parameters.

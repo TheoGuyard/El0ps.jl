@@ -1,65 +1,65 @@
 """
     AbstractDatafit
 
-Abstract type for the function `F` in a [`Problem`](@ref).
+Abstract type for the function `f` in a [`Problem`](@ref).
 """
 abstract type AbstractDatafit end
 
-function Base.show(io::IO, F::AbstractDatafit)
-    error("Function 'show' is not implemented for the datafit $F")
+function Base.show(io::IO, f::AbstractDatafit)
+    error("Function 'show' is not implemented for the datafit $f")
 end
 
 """
-    lipschitz_constant(F::AbstractDatafit, y::Vector)
+    lipschitz_constant(f::AbstractDatafit, y::Vector)
 
-Lischitz constant of the gradient of `F` with respect to its second argument.
+Lischitz constant of the gradient of `f` with respect to its second argument.
 """
-function lipschitz_constant(F::AbstractDatafit, y::Vector)
-    error("Function 'lipschitz_constant' is not implemented for the datafit $F")
+function lipschitz_constant(f::AbstractDatafit, y::Vector)
+    error("Function 'lipschitz_constant' is not implemented for the datafit $f")
 end
 
 """
-    value(F::AbstractDatafit, y::Vector, w::Vector)
+    value(f::AbstractDatafit, y::Vector, w::Vector)
 
-Value of `F`.
+Value of `f`.
 """
-function value(F::AbstractDatafit, y::Vector, w::Vector)
-    error("Function 'value' is not implemented for the datafit $F")
+function value(f::AbstractDatafit, y::Vector, w::Vector)
+    error("Function 'value' is not implemented for the datafit $f")
 end
 
 """
-    gradient(F::AbstractDatafit, y::Vector, w::Vector)
+    gradient(f::AbstractDatafit, y::Vector, w::Vector)
 
-Gradient of `F` with respect to its second argument.
+Gradient of `f` with respect to its second argument.
 """
-function gradient(F::AbstractDatafit, y::Vector, w::Vector)
-    error("Function 'gradient' is not implemented for the datafit $F")
+function gradient(f::AbstractDatafit, y::Vector, w::Vector)
+    error("Function 'gradient' is not implemented for the datafit $f")
 end
 
 """
-    conjugate(F::AbstractDatafit, y::Vector, w::Vector)
+    conjugate(f::AbstractDatafit, y::Vector, w::Vector)
 
-Fenchel conjugate of `F` with respect to its second argument.
+Fenchel conjugate of `f` with respect to its second argument.
 """
-function conjugate(F::AbstractDatafit, y::Vector, u::Vector)
-    error("Function 'conjugate' is not implemented for the datafit $F")
+function conjugate(f::AbstractDatafit, y::Vector, u::Vector)
+    error("Function 'conjugate' is not implemented for the datafit $f")
 end
 
 """
-    dual_scale!(F::AbstractDatafit, y::Vector, u::Vector)
+    dual_scale!(f::AbstractDatafit, y::Vector, u::Vector)
 
-In-place transforms a vector `u` into a feasible one for the conjugate of `F`.
+In-place transforms a vector `u` into a feasible one for the conjugate of `f`.
 """
-function dual_scale!(F::AbstractDatafit, y::Vector, u::Vector)
-    error("Function 'dual_scaling_factor' is not implemented for the datafit $F")
+function dual_scale!(f::AbstractDatafit, y::Vector, u::Vector)
+    error("Function 'dual_scaling_factor' is not implemented for the datafit $f")
 end
 
 """
-    bind_model!(F::AbstractDatafit, y::Vector, model::JuMP.Model)
+    bind_model!(f::AbstractDatafit, y::Vector, model::JuMP.Model)
 
-Formulate the function `F` in `model`. See [`initialize_model`](@ref) for more 
+Formulate the function `f` in `model`. See [`initialize_model`](@ref) for more 
 details about the argument `model`.
 """
-function bind_model!(F::AbstractDatafit, y::Vector, model::JuMP.Model)
-    error("Function 'bind_model!' is not implemented for the datafit $F")
+function bind_model!(f::AbstractDatafit, y::Vector, model::JuMP.Model)
+    error("Function 'bind_model!' is not implemented for the datafit $f")
 end

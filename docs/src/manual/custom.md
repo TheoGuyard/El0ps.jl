@@ -31,7 +31,7 @@ h = L1norm(α)
 h = L2norm(β)
 h = L1L2norm(α, β)
 ```
-They all derive from the [`AbstractDatafit`](@ref) and [`AbstractPenalty`](@ref) structs.
+They all derive from the [`AbstractDatafit`](@ref) and [`AbstractPerturbation`](@ref) structs.
 
 ## Defining new loss functions
 
@@ -47,7 +47,7 @@ struct MyNewF <: AbstractDatafit end
 
 For instance, the user can specify how it is pretty-printed with
 ```julia
-Base.show(io::IO, F::MyNewF) = print(io, "MyNewF")
+Base.show(io::IO, f::MyNewF) = print(io, "MyNewF")
 ```
 
 So that the BnB solver can run, it is also require to define the following functions:
@@ -73,7 +73,7 @@ The function $h$ must verify the following hypotheses:
 The above hypotheses are for instance verifies for norms, bound constraints, ...
 If they are fulfilled, then a new perturbation term can be defined as follow.
 ```julia
-struct MyNewH <: AbstractPenalty end
+struct MyNewH <: AbstractPerturbation end
 ```
 
 For instance, the user can specify how it is pretty-printed with
@@ -109,7 +109,7 @@ struct QuadraticLoss <: AbstractDatafit
 end
 
 # Definition of the loss operators
-lipschitz_constant(f::QuadraticLoss, y::Vector) = maximum(svdvals(F.Q))
+lipschitz_constant(f::QuadraticLoss, y::Vector) = maximum(svdvals(f.Q))
 value(f::QuadraticLoss, y::Vector, w::Vector) = 0.5 * (w' * f.Q * w) + w' * y
 gradient(f::QuadraticLoss, y::Vector, w::Vector) = f.Q * w + y
 conjugate(f::QuadraticLoss, y::Vector, w::Vector) = inv(Q) * (w - y)
@@ -133,7 +133,7 @@ where $q$ is such that $\tfrac{1}{p} + \tfrac{1}{q} = 1$ and where $\mathrm{root
 using Roots
 
 # Definition of the new struct 
-struct LpNorm <: AbstractPenalty
+struct LpNorm <: AbstractPerturbation
     p::Int
     q::Int
     LpNorm(p::Int) = new(p, p/(p-1))

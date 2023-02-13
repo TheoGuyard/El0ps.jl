@@ -1,7 +1,7 @@
 function l0screening!(
     solver::BnbSolver,
     node::BnbNode,
-    F::AbstractDatafit,
+    f::AbstractDatafit,
     A::Matrix,
     y::Vector,
     λ::Float64,
@@ -30,7 +30,7 @@ function l0screening!(
             S0[i] = true
             if x[i] != 0.0
                 axpy!(-x[i], A[:, i], w)
-                copy!(u, -gradient(F, y, w))
+                copy!(u, -gradient(f, y, w))
                 x[i] = 0.0
             end
             solver.supp_pruned += 2. ^ (-depth(node))
@@ -48,7 +48,7 @@ function l0screening!(
 end
 
 function l1screening!(
-    F::AbstractDatafit,
+    f::AbstractDatafit,
     A::Matrix,
     y::Vector,
     λ::Float64,
@@ -72,7 +72,7 @@ function l1screening!(
             # Move i from Sbi to Sb0
             if x[i] != 0.
                 axpy!(-x[i], A[:, i], w)  
-                copy!(u, -gradient(F, y, w))
+                copy!(u, -gradient(f, y, w))
                 x[i] = 0.
             end
             Sbi[i] = false

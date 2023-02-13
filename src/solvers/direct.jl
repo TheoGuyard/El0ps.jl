@@ -59,12 +59,12 @@ st  Ax = w
     z ∈ {0,1}^n
     w ∈ R^m
     Fcost ∈ R
-    Gcost ∈ R
+    hcost ∈ R
 ```   
 and set the initial value of `x` to `x0`. To complete the model, one has to 
-construct the epigraph formulations of the functions `F` and `G` in the 
+construct the epigraph formulations of the functions `f` and `h` in the 
 [`Problem`](@ref) using [`bind_model!`](@ref) and the scalar values `Fcost` and
-`Gcost` that represent the epigraph value.
+`hcost` that represent the epigraph value.
 """
 function initialize_model(
     problem::Problem, 
@@ -131,8 +131,8 @@ function optimize(
     !isa(x0, Nothing) && @assert all(x0[S0] .== 0.)
     !isa(x0, Nothing) && @assert all(x0[S1] .!= 0.)
     model = initialize_model(problem, solver, x0, S0, S1)
-    bind_model!(problem.F, problem.y, model)
-    bind_model!(problem.G, model)
+    bind_model!(problem.f, problem.y, model)
+    bind_model!(problem.h, model)
     optimize!(model)
     return DirectResult(model)
 end

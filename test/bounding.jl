@@ -5,10 +5,10 @@
     ρ = 0.1
     σ = 10.
     xtrue, A, y = synthetic_data_regression(k, m, n, ρ, σ)
-    F = LeastSquares()
-    G = Bigm(1.)
-    λ = 0.1 * compute_λmax(F, G, A, y)
-    problem = Problem(F, G, A, y, λ)
+    f = LeastSquares()
+    h = Bigm(1.)
+    λ = 0.1 * compute_λmax(f, h, A, y)
+    problem = Problem(f, h, A, y, λ)
 
     bounding_solvers = [
         CD(),

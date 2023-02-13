@@ -5,12 +5,12 @@
     ρ = 0.1
     σ = 10.
     xtrue, A, y = synthetic_data_regression(k, m, n, ρ, σ)
-    F = LeastSquares()
-    G = Bigm(1.)
+    f = LeastSquares()
+    h = Bigm(1.)
 
     @testset "BnbSolver" begin
         solver = BnbSolver(verbosity=false, maxtime=60.)
-        path = fit_path(solver, F, G, A, y, 
+        path = fit_path(solver, f, h, A, y, 
             λratio_min  = 1e-1, 
             verbosity   = false,
             compute_cv  = true,
@@ -21,7 +21,7 @@
     @testset "DirectSolver" begin
         options = Dict("display/verblevel" => 0, "limits/gap" => 1e-4)
         solver = DirectSolver(SCIP.Optimizer, options=options)
-        path = fit_path(solver, F, G, A, y, 
+        path = fit_path(solver, f, h, A, y, 
             λratio_min  = 1e-1, 
             verbosity   = false,
             compute_cv  = true,
@@ -31,7 +31,7 @@
 
     @testset "Misc" begin
         solver = BnbSolver(verbosity=false, maxtime=60.)
-        path = fit_path(solver, F, G, A, y, 
+        path = fit_path(solver, f, h, A, y, 
             λratio_min  = 1e-1, 
             verbosity   = true,
             compute_cv  = false,

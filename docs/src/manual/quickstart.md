@@ -45,7 +45,7 @@ problem = Problem(f, h, A, y, λ)
 println(problem)
 ```
 The functions `f` and `h` are defined via structures provided by our package. 
-The function `f` must derive from the [`AbstractDatafit`](@ref) one and the function `h` must derive from the [`AbstractPenalty`](@ref) one.
+The function `f` must derive from the [`AbstractDatafit`](@ref) one and the function `h` must derive from the [`AbstractPerturbation`](@ref) one.
 Moreover, `A` and `y` must be a matrix and a vector with dimensions `(m,n)` and `(m,)`, respectively.
 The columns of `A` needs not to be normalized but all-zero columns are not allowed.
 These latter can be removed without modifying the problem solution.

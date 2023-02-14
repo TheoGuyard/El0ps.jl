@@ -1,3 +1,6 @@
+abstract type AbstractSolver end
+abstract type AbstractResult end
+
 """
     ExplorationStrategy
 
@@ -16,7 +19,7 @@ end
 
 Branching strategy of a [`BnbSolver`](@ref).
 
-- LARGEST : Select the largest index in absolute value in the relaxed solution.
+- LARGEST : Select the largest index in absolute value in the relaxation solution.
 """
 @enum BranchingStrategy begin
     LARGEST
@@ -27,7 +30,7 @@ end
 
 Options of a [`BnbSolver`](@ref).
 
-# Arguments 
+# Attributes 
 
 - `lb_solver::AbstractBoundingSolver` : Solver for the lower-bounding step.
 - `ub_solver::AbstractBoundingSolver` : Solver for the upper-bounding step.
@@ -62,8 +65,8 @@ struct BnbOptions
     showevery::Int
     keeptrace::Bool
     function BnbOptions(;
-        lb_solver::AbstractBoundingSolver   = CDAS(),
-        ub_solver::AbstractBoundingSolver   = CDAS(),
+        lb_solver::AbstractBoundingSolver   = CDAS(LOWER_BOUNDING),
+        ub_solver::AbstractBoundingSolver   = CDAS(UPPER_BOUNDING),
         exploration::ExplorationStrategy    = DFS,
         branching::BranchingStrategy        = LARGEST,
         maxtime::Float64                    = 60.,
@@ -79,6 +82,8 @@ struct BnbOptions
         keeptrace::Bool                     = false,
     )
 
+        @assert bounding_type(lb_solver) == LOWER_BOUNDING
+        @assert bounding_type(ub_solver) == UPPER_BOUNDING
         @assert maxtime >= 0.
         @assert maxnode >= 0
         @assert tolgap >= 0.
@@ -106,8 +111,26 @@ struct BnbOptions
     end
 end
 
+"""
+    NodeStatus
+
+Status of a [`BnbNode`](@ref).
+
+- OPEN : The node has not been treated yet.
+- PRUNED : The node has been pruned
+- SOLVED : The node has been treated and not pruned.
+- PERFECT : The node has a perfect relaxation.
+"""
+@enum BnbNodeStatus begin
+    OPEN
+    PRUNED
+    SOLVED
+    PERFECT
+end
+
 mutable struct BnbNode
     parent::Union{BnbNode,Nothing}
+    status::BnbNodeStatus
     S0::BitArray
     S1::BitArray
     Sb::BitArray
@@ -125,6 +148,7 @@ mutable struct BnbNode
     function BnbNode(problem::Problem)
         return new(
             nothing,
+            OPEN,
             falses(problem.n),
             falses(problem.n),
             trues(problem.n),
@@ -132,7 +156,7 @@ mutable struct BnbNode
             Inf,
             zeros(problem.n),
             zeros(problem.m),
-            -gradient(problem.f, problem.y, zeros(problem.m)),
+            -gradient(problem.f, zeros(problem.m)),
             zeros(problem.n),
             0,
             0,
@@ -144,6 +168,7 @@ mutable struct BnbNode
     function BnbNode(parent::BnbNode, j::Int, jval::Int, prob::Problem)
         child = new(
             parent,
+            OPEN,
             copy(parent.S0),
             copy(parent.S1),
             copy(parent.Sb),
@@ -175,7 +200,7 @@ Base.@kwdef mutable struct BnbTrace
     node_count::Vector{Int}                 = Vector{Int}()
     queue_size::Vector{Int}                 = Vector{Int}()
     timer::Vector                           = Vector()
-    supp_pruned::Vector                     = Vector()
+    node_status::Vector{BnbNodeStatus}      = Vector{BnbNodeStatus}()
     node_lb::Vector                         = Vector()
     node_ub::Vector                         = Vector()
     node_card_S0::Vector{Int}               = Vector{Int}()
@@ -201,7 +226,6 @@ mutable struct BnbSolver <: AbstractSolver
     x::Vector
     queue::Vector{BnbNode}
     node_count::Int
-    supp_pruned::Float64
     start_time::Float64
     options::BnbOptions
     trace::BnbTrace
@@ -213,7 +237,6 @@ mutable struct BnbSolver <: AbstractSolver
             zeros(0),
             Vector{BnbNode}(),
             0,
-            0.,
             Dates.time(),
             BnbOptions(; kwargs...),
             BnbTrace(),
@@ -269,7 +292,6 @@ function initialize!(
     end
     push!(solver.queue, root)
     solver.node_count = 0
-    solver.supp_pruned = 0.
     solver.start_time = Dates.time()
     solver.trace = BnbTrace()
     return nothing
@@ -351,12 +373,14 @@ end
 function prune!(solver::BnbSolver, node::BnbNode, options::BnbOptions)
     pruning_test = (node.lb > solver.ub + options.tolprune)
     perfect_test = (options.tolprune <= gap(node) < options.tolgap)
-    prune = (pruning_test | perfect_test)
-    if prune
-        solver.supp_pruned += 2. ^ (-depth(node))
+    if pruning_test
+        node.status = PRUNED
+    elseif perfect_test
+        node.status = PERFECT
     end
-    return prune
+    return pruning_test | perfect_test
 end
+
 
 function branch!(prob::Problem, solver::BnbSolver, node::BnbNode, options::BnbOptions)
     !any(node.Sb) && return nothing
@@ -380,7 +404,7 @@ function fixto!(node::BnbNode, j::Int, jval::Int, prob::Problem)
         node.S0[j] = true
         if node.x[j] != 0.0
             axpy!(-node.x[j], prob.A[:, j], node.w)
-            copy!(node.u, -gradient(prob.f, prob.y, node.w))
+            copy!(node.u, -gradient(prob.f, node.w))
             node.x[j] = 0.0
         end
     elseif jval == 1
@@ -412,7 +436,6 @@ function update_trace!(trace::BnbTrace, solver::BnbSolver, node::BnbNode, option
     push!(trace.node_count, solver.node_count)
     push!(trace.queue_size, length(solver.queue))
     push!(trace.timer, elapsed_time(solver))
-    push!(trace.supp_pruned, solver.supp_pruned)
     push!(trace.node_lb, node.lb)
     push!(trace.node_ub, node.ub)
     push!(trace.node_card_S0, sum(node.S0))
@@ -461,9 +484,10 @@ function optimize(
         update_status!(solver, options) 
         is_terminated(solver) && break
         node = next_node!(solver, options)
-        bound!(options.lb_solver, problem, solver, node, options, LOWER)
+        bound!(options.lb_solver, problem, solver, node, options)
+        node.status = SOLVED
         if !(prune!(solver, node, options))
-            bound!(options.ub_solver, problem, solver, node, options, UPPER)
+            bound!(options.ub_solver, problem, solver, node, options)
             branch!(problem, solver, node, options)
         end
         update_bounds!(solver, node, options)
@@ -474,3 +498,15 @@ function optimize(
 
     return BnbResult(solver, trace)
 end
+
+function Base.show(io::IO, result::BnbResult)
+    println(io, "Result")
+    println(io, "  Status     : $(result.termination_status)")
+    println(io, "  Objective  : $(result.objective_value)")
+    println(io, "  Non-zeros  : $(norm(result.x, 0))")
+    println(io, "  Last gap   : $(result.relative_gap)")
+    println(io, "  Solve time : $(result.solve_time) seconds")
+    print(io, "  Node count : $(result.node_count)")
+end
+
+

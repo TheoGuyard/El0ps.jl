@@ -13,7 +13,7 @@ values of `λ`.
     node_count::Vector{Int}     = Vector{Int}()
     objective_value::Vector     = Vector()
     datafit_value::Vector       = Vector()
-    perturbation_value::Vector       = Vector()
+    perturbation_value::Vector  = Vector()
     support_size::Vector{Int}   = Vector{Int}()
     cv_mean::Vector{Float64}    = Vector{Float64}()
     cv_std::Vector{Float64}     = Vector{Float64}()
@@ -82,14 +82,14 @@ end
 const PATH_HEAD_STRING = " λ/λmax   Conv     Time     Fval     Hval   Nnz  CV mean ±  CV std"
 
 function display_path_head()
-    println(repeat("=", length(PATH_HEAD_STRING)))
+    println(repeat("-", length(PATH_HEAD_STRING)))
     println(PATH_HEAD_STRING)
-    println(repeat("=", length(PATH_HEAD_STRING)))
+    println(repeat("-", length(PATH_HEAD_STRING)))
     return nothing
 end
 
 function display_path_tail()
-    println(repeat("=", length(PATH_HEAD_STRING)))
+    println(repeat("-", length(PATH_HEAD_STRING)))
 end
 
 function display_path_info(path::Path, i::Union{Int,Nothing}=nothing)
@@ -113,14 +113,13 @@ function fill_path!(
     f::AbstractDatafit,
     h::AbstractPerturbation,
     A::Matrix,
-    y::Vector,
     λ::Float64,
     λratio::Float64, 
     result::AbstractResult, 
     options::PathOptions,
     )
     if options.compute_cv 
-        cv_mean, cv_std = compute_cv_statistics(result.x, f, A, y, options.nb_folds)
+        cv_mean, cv_std = compute_cv_statistics(result.x, f, A, options.nb_folds)
     else
         cv_mean, cv_std = NaN, NaN
     end
@@ -131,7 +130,7 @@ function fill_path!(
     push!(path.solve_time, result.solve_time)
     push!(path.node_count, result.node_count)
     push!(path.objective_value, result.objective_value)
-    push!(path.datafit_value, value(f, y, A * result.x))
+    push!(path.datafit_value, value(f, A * result.x))
     push!(path.perturbation_value, value(h, result.x))
     push!(path.support_size, norm(result.x, 0))
     push!(path.cv_mean, cv_mean)
@@ -143,7 +142,6 @@ function compute_cv_statistics(
     x::Vector, 
     f::AbstractDatafit, 
     A::Matrix, 
-    y::Vector, 
     nb_folds::Int,
     )
     m, n = size(A)
@@ -152,9 +150,8 @@ function compute_cv_statistics(
     cv_errors = Vector()
     for i in 1:nb_folds
         idx = randperm(m)[1:m_fold]
-        A_idx = A[idx, :]
-        y_idx = y[idx]
-        cv_error = value(f, y_idx, A_idx * x)
+        f_idx = typeof(f)(f.y[idx])
+        cv_error = value(f_idx, A[idx, :] * x)
         push!(cv_errors, cv_error)
     end
     return mean(cv_errors), std(cv_errors)
@@ -172,7 +169,6 @@ end
         f::AbstractDatafit,
         h::AbstractPerturbation,
         A::Matrix,
-        y::Vector;
         kwargs...
     )
 
@@ -183,8 +179,7 @@ function fit_path(
     solver::AbstractSolver,
     f::AbstractDatafit,
     h::AbstractPerturbation,
-    A::Matrix,
-    y::Vector;
+    A::Matrix;
     kwargs...
     )
 
@@ -196,16 +191,16 @@ function fit_path(
 
     λratio_sep = (log10(options.λratio_min) - log10(options.λratio_max)) / (options.λratio_num - 1)
     λratio_val = 10 .^ (log10(options.λratio_max):λratio_sep:log10(options.λratio_min))
-    λmax = compute_λmax(f, h, A, y)
+    λmax = compute_λmax(f, h, A)
     x0 = zeros(size(A)[2])
     path = Path()
     
     options.verbosity && display_path_head()
     for λratio in λratio_val
         λ = λratio * λmax
-        problem = Problem(f, h, A, y, λ)
+        problem = Problem(f, h, A, λ)
         result = optimize(solver, problem, x0=x0)
-        fill_path!(path, f, h, A, y, λ, λratio, result, options)
+        fill_path!(path, f, h, A, λ, λratio, result, options)
         copy!(x0, result.x)
         options.verbosity && display_path_info(path)
         isterminated(path, options) && break

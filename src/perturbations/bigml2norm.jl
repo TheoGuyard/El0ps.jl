@@ -29,19 +29,3 @@ function conjugate_1d(h::BigmL2norm, v::Float64)
     return v * r - h.α * r^2
 end
 prox_1d(h::BigmL2norm, x::Float64, η::Float64) = clamp(x / (1. + 2. * η * h.α), -h.M, h.M)
-dual_scale!(h::BigmL2norm, A::Matrix, u::Vector, λ::Float64) = A' * u
-
-function bind_model!(h::BigmL2norm, model::JuMP.Model)
-    n = length(model[:x])
-    @variable(model, s[1:n] >= 0.0)
-    for i in eachindex(s, model[:z], model[:x])
-        @constraint(
-            model,
-            [0.5 * s[i]; model[:z][i]; model[:x][i]] in RotatedSecondOrderCone()
-        )
-    end
-    @constraint(model, model[:x] .>= -h.M .* model[:z])
-    @constraint(model, model[:x] .<= h.M .* model[:z])
-    @constraint(model, model[:Gcost] >= sum(model[:z]) + h.α * sum(s))
-    return nothing
-end

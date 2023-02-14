@@ -4,7 +4,6 @@ using Test
 using JuMP
 using LinearAlgebra
 using OrderedCollections
-using SCIP
 using Statistics
 
 @testset "Package info" begin
@@ -16,9 +15,7 @@ using Statistics
 end
 
 include("datafits.jl")
-include("penalties.jl")
+include("perturbations.jl")
 include("problem.jl")
 include("solvers.jl")
-include("bounding.jl")
 include("path.jl")
-include("data.jl")

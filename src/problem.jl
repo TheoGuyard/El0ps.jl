@@ -1,18 +1,12 @@
 """
     Problem
 
-Problem of the form 
-    
-``\\min f(\\mathbf{y},\\mathbf{Ax}) + \\lambda (\\|x\\|_0 + h(\\mathbf{x}))``
-
-where ``\\mathbf{A} \\in \\mathbf{R}^{m \\times n}``, 
-``\\mathbf{y} \\in \\mathbf{R}^{m}`` and ``\\lambda > 0``.
+L0-penalized problem \$\\min f(\\mathbf{Ax}) + \\lambda (\\|x\\|_0 + h(\\mathbf{x}))\$.
 """
 struct Problem
     f::AbstractDatafit
     h::AbstractPerturbation
     A::Matrix
-    y::Vector
     λ::Float64
     a::Vector
     m::Int
@@ -22,17 +16,16 @@ struct Problem
         f::AbstractDatafit,
         h::AbstractPerturbation,
         A::Matrix,
-        y::Vector,
         λ::Float64,
     )
         m = size(A, 1)
         n = size(A, 2)
         a = [norm(ai, 2)^2 for ai in eachcol(A)]
-        @assert length(y) == m
+        @assert dim_input(f) == m
         @assert λ >= 0.
         @assert !any(a .≈ 0.)
-        λmax = compute_λmax(f, h, A, y)
-        return new(f, h, A, y, λ, a, m, n, λmax)
+        λmax = compute_λmax(f, h, A)
+        return new(f, h, A, λ, a, m, n, λmax)
     end
 end
 
@@ -48,19 +41,18 @@ end
 """
     objective(problem::Problem, x::Vector, Ax::Vector)
 
-Returns the value of the objective of a [`Problem`](@ref) when `Ax` is already
-computed.
+Value of the objective of a [`Problem`](@ref) when `Ax` is already computed.
 """
 function objective(problem::Problem, x::Vector, Ax::Vector)
-    FAx = value(problem.f, problem.y, Ax)
-    hx = value(problem.h, x)
-    return FAx + problem.λ * (norm(x, 0) + hx)
+    fval = value(problem.f, Ax)
+    hval = value(problem.h, x)
+    return fval + problem.λ * (norm(x, 0) + hval)
 end
 
 """
     objective(problem::Problem, x::Vector)
 
-Returns the value of the objective of a [`Problem`](@ref).
+Value of the objective of a [`Problem`](@ref).
 """
 objective(problem::Problem, x::Vector) = objective(problem, x, problem.A * x)
 
@@ -69,6 +61,6 @@ objective(problem::Problem, x::Vector) = objective(problem, x, problem.A * x)
 
 Return a value of `λ` such that `0` is a solution of a [`Problem`](@ref).
 """
-function compute_λmax(f::AbstractDatafit, h::AbstractPerturbation, A::Matrix, y::Vector)
-    return norm(A' * gradient(f, y, zeros(length(y))), Inf) / h.τ
+function compute_λmax(f::AbstractDatafit, h::AbstractPerturbation, A::Matrix)
+    return norm(A' * gradient(f, zeros(dim_input(f))), Inf) / h.τ
 end

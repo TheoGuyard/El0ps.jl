@@ -1,25 +1,22 @@
-
-
 @testset "Datafits" begin
     candidates = [
-        (LeastSquares, "regression"),
-        # (Logistic, "classification"),
+        (LeastSquares, m -> randn(m)),
+        (Logistic, m -> 2. .* (randn(m) .<= 0.5) .- 1.),
     ]
-
-    for (test_type, test_modelling) in candidates
-        f = test_type()
-        @testset "$f" begin
+    for (test_type, y_generation) in candidates
+        @testset "$test_type" begin
             m = 100
+            y = y_generation(m)
             w = randn(m)
             u = randn(m)
-            if test_modelling == "regression"
-                y = randn(m)
-            elseif test_modelling == "classification"
-                y = 2. .* (randn(m) .<= 0.5) .- 1.
+            f = test_type(y)
+            @test El0ps.dim_input(f) == m
+            @test El0ps.lipschitz_constant(f) >= 0.
+            @test El0ps.value(f, w) >= El0ps.value(f, u) + El0ps.gradient(f, u)' * (w - u)
+            if !isa(f, Logistic)
+                @test El0ps.value(f, w) + El0ps.conjugate(f, u) >= w' * u
             end
-            @test lipschitz_constant(f, y) >= 0.
-            @test El0ps.value(f, y, w) >= El0ps.value(f, y, u) + gradient(f, y, u)' * (w - u)
-            @test El0ps.value(f, y, w) + conjugate(f, y, u) >= w' * u
+            @test isa(El0ps.params_to_dict(f), OrderedDict)
         end
     end
 end

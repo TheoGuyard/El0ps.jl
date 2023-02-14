@@ -6,15 +6,18 @@ bounding steps in the [`BnbSolver`](@ref).
 
 # Arguments
 
-- `reltol::Float64` : Relative tolearance for lower bouning.
-- `maxiter_cd::Int` : Maximum number of cooridinate descent updates.
-- `maxiter_as::Int` : Maximum number of active-set updates.
+- `bounding_type::BoundingType` : Bounding type.
+- `reltol::Float64=1e-4` : Relative tolearance for lower bouning.
+- `maxiter_cd::Int=1_000` : Maximum number of cooridinate descent updates.
+- `maxiter_as::Int=100` : Maximum number of active-set updates.
 """
 struct CDAS <: AbstractBoundingSolver
+    bounding_type::BoundingType
     reltol::Float64
     maxiter_cd::Int
     maxiter_as::Int
-    function CDAS(; 
+    function CDAS(
+        bounding_type::BoundingType;
         reltol::Float64=1e-4, 
         maxiter_cd::Int=1_000, 
         maxiter_as::Int=100
@@ -22,15 +25,16 @@ struct CDAS <: AbstractBoundingSolver
         @assert reltol >= 0.
         @assert maxiter_cd >= 0
         @assert maxiter_as >= 0
-        return new(reltol, maxiter_cd, maxiter_as)
+        return new(bounding_type, reltol, maxiter_cd, maxiter_as)
     end
 end
+
+bounding_type(bounding_solver::CDAS) = bounding_solver.bounding_type
 
 function cd_loop!(
     f::AbstractDatafit, 
     h::AbstractPerturbation, 
     A::Matrix, 
-    y::Vector, 
     x::Vector,
     w::Vector, 
     u::Vector, 
@@ -52,7 +56,7 @@ function cd_loop!(
         end
         if x[i] != xi
             axpy!(x[i] - xi, ai, w)         # O(m)
-            copy!(u, -gradient(f, y, w))    # O(m)
+            copy!(u, -gradient(f, w))       # O(m)
         end
     end
     return nothing
@@ -61,7 +65,6 @@ end
 function compute_primal_value(
     f::AbstractDatafit, 
     h::AbstractPerturbation, 
-    y::Vector, 
     λ::Float64,
     x::Vector,
     w::Vector, 
@@ -70,7 +73,7 @@ function compute_primal_value(
     S::BitArray,
     Sb::BitArray,
 )
-    Fval = value(f, y, w)                   # O(m)
+    Fval = value(f, w)                   # O(m)
     hval = 0.
     for i in findall(S)
         xi = x[i]
@@ -87,7 +90,6 @@ function compute_dual_value(
     f::AbstractDatafit, 
     h::AbstractPerturbation, 
     A::Matrix,
-    y::Vector, 
     λ::Float64,
     u::Vector,
     v::Vector,
@@ -97,8 +99,8 @@ function compute_dual_value(
 )
     nz = findall(S)
     v[nz] = A[:, nz]' * u                               # O(m|nz|)
-    p[nz] = conjugate_vectorized(h, v[nz] / λ) .- 1.
-    cFval = conjugate(f, y, -u)
+    p[nz] = [conjugate_1d(h, v[i] / λ) .- 1. for i in nz]
+    cFval = conjugate(f, -u)
     chval = 0.
     for i in nz
         chval += Sb[i] ? max(p[i], 0.) : p[i]           # O(1)
@@ -134,10 +136,9 @@ end
 function bound!(
     bounding_solver::CDAS, 
     problem::Problem, 
-    solver::BnbSolver, 
-    node::BnbNode, 
-    options::BnbOptions,   
-    bounding_type::BoundingType,
+    solver, 
+    node, 
+    options,   
     )
     
     # ----- Initialization ----- #
@@ -146,28 +147,27 @@ function bound!(
     f = problem.f
     h = problem.h
     A = problem.A
-    y = problem.y
     λ = problem.λ
     a = problem.a
     m = problem.m
     n = problem.n
 
     # Node data
-    if bounding_type == LOWER
+    if bounding_solver.bounding_type == LOWER_BOUNDING
         S0 = node.S0
         S1 = node.S1
         Sb = node.Sb
         x = node.x
         w = node.w
         u = node.u
-    elseif bounding_type == UPPER
+    elseif bounding_solver.bounding_type == UPPER_BOUNDING
         S0 = copy(node.S0 .| node.Sb)
         S1 = copy(node.S1)
         Sb = falses(n)
         x = zeros(n)
         x[S1] = copy(node.x[S1])
         w = A[:, S1] * x[S1]
-        u = -gradient(f, y, w)
+        u = -gradient(f, w)
     else
         error("Unknown bounding type $bounding_type")
     end
@@ -187,7 +187,7 @@ function bound!(
     # Constants and working values
     τ = h.τ
     μ = h.μ
-    α = lipschitz_constant(f, y)
+    α = lipschitz_constant(f)
     κ = α .* a
     ν = 1. ./ κ
     ρ = λ ./ κ
@@ -226,12 +226,12 @@ function bound!(
         while true
             it_cd += 1
             pv_old = pv
-            cd_loop!(f, h, A, y, x, w, u, ν, ρ, η, δ, S, Sb)
-            pv = compute_primal_value(f, h, y, λ, x, w, τ, μ, S, Sb)
-            if bounding_type == LOWER
+            cd_loop!(f, h, A, x, w, u, ν, ρ, η, δ, S, Sb)
+            pv = compute_primal_value(f, h, λ, x, w, τ, μ, S, Sb)
+            if bounding_solver.bounding_type == LOWER_BOUNDING
                 (abs(pv - pv_old) / (abs(pv) + 1e-10) < cdltol) && break
-            elseif bounding_type == UPPER
-                dv = compute_dual_value(f, h, A, y, λ, u, v, p, S, Sb)
+            elseif bounding_solver.bounding_type == UPPER_BOUNDING
+                dv = compute_dual_value(f, h, A, λ, u, v, p, S, Sb)
                 (abs(pv - dv) / (abs(pv) + 1e-10) < tolgap) && break
             end
             (it_cd >= maxiter_cd) && break
@@ -239,12 +239,12 @@ function bound!(
 
         # --- Active-set update and termination check --- #
 
-        (bounding_type == UPPER) && break
+        (bounding_solver.bounding_type == UPPER_BOUNDING) && break
         V = update_active_set!(h, A, λ, u, v, p, τ, S, Sbi) 
         (it_as >= maxiter_as) && break
         (elapsed_time(solver) >= maxtime) && break
         if length(V) == 0
-            dv = compute_dual_value(f, h, A, y, λ, u, v, p, S, Sb)
+            dv = compute_dual_value(f, h, A, λ, u, v, p, S, Sb)
             (abs(pv - dv) / (abs(pv) + 1e-10) < reltol) && break
             (cdltol <= 1e-8) && break
             cdltol *= 1e-2
@@ -252,12 +252,12 @@ function bound!(
 
         # --- Accelerations --- #
 
-        if (bounding_type == LOWER) & (l1screening | l0screening | dualpruning)
-            dv = isnan(dv) ? compute_dual_value(f, h, A, y, λ, u, v, p, S, Sb) : dv
+        if (bounding_solver.bounding_type == LOWER_BOUNDING) & (l1screening | l0screening | dualpruning)
+            dv = isnan(dv) ? compute_dual_value(f, h, A, λ, u, v, p, S, Sb) : dv
             gap = abs(pv - dv)
             dualpruning && (dv >= ub + tolprune) && break
-            l1screening && l1screening!(f, A, y, λ, x, w, u, v, α, τ, gap, Sb0, Sbi, Sbb)
-            l0screening && l0screening!(solver, node, f, A, y, λ, x, w, u, p, ub, dv, tolprune, S0, S1, Sb, Sbi, Sbb, S1i)
+            l1screening && l1screening!(f, A, λ, x, w, u, v, α, τ, gap, Sb0, Sbi, Sbb)
+            l0screening && l0screening!(f, A, λ, x, w, u, p, ub, dv, tolprune, S0, S1, Sb, Sbi, Sbb, S1i)
             S .|= S1
             S .|= Sbb
             S .&= (.!S0)
@@ -267,14 +267,14 @@ function bound!(
 
     # ----- Post-processing ----- #
 
-    if bounding_type == LOWER
-        node.lb = isnan(dv) ? compute_dual_value(f, h, A, y, λ, u, v, p, S, Sb) : dv
+    if bounding_solver.bounding_type == LOWER_BOUNDING
+        node.lb = isnan(dv) ? compute_dual_value(f, h, A, λ, u, v, p, S, Sb) : dv
         node.lb_it = it_cd
         node.lb_l1screening_Sb0 = sum(Sb0)
         node.lb_l1screening_Sbb = sum(Sbb)
         node.lb_l0screening_S0 = sum(S0) - (isa(node.parent, Nothing) ? 1 : (sum(node.parent.S0) + 1))
         node.lb_l0screening_S1 = sum(S1) - (isa(node.parent, Nothing) ? 1 : (sum(node.parent.S1) + 1))
-    else
+    elseif bounding_solver.bounding_type == UPPER_BOUNDING
         node.ub = pv
         node.x_ub = copy(x)
     end

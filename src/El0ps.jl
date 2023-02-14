@@ -8,7 +8,7 @@ using OrderedCollections
 using Printf
 using Random
 
-version() = "v0.1"
+version() = "v0.2"
 authors() = "Theo Guyard"
 contact() = "guyard.theo@gmail.com"
 license() = "AGPL 3.0"

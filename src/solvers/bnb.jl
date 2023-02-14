@@ -106,8 +106,26 @@ struct BnbOptions
     end
 end
 
+"""
+    NodeStatus
+
+Status of a [`BnbNode`](@ref).
+
+- OPEN : The node has not been treated yet.
+- PRUNED : The node has been pruned
+- SOLVED : The node has been treated and not pruned.
+- PERFECT : The node has a perfect relaxation.
+"""
+@enum BnbNodeStatus begin
+    OPEN
+    PRUNED
+    SOLVED
+    PERFECT
+end
+
 mutable struct BnbNode
     parent::Union{BnbNode,Nothing}
+    status::BnbNodeStatus
     S0::BitArray
     S1::BitArray
     Sb::BitArray
@@ -125,6 +143,7 @@ mutable struct BnbNode
     function BnbNode(problem::Problem)
         return new(
             nothing,
+            OPEN,
             falses(problem.n),
             falses(problem.n),
             trues(problem.n),
@@ -144,6 +163,7 @@ mutable struct BnbNode
     function BnbNode(parent::BnbNode, j::Int, jval::Int, prob::Problem)
         child = new(
             parent,
+            OPEN,
             copy(parent.S0),
             copy(parent.S1),
             copy(parent.Sb),
@@ -176,6 +196,7 @@ Base.@kwdef mutable struct BnbTrace
     queue_size::Vector{Int}                 = Vector{Int}()
     timer::Vector                           = Vector()
     supp_pruned::Vector                     = Vector()
+    node_status::Vector{BnbNodeStatus}      = Vector{BnbNodeStatus}()
     node_lb::Vector                         = Vector()
     node_ub::Vector                         = Vector()
     node_card_S0::Vector{Int}               = Vector{Int}()
@@ -351,11 +372,14 @@ end
 function prune!(solver::BnbSolver, node::BnbNode, options::BnbOptions)
     pruning_test = (node.lb > solver.ub + options.tolprune)
     perfect_test = (options.tolprune <= gap(node) < options.tolgap)
-    prune = (pruning_test | perfect_test)
-    if prune
+    if pruning_test
         solver.supp_pruned += 2. ^ (-depth(node))
+        node.status = PRUNED
+    elseif perfect_test
+        solver.supp_pruned += 2. ^ (-depth(node))
+        node.status = PERFECT
     end
-    return prune
+    return pruning_test | perfect_test
 end
 
 function branch!(prob::Problem, solver::BnbSolver, node::BnbNode, options::BnbOptions)
@@ -462,6 +486,7 @@ function optimize(
         is_terminated(solver) && break
         node = next_node!(solver, options)
         bound!(options.lb_solver, problem, solver, node, options, LOWER)
+        node.status = SOLVED
         if !(prune!(solver, node, options))
             bound!(options.ub_solver, problem, solver, node, options, UPPER)
             branch!(problem, solver, node, options)

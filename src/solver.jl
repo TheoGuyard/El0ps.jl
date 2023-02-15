@@ -436,6 +436,7 @@ function update_trace!(trace::BnbTrace, solver::BnbSolver, node::BnbNode, option
     push!(trace.node_count, solver.node_count)
     push!(trace.queue_size, length(solver.queue))
     push!(trace.timer, elapsed_time(solver))
+    push!(trace.node_status, node.status)
     push!(trace.node_lb, node.lb)
     push!(trace.node_ub, node.ub)
     push!(trace.node_card_S0, sum(node.S0))

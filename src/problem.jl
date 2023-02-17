@@ -1,7 +1,7 @@
 """
     Problem
 
-L0-penalized problem \$\\min f(\\mathbf{Ax}) + \\lambda (\\|x\\|_0 + h(\\mathbf{x}))\$.
+L0-penalized problem \$\\min f(\\mathbf{Ax}) + \\lambda(\\|\\mathbf{x}\\|_0 + h(\\mathbf{x}))\$.
 """
 struct Problem
     f::AbstractDatafit
@@ -57,7 +57,12 @@ Value of the objective of a [`Problem`](@ref).
 objective(problem::Problem, x::Vector) = objective(problem, x, problem.A * x)
 
 """
-    compute_λmax(f::AbstractDatafit, h::AbstractPerturbation, A::Matrix, y::Vector)
+    compute_λmax(
+        f::AbstractDatafit, 
+        h::AbstractPerturbation, 
+        A::Matrix, 
+        y::Vector
+    )
 
 Return a value of `λ` such that `0` is a solution of a [`Problem`](@ref).
 """

@@ -1,17 +1,18 @@
 # Regularization path
 
 In this section, we consider some [`Problem`](@ref) data for which we want to fit a regularization path, i.e., solving the problem for a range of `λ` values.
+For each value, the corresponding problem will be solved with a [`BnbSolver`](@ref).
 
 ```@example path
 using El0ps
 using Random
-
 Random.seed!(42)
 
-f = LeastSquares()
-h = Bigm(1.)
-A = randn(10, 30)
 y = randn(10)
+f = LeastSquares(y)
+M = 1.
+h = Bigm(M)
+A = randn(10, 30)
 
 solver = BnbSolver()
 ```
@@ -21,19 +22,18 @@ solver = BnbSolver()
 The path if fitted using the [`fit_path`](@ref) function as follows:
 
 ```@example path
-path = fit_path(solver, f, h, A, y, verbosity=false)
-println(path)
+path = fit_path(solver, f, h, A)
 ```
 
 This operation returns a [`Path`](@ref) instance with several information:
 * `λ/λmax`: the ratio between the current `λ` and the value `λmax` above which the solution to the problem is necessarily the all-zero vector
 * `Conv`: whether the solver has converged
 * `Time`: solution time
-* `Fval`: value of $f(\mathbf{y},\mathbf{Ax})$
+* `Fval`: value of $f(\mathbf{Ax})$
 * `hval`: value of $g(\mathbf{x}) = \|\mathbf{x}\|_0 + h(\mathbf{x})$
 * `Nnz`: number of non-zeros in the solution
-* `CV mean`: mean cross validation error on the term $f(\mathbf{y},\mathbf{Ax})$
-* `CV std`: standard deviation of the cross validation error on the term $f(\mathbf{y},\mathbf{Ax})$
+* `CV mean`: mean cross validation error on the term $f(\mathbf{Ax})$
+* `CV std`: standard deviation of the cross validation error on the term $f(\mathbf{Ax})$
 
 ## Specifying parameters
 
@@ -49,7 +49,7 @@ When fitting the path, the following parameters can be specified:
 
 They are passed to the [`fit_path`](@ref) function as keyword arguments.
 ```julia
-path = fit_path(solver, f, h, A, y, max_support_size=5, compute_cv=false)
+path = fit_path(solver, f, h, A, max_support_size=5, compute_cv=false)
 ```
 
 More information is given in the documentation of the [`PathOptions`](@ref) struct which handle the path parameters.

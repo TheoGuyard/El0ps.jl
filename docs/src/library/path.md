@@ -1,4 +1,4 @@
-## Regularization path
+# Regularization path
 
 ```@autodocs
 Modules = [El0ps]

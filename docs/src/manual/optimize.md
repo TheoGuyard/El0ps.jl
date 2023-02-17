@@ -5,46 +5,45 @@ In this section, we consider a [`Problem`](@ref) instance that is to be solved.
 ```@example optimize
 using El0ps
 using Random
-
 Random.seed!(42)
 
-f = LeastSquares()
-h = Bigm(1.)
-A = randn(10, 30)
 y = randn(10)
-λ = 0.1
+f = LeastSquares(y)
+M = 1.
+h = Bigm(M)
+A = randn(10, 30)
+λ = 0.1 * compute_λmax(f, h, A)
 
-problem = Problem(f, h, A, y, λ)
+problem = Problem(f, h, A, λ)
 ```
 
 ## Running the solver
 
-The problem can be addressed with the [`BnbSolver`](@ref), instantiated with 
+The problem can be addressed with a [`BnbSolver`](@ref) that can be instantiated as follows 
 
 ```@example optimize
 solver = BnbSolver()
 ```
 
-Here, we do not specify any argument, so the default ones are used.
-Then, simply call the [`optimize`](@ref) function to solve the problem.
+Then, the [`optimize`](@ref) function allows to solve the problem.
 
 ```@example optimize
 result = optimize(solver, problem)
 ```
 
-The result specifies different statistics about the solution process:
+The result specifies different statistics about the solving process:
 * The solution status
-  * `OPTIMAL` when convergence is met 
+  * `OPTIMAL` when convergence is achieved 
   * `TIME_LIMIT` when the maximum time allowed is reached
   * `ITERATION_LIMIT` when the maximum number of nodes allowed is reached
 * The best objective value obtained
 * The number of non-zero elements in the solution
-* The last MIP gap, which should be zero at optimality
+* The last gap
 * The overall solution time
-* The number of BnB nodes processed
+* The number of nodes processed
 
-The solution of the problem can be accessed via
-```@example optimize
+The solution can be accessed via
+```julia
 result.x
 ```
 
@@ -55,9 +54,9 @@ result.x
 
 When creating a [`BnbSolver`](@ref), different parameters can be specified.
 First, there exists parameters to control and limit the execution of the solver:
-* `exploration` : the BnB exploration strategy (`BFS` or `DFS`)
+* `exploration` : the BnB exploration strategy (`BFS`, `DFS` or `MIXED`)
 * `branching` : the BnB branching strategy (`LARGEST` or `RESIDUAL`)
-* `maxtime` : the maximum solution time allowed (in seconds)
+* `maxtime` : the maximum solution time in seconds
 * `maxnode` : the maximum number of nodes 
 * `tolgap` : the targeted MIP duality gap in the BnB
 * `tolint` : the integrality tolerance in the BnB
@@ -79,7 +78,7 @@ They can be passed to the solver as keywords arguments:
 solver = BnbSolver(maxtime=60., verbosity=false)
 ```
 
-More information is given in the documentation of the [`BnbOptions`](@ref) structure that collects the keywords passed to [`BnbSolver`](@ref).
+More information is given in the documentation of the [`BnbOptions`](@ref) structure that collects the keywords passed to a [`BnbSolver`](@ref).
 
 ## Warm start
 
@@ -92,10 +91,16 @@ The BnB algorithm will construct its first upper bound based on the evaluation o
 Moreover, it is also possible to force indices of the problem variable to zero or non-zero from the beginning of the algorithm.
 This can be done with
 ```@example optimize
-idx_zer = [1,2,3]
-idx_nnz = [4,5,6]
-result = optimize(solver, problem, S0=idx_zer, S1=idx_nnz)
-println(result.x[idx_zer])
-println(result.x[idx_nnz])
+force_zer = [1,2,3]
+force_nnz = [4,5,6]
+result = optimize(solver, problem, S0=force_zer, S1=force_nnz)
 ```
-One notices that `result.x[idx_zer]` and `result.x[idx_nnz]` indeed correspond to zero and non-zero values, respectively.
+One notices that
+```@example optimize
+result.x[force_zer]
+```
+and
+```@example optimize
+result.x[force_nnz]
+```
+indeed correspond to zero and non-zero values, respectively.

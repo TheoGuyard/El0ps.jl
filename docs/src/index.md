@@ -4,33 +4,40 @@
 
 ## Summary
 
-This package provides solution methods to address the problem
+This package provides solution methods to address problems of the form
 
-$$\min_{\mathbf{x}} \ f(\mathbf{y},\mathbf{A}\mathbf{x}) + \lambda g(\mathbf{x})$$
+$$\min_{\mathbf{x}} \ f(\mathbf{A}\mathbf{x}) + \lambda g(\mathbf{x})$$
 
-where $g(x) = \|\mathbf{x}\|_0 + h(x)$.
-It aims to fit an input $\mathbf{y}$ through some model of $\mathbf{Ax}$ encoded in the loss function $f$.
-It also enforces sparsity in the optimizers with the $\ell_0$-norm, which counts the number of non-zero entries in its argument.
+where $g(\mathbf{x}) = \|\mathbf{x}\|_0 + h(\mathbf{x})$.
+Such problems aim to minimize a loss function $f$ of some linear model $\mathbf{Ax}$.
+It also enforces sparsity in the optimizers with the $\ell_0$-norm, which counts the number of non-zero entries in its input.
 The function $h$ is a perturbation term required to build-up efficient numerical procedures.
-In particular, `El0ps.jl` implements a Branch-and-Bound algorithm that exploits the structure of the problem to achieve competitive performances.
-
+In particular, this package implements a Branch-and-Bound algorithm that exploits the structure of the problem to achieve competitive performances.
+It it designed to be robust to dimensionality scaling and flexible with respect to the choice of the functions $f$ and $h$.
 
 ## Features
 
-* Simple problem instantiation
-* Easy process to define new functions $f$ and $h$
-* Branch-and-Bound algorithm with
-  * Several exploration strategies
-  * Several branching strategies
-  * Tunable parameters
+* ⚙️ Interfaces
+  * Simple problem instantiation
+  * Easy process to define new functions $f$ and $h$
+  * Pretty-print utilities
+* 🚀 Solution methods
+  * Branch-and-Bound algorithm
+  * Specialized exploration strategies
+  * Specialized branching strategies
+  * Many tunable parameters
   * Efficient bounding solver
   * Structure-exploiting acceleration methods
-* Routines to fit regularization paths
+  * Robust to dimension-scaling
+* 📈 Utilities
+  * Regularization path fitting
+  * Efficiency through warm-start
+  * Cross-validation computations
 
 
 ## Citation
 
-To cite `El0ps.jl`, please refer to the following [paper](https://hal.science/hal-03960204/document) (in french):
+To cite this package, please refer to the following [paper](https://hal.science/hal-03960204/document) (in french):
 
 ```{bibtex}
 @inproceedings{guyard2023solveur,
@@ -41,15 +48,14 @@ To cite `El0ps.jl`, please refer to the following [paper](https://hal.science/ha
 }
 ```
 
- 
 ## Manual outline
 
 ```@contents
-Pages = ["manual/quickstart.md", "manual/optimize.md", "manual/path.md", "manual/custom.md"]
+Pages = ["manual/quickstart.md", "manual/problem.md", "manual/optimize.md", "manual/path.md", "manual/custom.md"]
 ```
 
 ## Library outline
 
 ```@contents
-Pages = ["library/problem.md", "library/datafits.md", "library/penalties.md", "library/solvers.md", "library/path.md"]
+Pages = ["library/problem.md", "library/datafits.md", "library/perturbations.md", "library/solver.md", "library/path.md"]
 ```

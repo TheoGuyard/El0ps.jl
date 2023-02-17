@@ -36,8 +36,49 @@ end
     BnbOptions
 
 Options of a [`BnbSolver`](@ref).
+"""
+struct BnbOptions
+    lb_solver::AbstractBoundingSolver
+    ub_solver::AbstractBoundingSolver
+    exploration::ExplorationStrategy
+    depthswitch::Int
+    branching::BranchingStrategy
+    maxtime::Float64
+    maxnode::Int
+    tolgap::Float64
+    tolint::Float64
+    tolprune::Float64
+    dualpruning::Bool
+    l0screening::Bool
+    l1screening::Bool
+    verbosity::Bool
+    showevery::Int
+    keeptrace::Bool
+end
 
-# Attributes 
+"""
+    BnbOptions(;
+        lb_solver::AbstractBoundingSolver   = CDAS(LOWER_BOUNDING),
+        ub_solver::AbstractBoundingSolver   = CDAS(UPPER_BOUNDING),
+        exploration::ExplorationStrategy    = DFS,
+        depthswitch::Int                    = 10,
+        branching::BranchingStrategy        = LARGEST,
+        maxtime::Float64                    = 60.,
+        maxnode::Int                        = typemax(Int),
+        tolgap::Float64                     = 1e-8,
+        tolint::Float64                     = 1e-8,
+        tolprune::Float64                   = 0.,
+        dualpruning::Bool                   = false,
+        l0screening::Bool                   = false,
+        l1screening::Bool                   = false,
+        verbosity::Bool                     = false,
+        showevery::Int                      = 1,
+        keeptrace::Bool                     = false,
+    )
+
+Instantiate a [`BnbOptions`](@ref).
+
+**Keywords:**
 
 - `lb_solver::AbstractBoundingSolver` : Solver for the lower-bounding step.
 - `ub_solver::AbstractBoundingSolver` : Solver for the upper-bounding step.
@@ -58,69 +99,51 @@ tolprune < node.lb`.
 - `showevery::Int` : Displays logs every `showevery` nodes explored.
 - `keeptrace::Bool` : Whether to fill the [`BnbTrace`](@ref) or not.
 """
-struct BnbOptions
-    lb_solver::AbstractBoundingSolver
-    ub_solver::AbstractBoundingSolver
-    exploration::ExplorationStrategy
-    depthswitch::Int
-    branching::BranchingStrategy
-    maxtime::Float64
-    maxnode::Int
-    tolgap::Float64
-    tolint::Float64
-    tolprune::Float64
-    dualpruning::Bool
-    l0screening::Bool
-    l1screening::Bool
-    verbosity::Bool
-    showevery::Int
-    keeptrace::Bool
-    function BnbOptions(;
-        lb_solver::AbstractBoundingSolver   = CDAS(LOWER_BOUNDING),
-        ub_solver::AbstractBoundingSolver   = CDAS(UPPER_BOUNDING),
-        exploration::ExplorationStrategy    = DFS,
-        depthswitch::Int                    = 10,
-        branching::BranchingStrategy        = LARGEST,
-        maxtime::Float64                    = 60.,
-        maxnode::Int                        = typemax(Int),
-        tolgap::Float64                     = 1e-8,
-        tolint::Float64                     = 1e-8,
-        tolprune::Float64                   = 0.,
-        dualpruning::Bool                   = false,
-        l0screening::Bool                   = false,
-        l1screening::Bool                   = false,
-        verbosity::Bool                     = false,
-        showevery::Int                      = 1,
-        keeptrace::Bool                     = false,
+function BnbOptions(;
+    lb_solver::AbstractBoundingSolver   = CDAS(LOWER_BOUNDING),
+    ub_solver::AbstractBoundingSolver   = CDAS(UPPER_BOUNDING),
+    exploration::ExplorationStrategy    = DFS,
+    depthswitch::Int                    = 10,
+    branching::BranchingStrategy        = LARGEST,
+    maxtime::Float64                    = 60.,
+    maxnode::Int                        = typemax(Int),
+    tolgap::Float64                     = 1e-8,
+    tolint::Float64                     = 1e-8,
+    tolprune::Float64                   = 0.,
+    dualpruning::Bool                   = false,
+    l0screening::Bool                   = false,
+    l1screening::Bool                   = false,
+    verbosity::Bool                     = false,
+    showevery::Int                      = 1,
+    keeptrace::Bool                     = false,
+)
+    @assert bounding_type(lb_solver) == LOWER_BOUNDING
+    @assert bounding_type(ub_solver) == UPPER_BOUNDING
+    @assert depthswitch >= 0.
+    @assert maxtime >= 0.
+    @assert maxnode >= 0
+    @assert tolgap >= 0.
+    @assert tolint >= 0.
+    @assert tolprune >= 0.
+    @assert showevery >= 0
+    return BnbOptions(
+        lb_solver,
+        ub_solver,
+        exploration,
+        depthswitch,
+        branching,
+        maxtime,
+        maxnode,
+        tolgap,
+        tolint,
+        tolprune,
+        dualpruning,
+        l0screening,
+        l1screening,
+        verbosity,
+        showevery,
+        keeptrace,
     )
-        @assert bounding_type(lb_solver) == LOWER_BOUNDING
-        @assert bounding_type(ub_solver) == UPPER_BOUNDING
-        @assert depthswitch >= 0.
-        @assert maxtime >= 0.
-        @assert maxnode >= 0
-        @assert tolgap >= 0.
-        @assert tolint >= 0.
-        @assert tolprune >= 0.
-        @assert showevery >= 0
-        return new(
-            lb_solver,
-            ub_solver,
-            exploration,
-            depthswitch,
-            branching,
-            maxtime,
-            maxnode,
-            tolgap,
-            tolint,
-            tolprune,
-            dualpruning,
-            l0screening,
-            l1screening,
-            verbosity,
-            showevery,
-            keeptrace,
-        )
-    end
 end
 
 """
@@ -157,48 +180,50 @@ mutable struct BnbNode
     lb_l1screening_Sbb::Int
     lb_l0screening_S0::Int
     lb_l0screening_S1::Int
-    function BnbNode(problem::Problem)
-        return new(
-            nothing,
-            OPEN,
-            falses(problem.n),
-            falses(problem.n),
-            trues(problem.n),
-            -Inf,
-            Inf,
-            zeros(problem.n),
-            zeros(problem.m),
-            -gradient(problem.f, zeros(problem.m)),
-            zeros(problem.n),
-            0,
-            0,
-            0,
-            0,
-            0,
-        )
-    end
-    function BnbNode(parent::BnbNode, j::Int, jval::Int, problem::Problem)
-        child = new(
-            parent,
-            OPEN,
-            copy(parent.S0),
-            copy(parent.S1),
-            copy(parent.Sb),
-            copy(parent.lb),
-            copy(parent.ub),
-            copy(parent.x),
-            copy(parent.w),
-            copy(parent.u),
-            copy(parent.x_ub),
-            0,
-            0,
-            0,
-            0,
-            0,
-        )
-        fixto!(child, j, jval, problem)
-        return child
-    end
+end
+
+function BnbNode(problem::Problem)
+    return new(
+        nothing,
+        OPEN,
+        falses(problem.n),
+        falses(problem.n),
+        trues(problem.n),
+        -Inf,
+        Inf,
+        zeros(problem.n),
+        zeros(problem.m),
+        -gradient(problem.f, zeros(problem.m)),
+        zeros(problem.n),
+        0,
+        0,
+        0,
+        0,
+        0,
+    )
+end
+
+function BnbNode(parent::BnbNode, j::Int, jval::Int, problem::Problem)
+    child = new(
+        parent,
+        OPEN,
+        copy(parent.S0),
+        copy(parent.S1),
+        copy(parent.Sb),
+        copy(parent.lb),
+        copy(parent.ub),
+        copy(parent.x),
+        copy(parent.w),
+        copy(parent.u),
+        copy(parent.x_ub),
+        0,
+        0,
+        0,
+        0,
+        0,
+    )
+    fixto!(child, j, jval, problem)
+    return child
 end
 
 """
@@ -226,10 +251,9 @@ Base.@kwdef mutable struct BnbTrace
 end
 
 """
-    BnbSolver <: AbstractSolver
+    BnbSolver
 
-Branch-and-Bound algorithm to solve a [`Problem`](@ref). Additional keyword 
-arguments in `kwargs` are passed to a [`BnbOptions`](@ref) instance.
+Branch-and-Bound solver for a [`Problem`](@ref).
 """
 mutable struct BnbSolver <: AbstractSolver
     status::MOI.TerminationStatusCode
@@ -241,19 +265,25 @@ mutable struct BnbSolver <: AbstractSolver
     start_time::Float64
     options::BnbOptions
     trace::BnbTrace
-    function BnbSolver(; kwargs...)
-        return new(
-            MOI.OPTIMIZE_NOT_CALLED,
-            Inf,
-            -Inf,
-            zeros(0),
-            Vector{BnbNode}(),
-            0,
-            Dates.time(),
-            BnbOptions(; kwargs...),
-            BnbTrace(),
-        )
-    end
+end
+
+"""
+    BnbSolver(; kwargs...)
+
+Instantiate a [`BnbSolver`](@ref). Keywords are passed to [`BnbOptions`](@ref).
+"""
+function BnbSolver(; kwargs...)
+    return BnbSolver(
+        MOI.OPTIMIZE_NOT_CALLED,
+        Inf,
+        -Inf,
+        zeros(0),
+        Vector{BnbNode}(),
+        0,
+        Dates.time(),
+        BnbOptions(; kwargs...),
+        BnbTrace(),
+    )
 end
 
 Base.show(io::IO, solver::BnbSolver) = print(io, "BnB solver")

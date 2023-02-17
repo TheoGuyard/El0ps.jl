@@ -1,4 +1,4 @@
-## Datafits
+# Datafits
 
 ```@autodocs
 Modules = [El0ps]

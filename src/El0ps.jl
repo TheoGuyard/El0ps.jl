@@ -46,8 +46,8 @@ export CDAS
 
 include("solver.jl")
 export AbstractSolver, AbstractResult
-export BFS, DFS
-export LARGEST
+export BFS, DFS, MIXED
+export LARGEST, RESIDUAL
 export OPEN, PRUNED, SOLVED, PERFECT
 export BnbSolver, BnbOptions, BnbTrace, BnbResult
 export optimize

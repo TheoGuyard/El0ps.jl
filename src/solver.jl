@@ -8,10 +8,14 @@ Exploration strategy of a [`BnbSolver`](@ref).
 
 - `BFS` : Breadth-First Search
 - `DFS` : Depth-First Search
+- `MIXED` : Mixed exploration strategy where the k-top layers of nodes are 
+explored in a `DFS` fashion and where the below ones are explored in a `BFS` 
+fashion. The parameter `k` is specified in [`BnbOptions`](@ref).
 """
 @enum ExplorationStrategy begin
     BFS
     DFS
+    MIXED
 end
 
 """
@@ -19,10 +23,13 @@ end
 
 Branching strategy of a [`BnbSolver`](@ref).
 
-- LARGEST : Select the largest index in absolute value in the relaxation solution.
+- LARGEST : Select the largest index in absolute value in the relaxation 
+solution.
+- RESIDUAL : Select the largest index in absolute value in the dual residual.
 """
 @enum BranchingStrategy begin
     LARGEST
+    RESIDUAL
 end
 
 """
@@ -35,12 +42,15 @@ Options of a [`BnbSolver`](@ref).
 - `lb_solver::AbstractBoundingSolver` : Solver for the lower-bounding step.
 - `ub_solver::AbstractBoundingSolver` : Solver for the upper-bounding step.
 - `exploration::ExplorationStrategy` : Tree exploration strategy.
+- `depthswitch::Int` : The depth where the `MIXED` [`ExplorationStrategy`](@ref)
+is switched. 
 - `branching::BranchingStrategy` : Tree branching strategy.
 - `maxtime::Float64` : Maximum solution time in seconds.
 - `maxnode::Int` : Maximum number of nodes.
 - `tolgap::Float64` : Relative MIP gap tolerance.
 - `tolint::Float64` : Integer tolerance, i.e., `x = 0` when `|x| < tolint`.
-- `tolprune::Float64` : Prune a `node` in the `bnb` tree when `bnb.ub + tolprune < node.lb`.
+- `tolprune::Float64` : Prune a `node` in the `bnb` tree when `bnb.ub + 
+tolprune < node.lb`.
 - `dualpruning::Bool` : Toogle the dual-pruning acceleration.
 - `l0screening::Bool` : Toogle the L0-screening acceleration.
 - `l1screening::Bool` : Toogle the L1-screening acceleration.
@@ -52,6 +62,7 @@ struct BnbOptions
     lb_solver::AbstractBoundingSolver
     ub_solver::AbstractBoundingSolver
     exploration::ExplorationStrategy
+    depthswitch::Int
     branching::BranchingStrategy
     maxtime::Float64
     maxnode::Int
@@ -68,6 +79,7 @@ struct BnbOptions
         lb_solver::AbstractBoundingSolver   = CDAS(LOWER_BOUNDING),
         ub_solver::AbstractBoundingSolver   = CDAS(UPPER_BOUNDING),
         exploration::ExplorationStrategy    = DFS,
+        depthswitch::Int                    = 10,
         branching::BranchingStrategy        = LARGEST,
         maxtime::Float64                    = 60.,
         maxnode::Int                        = typemax(Int),
@@ -81,20 +93,20 @@ struct BnbOptions
         showevery::Int                      = 1,
         keeptrace::Bool                     = false,
     )
-
         @assert bounding_type(lb_solver) == LOWER_BOUNDING
         @assert bounding_type(ub_solver) == UPPER_BOUNDING
+        @assert depthswitch >= 0.
         @assert maxtime >= 0.
         @assert maxnode >= 0
         @assert tolgap >= 0.
         @assert tolint >= 0.
         @assert tolprune >= 0.
         @assert showevery >= 0
-
         return new(
             lb_solver,
             ub_solver,
             exploration,
+            depthswitch,
             branching,
             maxtime,
             maxnode,
@@ -165,7 +177,7 @@ mutable struct BnbNode
             0,
         )
     end
-    function BnbNode(parent::BnbNode, j::Int, jval::Int, prob::Problem)
+    function BnbNode(parent::BnbNode, j::Int, jval::Int, problem::Problem)
         child = new(
             parent,
             OPEN,
@@ -184,7 +196,7 @@ mutable struct BnbNode
             0,
             0,
         )
-        fixto!(child, j, jval, prob)
+        fixto!(child, j, jval, problem)
         return child
     end
 end
@@ -244,6 +256,8 @@ mutable struct BnbSolver <: AbstractSolver
     end
 end
 
+Base.show(io::IO, solver::BnbSolver) = print(io, "BnB solver")
+
 """
     BnbResult
 
@@ -270,7 +284,15 @@ struct BnbResult <: AbstractResult
     end
 end
 
-Base.show(io::IO, solver::BnbSolver) = print(io, "BnB solver")
+function Base.show(io::IO, result::BnbResult)
+    println(io, "Result")
+    println(io, "  Status     : $(result.termination_status)")
+    println(io, "  Objective  : $(result.objective_value)")
+    println(io, "  Non-zeros  : $(norm(result.x, 0))")
+    println(io, "  Last gap   : $(result.relative_gap)")
+    println(io, "  Solve time : $(result.solve_time) seconds")
+    print(io, "  Node count : $(result.node_count)")
+end
 
 function initialize!(
     solver::BnbSolver, 
@@ -357,15 +379,30 @@ function update_status!(solver::BnbSolver, options::BnbOptions)
     return (solver.status != MOI.OPTIMIZE_NOT_CALLED)
 end
 
-function next_node!(solver::BnbSolver, options::BnbOptions)
+function next_node!(
+    solver::BnbSolver, 
+    node::Union{BnbNode,Nothing}, 
+    options::BnbOptions
+    )
     if options.exploration == DFS
         node = pop!(solver.queue)
         solver.node_count += 1
     elseif options.exploration == BFS
         node = popfirst!(solver.queue)
         solver.node_count += 1
+    elseif options.exploration == MIXED
+        if isa(node, Nothing)
+            node = pop!(solver.queue)
+            solver.node_count += 1
+        elseif depth(node) <= options.depthswitch
+            node = pop!(solver.queue)
+            solver.node_count += 1
+        else
+            node = popfirst!(solver.queue)
+            solver.node_count += 1
+        end
     else
-        error("Exploration strategy '$(options.exploration) not implemented yet")
+        error("Not implemented")
     end
     return node
 end
@@ -381,30 +418,36 @@ function prune!(solver::BnbSolver, node::BnbNode, options::BnbOptions)
     return pruning_test | perfect_test
 end
 
-
-function branch!(prob::Problem, solver::BnbSolver, node::BnbNode, options::BnbOptions)
+function branch!(
+    problem::Problem,
+    solver::BnbSolver, 
+    node::BnbNode, 
+    options::BnbOptions
+    )
     !any(node.Sb) && return nothing
     if options.branching == LARGEST
         jSb = argmax(abs.(node.x[node.Sb]))
+    elseif options.branching == RESIDUAL
+        jSb = argmax(abs.(problem.A[:, node.Sb]' * node.u))
     else
-        error("Unsupported branching strategy $(options.branching)")
+        error("Not implemented")
     end
-    j = (1:prob.n)[node.Sb][jSb]
-    node_j0 = BnbNode(node, j, 0, prob)
-    node_j1 = BnbNode(node, j, 1, prob)
+    j = (1:problem.n)[node.Sb][jSb]
+    node_j0 = BnbNode(node, j, 0, problem)
+    node_j1 = BnbNode(node, j, 1, problem)
     push!(solver.queue, node_j0)
     push!(solver.queue, node_j1)
     return nothing
 end
 
-function fixto!(node::BnbNode, j::Int, jval::Int, prob::Problem)
+function fixto!(node::BnbNode, j::Int, jval::Int, problem::Problem)
     node.Sb[j] || error("Branching index $j is already fixed")
     node.Sb[j] = false
     if jval == 0
         node.S0[j] = true
         if node.x[j] != 0.0
-            axpy!(-node.x[j], prob.A[:, j], node.w)
-            copy!(node.u, -gradient(prob.f, node.w))
+            axpy!(-node.x[j], problem.A[:, j], node.w)
+            copy!(node.u, -gradient(problem.f, node.w))
             node.x[j] = 0.0
         end
     elseif jval == 1
@@ -417,20 +460,20 @@ function update_bounds!(solver::BnbSolver, node::BnbNode, options::BnbOptions)
     if (node.ub ≈ solver.ub) & (norm(node.x_ub, 0) < norm(solver.x, 0))
         solver.ub = copy(node.ub)
         solver.x = copy(node.x_ub)
-        filter!(queue_node -> !prune!(solver, queue_node, options), solver.queue)
+        filter!(qnode -> !prune!(solver, qnode, options), solver.queue)
     elseif node.ub < solver.ub
         solver.ub = copy(node.ub)
         solver.x = copy(node.x_ub)
-        filter!(queue_node -> !prune!(solver, queue_node, options), solver.queue)
+        filter!(qnode -> !prune!(solver, qnode, options), solver.queue)
     end
     if isempty(solver.queue)
         solver.lb = min(node.lb, solver.ub)
     else
-        solver.lb = minimum([queue_node.lb for queue_node in solver.queue])
+        solver.lb = minimum([qnode.lb for qnode in solver.queue])
     end
 end
 
-function update_trace!(trace::BnbTrace, solver::BnbSolver, node::BnbNode, options::BnbOptions)
+function update_trace!(trace::BnbTrace, solver::BnbSolver, node::BnbNode)
     push!(trace.ub, solver.ub)
     push!(trace.lb, solver.lb)
     push!(trace.node_count, solver.node_count)
@@ -477,6 +520,7 @@ function optimize(
     !isa(x0, Nothing) && @assert all(x0[S1] .!= 0.)
     initialize!(solver, problem, x0, S0, S1)
 
+    node = nothing
     options = solver.options
     trace = solver.trace
 
@@ -484,7 +528,7 @@ function optimize(
     while true
         update_status!(solver, options) 
         is_terminated(solver) && break
-        node = next_node!(solver, options)
+        node = next_node!(solver, node, options)
         bound!(options.lb_solver, problem, solver, node, options)
         node.status = SOLVED
         if !(prune!(solver, node, options))
@@ -492,22 +536,13 @@ function optimize(
             branch!(problem, solver, node, options)
         end
         update_bounds!(solver, node, options)
-        options.keeptrace && update_trace!(trace, solver, node, options)
-        options.verbosity && solver.node_count % options.showevery == 0 && display_trace(solver, node)
+        options.keeptrace && update_trace!(trace, solver, node)
+        if options.verbosity & (solver.node_count % options.showevery == 0)
+            display_trace(solver, node)
+        end
     end
     options.verbosity && display_tail()
 
     return BnbResult(solver, trace)
 end
-
-function Base.show(io::IO, result::BnbResult)
-    println(io, "Result")
-    println(io, "  Status     : $(result.termination_status)")
-    println(io, "  Objective  : $(result.objective_value)")
-    println(io, "  Non-zeros  : $(norm(result.x, 0))")
-    println(io, "  Last gap   : $(result.relative_gap)")
-    println(io, "  Solve time : $(result.solve_time) seconds")
-    print(io, "  Node count : $(result.node_count)")
-end
-
 

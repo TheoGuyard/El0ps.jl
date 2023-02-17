@@ -1,12 +1,12 @@
 @testset "Perturbations" begin
     candidates = [
-        (Zero, ()),
-        (Bigm, (1.)),
-        (L1norm, (1.)),
-        (L2norm, (1.)),
-        (L1L2norm, (1., 1.)),
-        (BigmL1norm, (1., 1.)),
-        (BigmL2norm, (1., 1.)),
+        (El0ps.Zero, ()),
+        (El0ps.Bigm, (1.)),
+        (El0ps.L1norm, (1.)),
+        (El0ps.L2norm, (1.)),
+        (El0ps.L1L2norm, (1., 1.)),
+        (El0ps.BigmL1norm, (1., 1.)),
+        (El0ps.BigmL2norm, (1., 1.)),
     ]
     for (test_type, test_params) in candidates
         @testset "$test_type utilities" begin

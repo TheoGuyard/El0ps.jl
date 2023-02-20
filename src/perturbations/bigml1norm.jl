@@ -1,7 +1,9 @@
 """
-    BigmL1norm
+    BigmL1norm <: AbstractPerturbation
 
-Big-M plus L1-norm function h(x) = α||x||_1 + Ind(||x||_Inf <= M).
+Big-M constraint plus L1-norm function 
+`h(x) = h.α * norm(x, 1) + (norm(x, Inf) < h.M ? 0. : Inf)`, where `h.α > 0` and 
+`h.M > 0`.
 
 # Arguments
 
@@ -13,11 +15,17 @@ struct BigmL1norm <: AbstractPerturbation
     α::Float64
     τ::Float64
     μ::Float64
-    function BigmL1norm(M::Float64, α::Float64)
-        (M > 0.) || error("Parameter M must be positive")
-        (α > 0.) || error("Parameter α must be positive")
-        return new(M, α, (1. / M) + α, M)
-    end
+end
+
+"""
+    BigmL1norm(M::Float64, α::Float64)
+
+[`BigmL1norm`](@ref) constructor.
+"""
+function BigmL1norm(M::Float64, α::Float64)
+    (M > 0.) || error("Parameter M must be positive")
+    (α > 0.) || error("Parameter α must be positive")
+    return BigmL1norm(M, α, (1. / M) + α, M)
 end
 
 Base.show(io::IO, h::BigmL1norm) = print(io, "Bigm + L1-norm")

@@ -1,7 +1,13 @@
 """
     LeastSquares <: AbstractDatafit
 
-Least-squares function.
+Least-squares function `f(w) = norm(f.y - w, 2)^2 / f.m` where 
+`f.m = length(f.y)`.
+
+# Attributes 
+
+- `y::Vector` : Target data vector.
+- `m::Int` : Size of `y`.
 """
 struct LeastSquares <: AbstractDatafit 
     y::Vector
@@ -11,9 +17,9 @@ end
 """
     LeastSquares(y::Vector)
 
-Least-squares function `f(w) = norm(f.y - w, 2)^2 / f.m`.
+[`LeastSquares`](@ref) constructor.
 """
-LeastSquares(y::Vector) = new(y, length(y))
+LeastSquares(y::Vector) = LeastSquares(y, length(y))
 
 Base.show(io::IO, f::LeastSquares) = print(io, "Least-Squares")
 dim_input(f::LeastSquares) = f.m

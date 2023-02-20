@@ -183,7 +183,7 @@ mutable struct BnbNode
 end
 
 function BnbNode(problem::Problem)
-    return new(
+    return BnbNode(
         nothing,
         OPEN,
         falses(problem.n),
@@ -204,7 +204,7 @@ function BnbNode(problem::Problem)
 end
 
 function BnbNode(parent::BnbNode, j::Int, jval::Int, problem::Problem)
-    child = new(
+    child = BnbNode(
         parent,
         OPEN,
         copy(parent.S0),
@@ -301,17 +301,18 @@ struct BnbResult <: AbstractResult
     relative_gap::Float64
     x::Vector
     trace::BnbTrace
-    function BnbResult(solver::BnbSolver, trace::BnbTrace)
-        return new(
-            solver.status,
-            elapsed_time(solver),
-            solver.node_count,
-            solver.ub,
-            gap(solver),
-            solver.x,
-            trace,
-        )
-    end
+end
+
+function BnbResult(solver::BnbSolver, trace::BnbTrace)
+    return BnbResult(
+        solver.status,
+        elapsed_time(solver),
+        solver.node_count,
+        solver.ub,
+        gap(solver),
+        solver.x,
+        trace,
+    )
 end
 
 function Base.show(io::IO, result::BnbResult)
@@ -544,7 +545,6 @@ function optimize(
     S1::Vector{Int}=Vector{Int}(),
     )
 
-    @assert !isa(problem.h, Zero)
     !isa(x0, Nothing) && @assert (length(x0) == problem.n)
     !isa(x0, Nothing) && @assert all(x0[S0] .== 0.)
     !isa(x0, Nothing) && @assert all(x0[S1] .!= 0.)

@@ -1,7 +1,8 @@
 """
-    L1L2norm
+    L1L2norm <: AbstractPerturbation
 
-L1L2-norm function h(x) = α * ||x||_1 + β * ||x||_2^2.
+L1L2-norm function `h(x) = h.α * norm(x, 1) + h.β * norm(x, 2)^2`, where 
+`h.α > 0` and `h.β > 0`.
 
 # Arguments
 
@@ -13,13 +14,19 @@ struct L1L2norm <: AbstractPerturbation
     β::Float64
     τ::Float64
     μ::Float64
-    function L1L2norm(α::Float64, β::Float64)
-        (α > 0.) || error("Parameter α must be positive")
-        (β > 0.) || error("Parameter β must be positive")
-        τ =  α + sqrt(4. * β)
-        μ = sqrt(1. / β)
-        return new(α, β, τ, μ)
-    end
+end
+
+"""
+    L1L2norm(α::Float64, β::Float64)
+
+[`L1L2norm`](@ref) constructor.
+"""
+function L1L2norm(α::Float64, β::Float64)
+    (α > 0.) || error("Parameter α must be positive")
+    (β > 0.) || error("Parameter β must be positive")
+    τ =  α + sqrt(4. * β)
+    μ = sqrt(1. / β)
+    return L1L2norm(α, β, τ, μ)
 end
 
 Base.show(io::IO, h::L1L2norm) = print(io, "L1L2-norm")

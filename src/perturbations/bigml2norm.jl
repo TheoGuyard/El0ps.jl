@@ -1,7 +1,9 @@
 """
-    BigmL2norm
+    BigmL2norm <: AbstractPerturbation
 
-Big-M plus L2-norm function h(x) = α * ||x||_2^2 + Ind(||x||_Inf <= M).
+Big-M constraint plus L2-norm function 
+`h(x) = h.α * norm(x, 2)^2 + (norm(x, Inf) < h.M ? 0. : Inf)`, where `h.α > 0` 
+and `h.M > 0`.
 
 # Arguments
 
@@ -13,13 +15,19 @@ struct BigmL2norm <: AbstractPerturbation
     α::Float64
     τ::Float64
     μ::Float64
-    function BigmL2norm(M::Float64, α::Float64)
-        (M > 0.) || error("Parameter M must be positive")
-        (α > 0.) || error("Parameter α must be positive")
-        τ = sqrt(1. / α) < M ? sqrt(4. * α) : (1. / M) + α * M
-        μ = sqrt(1. / α) < M ? τ / (2. * α) : M
-        return new(M, α, τ, μ)
-    end
+end
+
+"""
+    BigmL2norm(M::Float64, α::Float64)
+
+[`BigmL2norm`](@ref) constructor.
+"""
+function BigmL2norm(M::Float64, α::Float64)
+    (M > 0.) || error("Parameter M must be positive")
+    (α > 0.) || error("Parameter α must be positive")
+    τ = sqrt(1. / α) < M ? sqrt(4. * α) : (1. / M) + α * M
+    μ = sqrt(1. / α) < M ? τ / (2. * α) : M
+    return BigmL2norm(M, α, τ, μ)
 end
 
 Base.show(io::IO, h::BigmL2norm) = print(io, "Bigm + L2-norm")

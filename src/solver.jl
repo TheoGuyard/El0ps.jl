@@ -23,9 +23,9 @@ end
 
 Branching strategy of a [`BnbSolver`](@ref).
 
-- LARGEST : Select the largest index in absolute value in the relaxation 
+- `LARGEST` : Select the largest index in absolute value in the relaxation 
 solution.
-- RESIDUAL : Select the largest index in absolute value in the dual residual.
+- `RESIDUAL` : Select the largest index in absolute value in the dual residual.
 """
 @enum BranchingStrategy begin
     LARGEST
@@ -147,14 +147,29 @@ function BnbOptions(;
 end
 
 """
+    NodeType
+
+Tyep of a [`BnbNode`](@ref).
+
+- `ROOT` : Root node.
+- `ZERO` : Created by setting an entry to zero. 
+- `ONE` : Created by setting an entry to non-zero. 
+"""
+@enum BnbNodeType begin
+    ROOT
+    ZERO
+    ONE
+end
+
+"""
     NodeStatus
 
 Status of a [`BnbNode`](@ref).
 
-- OPEN : The node has not been treated yet.
-- PRUNED : The node has been pruned
-- SOLVED : The node has been treated and not pruned.
-- PERFECT : The node has a perfect relaxation.
+- `OPEN` : The node has not been treated yet.
+- `PRUNED` : The node has been pruned
+- `SOLVED` : The node has been treated and not pruned.
+- `PERFECT` : The node has a perfect relaxation.
 """
 @enum BnbNodeStatus begin
     OPEN
@@ -165,6 +180,7 @@ end
 
 mutable struct BnbNode
     parent::Union{BnbNode,Nothing}
+    type::BnbNodeType
     status::BnbNodeStatus
     S0::BitArray
     S1::BitArray
@@ -185,6 +201,7 @@ end
 function BnbNode(problem::Problem)
     return BnbNode(
         nothing,
+        ROOT,
         OPEN,
         falses(problem.n),
         falses(problem.n),
@@ -206,6 +223,7 @@ end
 function BnbNode(parent::BnbNode, j::Int, jval::Int, problem::Problem)
     child = BnbNode(
         parent,
+        (jval == 0) ? ZERO : ONE,
         OPEN,
         copy(parent.S0),
         copy(parent.S1),
@@ -237,6 +255,7 @@ Base.@kwdef mutable struct BnbTrace
     node_count::Vector{Int}                 = Vector{Int}()
     queue_size::Vector{Int}                 = Vector{Int}()
     timer::Vector                           = Vector()
+    node_type::Vector{BnbNodeType}          = Vector{BnbNodeType}()
     node_status::Vector{BnbNodeStatus}      = Vector{BnbNodeStatus}()
     node_lb::Vector                         = Vector()
     node_ub::Vector                         = Vector()

@@ -1,3 +1,17 @@
+@testset "Abstract" begin
+    
+    struct NewF <: El0ps.AbstractDatafit end
+    
+    f = NewF()
+    x = randn(10)
+
+    @test_throws ErrorException El0ps.dim_input(f)
+    @test_throws ErrorException El0ps.lipschitz_constant(f)
+    @test_throws ErrorException El0ps.value(f, x)
+    @test_throws ErrorException El0ps.gradient(f, x)
+    @test_throws ErrorException El0ps.conjugate(f, x)
+end
+
 @testset "Datafits" begin
     candidates = [
         (El0ps.LeastSquares, m -> randn(m)),
@@ -10,6 +24,7 @@
             w = randn(m)
             u = randn(m)
             f = test_type(y)
+            @test isa(println(f), Nothing)
             @test El0ps.dim_input(f) == m
             @test El0ps.lipschitz_constant(f) >= 0.
             @test El0ps.value(f, w) >= El0ps.value(f, u) + El0ps.gradient(f, u)' * (w - u)

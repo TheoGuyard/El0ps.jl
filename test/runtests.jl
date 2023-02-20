@@ -17,5 +17,6 @@ end
 include("datafits.jl")
 include("perturbations.jl")
 include("problem.jl")
+include("bounding.jl")
 include("solver.jl")
 include("path.jl")

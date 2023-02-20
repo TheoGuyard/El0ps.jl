@@ -1,3 +1,16 @@
+@testset "Abstract" begin
+    
+    struct NewH <: El0ps.AbstractPerturbation end
+    
+    h = NewH()
+    x = randn()
+    η = rand()
+
+    @test_throws ErrorException El0ps.value_1d(h, x)
+    @test_throws ErrorException El0ps.conjugate_1d(h, x)
+    @test_throws ErrorException El0ps.prox_1d(h, x, η)
+end
+
 @testset "Perturbations" begin
     candidates = [
         (El0ps.Bigm, (1.)),
@@ -16,6 +29,7 @@
             z = zeros(n)
             r = randn(n)
             η = randn()
+            @test isa(println(h), Nothing)
             @test El0ps.value(h, x) >= 0.
             @test El0ps.value(h, z) == 0.
             @test El0ps.value(h, x) ≈ El0ps.value(h, -x)

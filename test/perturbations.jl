@@ -1,6 +1,5 @@
 @testset "Perturbations" begin
     candidates = [
-        (El0ps.Zero, ()),
         (El0ps.Bigm, (1.)),
         (El0ps.L1norm, (1.)),
         (El0ps.L2norm, (1.)),

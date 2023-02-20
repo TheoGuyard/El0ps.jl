@@ -1,13 +1,26 @@
 """
     Logistic <: AbstractDatafit
 
-Logistic function \$f(\\mathbf{x}) = \\tfrac{1}{m} \\sum(\\log(\\mathbf{1} + \\exp(- \\mathbf{y} \\odot \\mathbf{x})))\$ where `m = length(y)`, where ``\\odot`` denotes the Hadamard product and where the `log` and the `exp` functions are taken component-wisely.
+Logistic function `f(w) = sum(log.(1.0 .+ exp.(-f.y .* x))) / f.m` where 
+`f.m = length(f.y)`.
+
+# Attributes 
+
+- `y::Vector` : Target data vector.
+- `m::Int` : Size of `y`.
 """
 struct Logistic <: AbstractDatafit 
     y::Vector
     m::Int
-    Logistic(y::Vector) = new(y, length(y))
 end
+
+
+"""
+    Logistic(y::Vector)
+
+[`Logistic`](@ref) constructor.
+"""
+Logistic(y::Vector) = Logistic(y, length(y))
 
 Base.show(io::IO, f::Logistic) = print(io, "Logistic")
 dim_input(f::Logistic) = f.m

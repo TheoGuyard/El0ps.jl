@@ -14,41 +14,49 @@ pkg> add "https://github.com/TheoGuyard/El0ps.jl"
 
 ## Summary
 
-This package provides solution methods to address the problem
+This package provides solution methods to address problems of the form
 
-$$\min_{\mathbf{x}} \ f(\mathbf{y},\mathbf{A}\mathbf{x}) + \lambda g(\mathbf{x})$$
+$$\min_{\mathbf{x}} \ f(\mathbf{A}\mathbf{x}) + \lambda g(\mathbf{x})$$
 
-where $g(x) = \|\|\mathbf{x}\|\|_0 + h(x)$.
-It aims to fit an input $\mathbf{y}$ through some model of $\mathbf{Ax}$ encoded in the loss function $f$.
-It also enforces sparsity in the optimizers with the $\ell_0$-norm, which counts the number of non-zero entries in its argument.
+where $g(\mathbf{x}) = \|\|\mathbf{x}\|\|_0 + h(\mathbf{x})$.
+Such problems aim to minimize a loss function $f$ of some linear model $\mathbf{Ax}$.
+It also enforces sparsity in the optimizers with the $\ell_0$-norm, which counts the number of non-zero entries in its input.
 The function $h$ is a perturbation term required to build-up efficient numerical procedures.
-In particular, `El0ps.jl` implements a Branch-and-Bound algorithm that exploits the structure of the problem to achieve competitive performances.
+In particular, this package implements a Branch-and-Bound algorithm that exploits the structure of the problem to achieve competitive performances.
+It it designed to be robust to dimensionality scaling and flexible with respect to the choice of the functions $f$ and $h$.
 
+## Project status
 
+The package is still in beta version and is not accessible through Julia's [general registry](https://github.com/JuliaRegistries/General) yet.
+An alpha version will be released soon.
+The current version is tested against Julia `1.7` and `1.8` on Linux architectures.
+Please report any problem on the [issue](https://github.com/TheoGuyard/El0ps.jl/issues) page.
+Feel free to suggest improvements via a [pull request](https://github.com/TheoGuyard/El0ps.jl/pulls) !
 
 ## Loss and perturbation functions
 
-Our implementation is designed to be flexible regarding to the expression of the functions $f$ and $h$.
-The user can define his own, it is only required to indicate how to evaluate some of the operators associated with these functions (see the [docs](https://theoguyard.github.io/El0ps.jl/dev) for more details).
-The package already supports the following functions $f$ and $h$.
+Our package is designed to be flexible regarding to the expression of the functions $f$ and $h$.
+The user can define his own.
+It is only necessary to specify how to evaluate some of the operators associated with these functions.
+The package implements by default the following functions
 
 | Loss / Perturbation        | Expression | Parameters
-|--------------|-----|---|
-| Least-Squares |  $f(\mathbf{y},\mathbf{A}\mathbf{x}) = \tfrac{1}{2}\|\|\mathbf{y} - \mathbf{A}\mathbf{x}\|\|_2^2$ | None |
-| Logistic      |  $f(\mathbf{y},\mathbf{A}\mathbf{x}) = \mathbf{1}^{\top}\log(\mathbf{1} + \exp(-\mathbf{y}\odot\mathbf{A}\mathbf{x}))$ | None |
-| Big-M |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M)$ | $M > 0$ |
-| Big-M + $\ell_1$-norm      |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M) + \alpha\|\|\mathbf{x}\|\|_1$ | $M,\alpha > 0$ |
-| Big-M + $\ell_2$-norm      |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M) + \beta\|\|\mathbf{x}\|\|_2^2$ | $M,\beta > 0$ |
-| $\ell_1$-norm      |  $h(\mathbf{x}) = \alpha\|\|\mathbf{x}\|\|_1$ | $\alpha > 0$ |
-| $\ell_2$-norm      |  $h(\mathbf{x}) = \beta\|\|\mathbf{x}\|\|_2^2$ | $\beta > 0$ |
-| $\ell_1\ell_2$-norm      |  $h(\mathbf{x}) = \alpha\|\|\mathbf{x}\|\|_1 + \beta\|\|\mathbf{x}\|\|_2^2$ | $\alpha,\beta > 0$ |
+|:--------------|:-----|:---|
+| Least-Squares |  $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{2}\|\|\mathbf{y} - \mathbf{A}\mathbf{x}\|\|_2^2$ | Vector $\mathbf{y}$ |
+| Logistic      |  $f(\mathbf{A}\mathbf{x}) = \mathbf{1}^{\top}\log(\mathbf{1} + \exp(-\mathbf{y}\odot\mathbf{A}\mathbf{x}))$ | Vector $\mathbf{y}$ |
+| Big-M |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M)$ | Scalar $M > 0$ |
+| Big-M + $\ell_1$-norm      |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M) + \alpha\|\|\mathbf{x}\|\|_1$ | Scalars $M,\alpha > 0$ |
+| Big-M + $\ell_2$-norm      |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M) + \beta\|\|\mathbf{x}\|\|_2^2$ | Scalars $M,\beta > 0$ |
+| $\ell_1$-norm      |  $h(\mathbf{x}) = \alpha\|\|\mathbf{x}\|\|_1$ | Scalar $\alpha > 0$ |
+| $\ell_2$-norm      |  $h(\mathbf{x}) = \beta\|\|\mathbf{x}\|\|_2^2$ | Scalar $\beta > 0$ |
+| $\ell_1\ell_2$-norm      |  $h(\mathbf{x}) = \alpha\|\|\mathbf{x}\|\|_1 + \beta\|\|\mathbf{x}\|\|_2^2$ | Scalars $\alpha,\beta > 0$ |
 
-In the above table, the function $\mathbb{I}(\mathcal{C})$ denotes the convex indicator of the constraint $\mathcal{C}$.
-Please raise an [issue](https://github.com/TheoGuyard/El0ps.jl/issues) or create a [pull request](https://github.com/TheoGuyard/El0ps.jl/pulls) to ask for the support of other loss and perturbation functions.
+In the above table, $\mathbb{I}(\mathcal{C})$ denotes the convex indicator of the constraint $\mathcal{C}$ and $\odot$ denotes the Hadamard product.
+Please refer to the [docs](https://theoguyard.github.io/El0ps.jl/dev) for more details.
 
 ## Citation
 
-To cite `El0ps.jl`, please refer to the following [paper](https://hal.science/hal-03960204/document) (in french):
+To cite this package, please refer to the following [paper](https://hal.science/hal-03960204/document) (in french):
 
 ```{bibtex}
 @inproceedings{guyard2023solveur,

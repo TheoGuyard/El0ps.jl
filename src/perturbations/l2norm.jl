@@ -1,7 +1,7 @@
 """
-    L2norm
+    L2norm <: AbstractPerturbation
 
-L2-norm function h(x) = α * ||x||_2^2.
+L2-norm function `h(x) = h.α * norm(x, 2)^2`, where `h.α > 0`.
 
 # Arguments
 
@@ -11,12 +11,18 @@ struct L2norm <: AbstractPerturbation
     α::Float64
     τ::Float64
     μ::Float64
-    function L2norm(α::Float64)
-        (α > 0.) || error("Parameter α must be positive")
-        τ = 2. * sqrt(α)
-        μ = 1. / sqrt(α)
-        return new(α, τ, μ)
-    end
+end
+
+"""
+    L2norm(α::Float64)
+
+[`L2norm`](@ref) constructor.
+"""
+function L2norm(α::Float64)
+    (α > 0.) || error("Parameter α must be positive")
+    τ = 2. * sqrt(α)
+    μ = 1. / sqrt(α)
+    return L2norm(α, τ, μ)
 end
 
 Base.show(io::IO, h::L2norm) = print(io, "L2-norm")

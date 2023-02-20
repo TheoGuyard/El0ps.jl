@@ -1,7 +1,7 @@
 """
-    L1norm
+    L1norm <: AbstractPerturbation
 
-L1-norm function h(x) = α * ||x||_1.
+L1-norm function `h(x) = h.α * norm(x, 1)`, where `h.α > 0`.
 
 # Arguments
 
@@ -11,10 +11,16 @@ struct L1norm <: AbstractPerturbation
     α::Float64
     τ::Float64
     μ::Float64
-    function L1norm(α::Float64)
-        (α > 0.) || error("Parameter α must be positive")
-        return new(α, α, Inf)
-    end
+end
+
+"""
+    L1norm(α::Float64)
+
+[`L1norm`](@ref) constructor.
+"""
+function L1norm(α::Float64)
+    (α > 0.) || error("Parameter α must be positive")
+    return L1norm(α, α, Inf)
 end
 
 Base.show(io::IO, h::L1norm) = print(io, "L1-norm")

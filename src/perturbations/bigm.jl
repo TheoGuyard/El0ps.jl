@@ -1,11 +1,7 @@
 """
     Bigm <: AbstractPerturbation 
 
-Convex indicator of a Big-M constraint
-
-``h(\\mathbf{x}) = \\mathrm{Ind}(\\|\\mathbf{x}\\|_{\\infty} \\leq M)``
-
-where `M > 0`.
+Convex indicator of a Big-M constraint `abs.(x) .<= h.M`, where `h.M > 0`.
 
 # Arguments
 
@@ -15,8 +11,14 @@ struct Bigm <: AbstractPerturbation
     M::Float64
     τ::Float64
     μ::Float64
-    Bigm(M::Float64) = new(M, 1. / M, M)
 end
+
+"""
+    Bigm(M::Float64)
+
+[`Bigm`](@ref) constructor.
+"""
+Bigm(M::Float64) = Bigm(M, 1. / M, M)
 
 Base.show(io::IO, h::Bigm) = print(io, "Big-M constraint")
 value_1d(h::Bigm, x::Float64) = abs(x) <= h.M ? 0. : Inf

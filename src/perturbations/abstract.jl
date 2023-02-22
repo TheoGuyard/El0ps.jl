@@ -58,7 +58,7 @@ function params_to_dict(h::AbstractPerturbation)
     htype = typeof(h)
     hfields = fieldnames(htype)
     params = OrderedDict(hfields .=> getfield.(Ref(h), hfields))
-    filter!(kv -> !(first(kv) in [:μ,:τ]), params)
+    filter!(kv -> !(first(kv) in [:μ, :τ]), params)
     return params
 end
 

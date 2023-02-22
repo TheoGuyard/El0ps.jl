@@ -4,19 +4,19 @@
 Regularization path of a [`Problem`](@ref), i.e., solutions for different 
 values of `λ`.
 """
-@Base.kwdef mutable struct Path
-    λ::Vector                   = Vector()
-    λratio::Vector              = Vector()
-    x::Vector{Vector}           = Vector()
-    converged::Vector{Bool}     = Vector{Bool}()
-    solve_time::Vector          = Vector()
-    node_count::Vector{Int}     = Vector{Int}()
-    objective_value::Vector     = Vector()
-    datafit_value::Vector       = Vector()
-    perturbation_value::Vector  = Vector()
-    support_size::Vector{Int}   = Vector{Int}()
-    cv_mean::Vector{Float64}    = Vector{Float64}()
-    cv_std::Vector{Float64}     = Vector{Float64}()
+Base.@kwdef mutable struct Path
+    λ::Vector = Vector()
+    λratio::Vector = Vector()
+    x::Vector{Vector} = Vector()
+    converged::Vector{Bool} = Vector{Bool}()
+    solve_time::Vector = Vector()
+    node_count::Vector{Int} = Vector{Int}()
+    objective_value::Vector = Vector()
+    datafit_value::Vector = Vector()
+    perturbation_value::Vector = Vector()
+    support_size::Vector{Int} = Vector{Int}()
+    cv_mean::Vector{Float64} = Vector{Float64}()
+    cv_std::Vector{Float64} = Vector{Float64}()
 end
 
 """
@@ -51,17 +51,17 @@ struct PathOptions
     nb_folds::Int
     verbosity::Bool
     function PathOptions(;
-        λratio_max::Float64     = 1.,
-        λratio_min::Float64     = 1e-2,
-        λratio_num::Int         = 21,
-        max_support_size::Int   = typemax(Int),
-        stop_if_unsolved::Bool  = true,
-        compute_cv::Bool        = true,
-        nb_folds::Int           = 10,
-        verbosity::Bool         = true,
+        λratio_max::Float64 = 1.0,
+        λratio_min::Float64 = 1e-2,
+        λratio_num::Int = 21,
+        max_support_size::Int = typemax(Int),
+        stop_if_unsolved::Bool = true,
+        compute_cv::Bool = true,
+        nb_folds::Int = 10,
+        verbosity::Bool = true,
     )
 
-        @assert 0. <= λratio_min <= λratio_max <= 1.
+        @assert 0.0 <= λratio_min <= λratio_max <= 1.0
         @assert 0 <= λratio_num
         @assert 0 <= max_support_size
         @assert 0 <= nb_folds
@@ -92,7 +92,7 @@ function display_path_tail()
     println(repeat("-", length(PATH_HEAD_STRING)))
 end
 
-function display_path_info(path::Path, i::Union{Int,Nothing}=nothing)
+function display_path_info(path::Path, i::Union{Int,Nothing} = nothing)
     i = isa(i, Nothing) ? length(path.λratio) : i
     @printf "%.1e" path.λratio[i]
     @printf "   %s" string(path.converged[i])
@@ -109,16 +109,16 @@ function display_path_info(path::Path, i::Union{Int,Nothing}=nothing)
 end
 
 function fill_path!(
-    path::Path, 
+    path::Path,
     f::AbstractDatafit,
     h::AbstractPerturbation,
     A::Matrix,
     λ::Float64,
-    λratio::Float64, 
-    result::AbstractResult, 
+    λratio::Float64,
+    result::AbstractResult,
     options::PathOptions,
-    )
-    if options.compute_cv 
+)
+    if options.compute_cv
         cv_mean, cv_std = compute_cv_statistics(result.x, f, A, options.nb_folds)
     else
         cv_mean, cv_std = NaN, NaN
@@ -138,17 +138,12 @@ function fill_path!(
     return nothing
 end
 
-function compute_cv_statistics(
-    x::Vector, 
-    f::AbstractDatafit, 
-    A::Matrix, 
-    nb_folds::Int,
-    )
+function compute_cv_statistics(x::Vector, f::AbstractDatafit, A::Matrix, nb_folds::Int)
     m, n = size(A)
     @assert nb_folds <= m
     m_fold = Int(ceil(m / nb_folds))
     cv_errors = Vector()
-    for i in 1:nb_folds
+    for i = 1:nb_folds
         idx = randperm(m)[1:m_fold]
         f_idx = typeof(f)(f.y[idx])
         cv_error = value(f_idx, A[idx, :] * x)
@@ -180,26 +175,27 @@ function fit_path(
     f::AbstractDatafit,
     h::AbstractPerturbation,
     A::Matrix;
-    kwargs...
-    )
+    kwargs...,
+)
 
     options = PathOptions(; kwargs...)
-    
-    @assert 0. < options.λratio_min <= options.λratio_max <= 1.
+
+    @assert 0.0 < options.λratio_min <= options.λratio_max <= 1.0
     @assert 0 < options.λratio_num
     @assert options.nb_folds > 0
 
-    λratio_sep = (log10(options.λratio_min) - log10(options.λratio_max)) / (options.λratio_num - 1)
+    λratio_sep =
+        (log10(options.λratio_min) - log10(options.λratio_max)) / (options.λratio_num - 1)
     λratio_val = 10 .^ (log10(options.λratio_max):λratio_sep:log10(options.λratio_min))
     λmax = compute_λmax(f, h, A)
     x0 = zeros(size(A)[2])
     path = Path()
-    
+
     options.verbosity && display_path_head()
     for λratio in λratio_val
         λ = λratio * λmax
         problem = Problem(f, h, A, λ)
-        result = optimize(solver, problem, x0=x0)
+        result = optimize(solver, problem, x0 = x0)
         fill_path!(path, f, h, A, λ, λratio, result, options)
         copy!(x0, result.x)
         options.verbosity && display_path_info(path)
@@ -212,7 +208,7 @@ end
 
 function Base.show(io::IO, path::Path)
     display_path_head()
-    for i in 1:length(path.λ)
+    for i = 1:length(path.λ)
         display_path_info(path, i)
     end
     display_path_tail()

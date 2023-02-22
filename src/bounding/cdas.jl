@@ -18,11 +18,11 @@ struct CDAS <: AbstractBoundingSolver
     maxiter_as::Int
     function CDAS(
         bounding_type::BoundingType;
-        reltol::Float64=1e-4, 
-        maxiter_cd::Int=1_000, 
-        maxiter_as::Int=100
+        reltol::Float64 = 1e-4,
+        maxiter_cd::Int = 1_000,
+        maxiter_as::Int = 100,
     )
-        @assert reltol >= 0.
+        @assert reltol >= 0.0
         @assert maxiter_cd >= 0
         @assert maxiter_as >= 0
         return new(bounding_type, reltol, maxiter_cd, maxiter_as)
@@ -32,19 +32,19 @@ end
 bounding_type(bounding_solver::CDAS) = bounding_solver.bounding_type
 
 function cd_loop!(
-    f::AbstractDatafit, 
-    h::AbstractPerturbation, 
-    A::Matrix, 
+    f::AbstractDatafit,
+    h::AbstractPerturbation,
+    A::Matrix,
     x::Vector,
-    w::Vector, 
-    u::Vector, 
-    ν::Vector, 
-    ρ::Vector, 
-    η::Vector, 
-    δ::Vector, 
-    S::BitArray, 
+    w::Vector,
+    u::Vector,
+    ν::Vector,
+    ρ::Vector,
+    η::Vector,
+    δ::Vector,
+    S::BitArray,
     Sb::BitArray,
-    )
+)
     for i in findall(S)
         ai = A[:, i]
         xi = x[i]
@@ -63,32 +63,32 @@ function cd_loop!(
 end
 
 function compute_primal_value(
-    f::AbstractDatafit, 
-    h::AbstractPerturbation, 
+    f::AbstractDatafit,
+    h::AbstractPerturbation,
     λ::Float64,
     x::Vector,
-    w::Vector, 
+    w::Vector,
     τ::Float64,
     μ::Float64,
     S::BitArray,
     Sb::BitArray,
 )
     Fval = value(f, w)                   # O(m)
-    hval = 0.
+    hval = 0.0
     for i in findall(S)
         xi = x[i]
         if Sb[i] & (abs(xi) <= μ)
             hval += τ * abs(xi)             # O(1)
         else
-            hval += value_1d(h, xi) + 1.    # O(1)
+            hval += value_1d(h, xi) + 1.0    # O(1)
         end
     end
     return Fval + λ * hval
 end
 
 function compute_dual_value(
-    f::AbstractDatafit, 
-    h::AbstractPerturbation, 
+    f::AbstractDatafit,
+    h::AbstractPerturbation,
     A::Matrix,
     λ::Float64,
     u::Vector,
@@ -99,11 +99,11 @@ function compute_dual_value(
 )
     nz = findall(S)
     v[nz] = A[:, nz]' * u                               # O(m|nz|)
-    p[nz] = [conjugate_1d(h, v[i] / λ) .- 1. for i in nz]
+    p[nz] = [conjugate_1d(h, v[i] / λ) .- 1.0 for i in nz]
     cFval = conjugate(f, -u)
-    chval = 0.
+    chval = 0.0
     for i in nz
-        chval += Sb[i] ? max(p[i], 0.) : p[i]           # O(1)
+        chval += Sb[i] ? max(p[i], 0.0) : p[i]           # O(1)
     end
     return -cFval - λ * chval
 end
@@ -124,7 +124,7 @@ function update_active_set!(
     violations = Vector{Int}()
     for i in findall(@. !S & Sbi)
         v[i] = A[:, i]' * u
-        p[i] = conjugate_1d(h, v[i] / λ) .- 1.
+        p[i] = conjugate_1d(h, v[i] / λ) .- 1.0
         if abs(v[i]) > τ * λ
             push!(violations, i)
             S[i] = true
@@ -133,14 +133,8 @@ function update_active_set!(
     return violations
 end
 
-function bound!(
-    bounding_solver::CDAS, 
-    problem::Problem, 
-    solver, 
-    node, 
-    options,   
-    )
-    
+function bound!(bounding_solver::CDAS, problem::Problem, solver, node, options)
+
     # ----- Initialization ----- #
 
     # Problem data
@@ -183,26 +177,26 @@ function bound!(
     cdltol = 0.1 * reltol
     maxiter_cd = bounding_solver.maxiter_cd
     maxiter_as = bounding_solver.maxiter_as
-   
+
     # Constants and working values
     τ = h.τ
     μ = h.μ
     α = lipschitz_constant(f)
     κ = α .* a
-    ν = 1. ./ κ
+    ν = 1.0 ./ κ
     ρ = λ ./ κ
     η = τ .* ρ
     δ = η .+ μ
-    v = Vector{Float64}(undef, n) 
-    p = Vector{Float64}(undef, n) 
+    v = Vector{Float64}(undef, n)
+    p = Vector{Float64}(undef, n)
 
     # Active set and support configuration
     Sb0 = falses(n)
     Sbi = copy(Sb)
     Sbb = falses(n)
-    S1i = copy(S1) 
+    S1i = copy(S1)
     S1b = falses(n)
-    S = @. (x != 0.) | S1
+    S = @. (x != 0.0) | S1
     # TODO : maybe keep S1 unsplitted
 
     # Objective values
@@ -220,7 +214,7 @@ function bound!(
         v .= NaN
         p .= NaN
         dv = NaN
-        
+
         # ----- Inner CD solver ----- #
 
         while true
@@ -240,7 +234,7 @@ function bound!(
         # --- Active-set update and termination check --- #
 
         (bounding_solver.bounding_type == UPPER_BOUNDING) && break
-        V = update_active_set!(h, A, λ, u, v, p, τ, S, Sbi) 
+        V = update_active_set!(h, A, λ, u, v, p, τ, S, Sbi)
         (it_as >= maxiter_as) && break
         (elapsed_time(solver) >= maxtime) && break
         if length(V) == 0
@@ -252,12 +246,30 @@ function bound!(
 
         # --- Accelerations --- #
 
-        if (bounding_solver.bounding_type == LOWER_BOUNDING) & (l1screening | l0screening | dualpruning)
+        if (bounding_solver.bounding_type == LOWER_BOUNDING) &
+           (l1screening | l0screening | dualpruning)
             dv = isnan(dv) ? compute_dual_value(f, h, A, λ, u, v, p, S, Sb) : dv
             gap = abs(pv - dv)
             dualpruning && (dv >= ub + tolprune) && break
             l1screening && l1screening!(f, A, λ, x, w, u, v, α, τ, gap, Sb0, Sbi, Sbb)
-            l0screening && l0screening!(f, A, λ, x, w, u, p, ub, dv, tolprune, S0, S1, Sb, Sbi, Sbb, S1i)
+            l0screening && l0screening!(
+                f,
+                A,
+                λ,
+                x,
+                w,
+                u,
+                p,
+                ub,
+                dv,
+                tolprune,
+                S0,
+                S1,
+                Sb,
+                Sbi,
+                Sbb,
+                S1i,
+            )
             S .|= S1
             S .|= Sbb
             S .&= (.!S0)
@@ -272,8 +284,10 @@ function bound!(
         node.lb_it = it_cd
         node.lb_l1screening_Sb0 = sum(Sb0)
         node.lb_l1screening_Sbb = sum(Sbb)
-        node.lb_l0screening_S0 = sum(S0) - (isa(node.parent, Nothing) ? 1 : (sum(node.parent.S0) + 1))
-        node.lb_l0screening_S1 = sum(S1) - (isa(node.parent, Nothing) ? 1 : (sum(node.parent.S1) + 1))
+        node.lb_l0screening_S0 =
+            sum(S0) - (isa(node.parent, Nothing) ? 1 : (sum(node.parent.S0) + 1))
+        node.lb_l0screening_S1 =
+            sum(S1) - (isa(node.parent, Nothing) ? 1 : (sum(node.parent.S1) + 1))
     elseif bounding_solver.bounding_type == UPPER_BOUNDING
         node.ub = pv
         node.x_ub = copy(x)

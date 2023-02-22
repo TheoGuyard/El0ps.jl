@@ -24,18 +24,13 @@ end
 
 Instantiate a [`Problem`](@ref) of the form `min f(Ax) + λ (norm(x,0) + h(x))`.
 """
-function Problem(
-    f::AbstractDatafit,
-    h::AbstractPerturbation,
-    A::Matrix,
-    λ::Float64,
-)
+function Problem(f::AbstractDatafit, h::AbstractPerturbation, A::Matrix, λ::Float64)
     m = size(A, 1)
     n = size(A, 2)
     a = [norm(ai, 2)^2 for ai in eachcol(A)]
     @assert dim_input(f) == m
-    @assert λ >= 0.
-    @assert !any(a .≈ 0.)
+    @assert λ >= 0.0
+    @assert !any(a .≈ 0.0)
     λmax = compute_λmax(f, h, A)
     return Problem(f, h, A, λ, a, m, n, λmax)
 end

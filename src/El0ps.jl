@@ -13,7 +13,7 @@ authors() = "Theo Guyard"
 contact() = "guyard.theo@gmail.com"
 license() = "AGPL 3.0"
 export version, authors, contact, license
-    
+
 include("datafits/abstract.jl")
 include("datafits/leastsquares.jl")
 include("datafits/logistic.jl")

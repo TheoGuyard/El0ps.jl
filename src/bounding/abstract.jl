@@ -34,10 +34,5 @@ bounding_type(bounding_solver::AbstractBoundingSolver) = error("Not implemented"
 Perform the bounding operation at a given `node` of a Branch-and-Bound `solver`
 during the solving process of a [`Problem`](@ref).
 """
-bound!(
-    bounding_solver::AbstractBoundingSolver, 
-    problem::Problem, 
-    solver, 
-    node, 
-    options,
-) = error("Not implemented")
+bound!(bounding_solver::AbstractBoundingSolver, problem::Problem, solver, node, options) =
+    error("Not implemented")

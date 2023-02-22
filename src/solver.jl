@@ -100,31 +100,31 @@ tolprune < node.lb`.
 - `keeptrace::Bool` : Whether to fill the [`BnbTrace`](@ref) or not.
 """
 function BnbOptions(;
-    lb_solver::AbstractBoundingSolver   = CDAS(LOWER_BOUNDING),
-    ub_solver::AbstractBoundingSolver   = CDAS(UPPER_BOUNDING),
-    exploration::ExplorationStrategy    = DFS,
-    depthswitch::Int                    = 10,
-    branching::BranchingStrategy        = LARGEST,
-    maxtime::Float64                    = 60.,
-    maxnode::Int                        = typemax(Int),
-    tolgap::Float64                     = 1e-8,
-    tolint::Float64                     = 1e-8,
-    tolprune::Float64                   = 0.,
-    dualpruning::Bool                   = false,
-    l0screening::Bool                   = false,
-    l1screening::Bool                   = false,
-    verbosity::Bool                     = false,
-    showevery::Int                      = 1,
-    keeptrace::Bool                     = false,
+    lb_solver::AbstractBoundingSolver = CDAS(LOWER_BOUNDING),
+    ub_solver::AbstractBoundingSolver = CDAS(UPPER_BOUNDING),
+    exploration::ExplorationStrategy = DFS,
+    depthswitch::Int = 10,
+    branching::BranchingStrategy = LARGEST,
+    maxtime::Float64 = 60.0,
+    maxnode::Int = typemax(Int),
+    tolgap::Float64 = 1e-8,
+    tolint::Float64 = 1e-8,
+    tolprune::Float64 = 0.0,
+    dualpruning::Bool = false,
+    l0screening::Bool = false,
+    l1screening::Bool = false,
+    verbosity::Bool = false,
+    showevery::Int = 1,
+    keeptrace::Bool = false,
 )
     @assert bounding_type(lb_solver) == LOWER_BOUNDING
     @assert bounding_type(ub_solver) == UPPER_BOUNDING
-    @assert depthswitch >= 0.
-    @assert maxtime >= 0.
+    @assert depthswitch >= 0.0
+    @assert maxtime >= 0.0
     @assert maxnode >= 0
-    @assert tolgap >= 0.
-    @assert tolint >= 0.
-    @assert tolprune >= 0.
+    @assert tolgap >= 0.0
+    @assert tolint >= 0.0
+    @assert tolprune >= 0.0
     @assert showevery >= 0
     return BnbOptions(
         lb_solver,
@@ -249,24 +249,24 @@ end
 
 Trace of a [`BnbSolver`](@ref).
 """
-Base.@kwdef mutable struct BnbTrace 
-    ub::Vector                              = Vector()
-    lb::Vector                              = Vector()
-    node_count::Vector{Int}                 = Vector{Int}()
-    queue_size::Vector{Int}                 = Vector{Int}()
-    timer::Vector                           = Vector()
-    node_type::Vector{BnbNodeType}          = Vector{BnbNodeType}()
-    node_status::Vector{BnbNodeStatus}      = Vector{BnbNodeStatus}()
-    node_lb::Vector                         = Vector()
-    node_ub::Vector                         = Vector()
-    node_card_S0::Vector{Int}               = Vector{Int}()
-    node_card_S1::Vector{Int}               = Vector{Int}()
-    node_card_Sb::Vector{Int}               = Vector{Int}()
-    node_lb_it::Vector{Int}                 = Vector{Int}()
-    node_lb_l1screening_Sb0::Vector{Int}    = Vector{Int}()
-    node_lb_l1screening_Sbb::Vector{Int}    = Vector{Int}()
-    node_lb_l0screening_S0::Vector{Int}     = Vector{Int}()
-    node_lb_l0screening_S1::Vector{Int}     = Vector{Int}()
+Base.@kwdef mutable struct BnbTrace
+    ub::Vector = Vector()
+    lb::Vector = Vector()
+    node_count::Vector{Int} = Vector{Int}()
+    queue_size::Vector{Int} = Vector{Int}()
+    timer::Vector = Vector()
+    node_type::Vector{BnbNodeType} = Vector{BnbNodeType}()
+    node_status::Vector{BnbNodeStatus} = Vector{BnbNodeStatus}()
+    node_lb::Vector = Vector()
+    node_ub::Vector = Vector()
+    node_card_S0::Vector{Int} = Vector{Int}()
+    node_card_S1::Vector{Int} = Vector{Int}()
+    node_card_Sb::Vector{Int} = Vector{Int}()
+    node_lb_it::Vector{Int} = Vector{Int}()
+    node_lb_l1screening_Sb0::Vector{Int} = Vector{Int}()
+    node_lb_l1screening_Sbb::Vector{Int} = Vector{Int}()
+    node_lb_l0screening_S0::Vector{Int} = Vector{Int}()
+    node_lb_l0screening_S1::Vector{Int} = Vector{Int}()
 end
 
 """
@@ -345,12 +345,12 @@ function Base.show(io::IO, result::BnbResult)
 end
 
 function initialize!(
-    solver::BnbSolver, 
-    problem::Problem, 
-    x0::Union{Vector,Nothing}, 
-    S0::Vector{Int}, 
+    solver::BnbSolver,
+    problem::Problem,
+    x0::Union{Vector,Nothing},
+    S0::Vector{Int},
     S1::Vector{Int},
-    )
+)
     solver.status = OPTIMIZE_NOT_CALLED
     solver.ub = isa(x0, Nothing) ? Inf : objective(problem, x0)
     solver.lb = -Inf
@@ -372,7 +372,7 @@ end
 function header()
     str = (
         "  Nodes" *
-        "   Time" * 
+        "   Time" *
         "   Lower" *
         "   Upper" *
         " Rel gap" *
@@ -429,11 +429,7 @@ function update_status!(solver::BnbSolver, options::BnbOptions)
     return (solver.status != MOI.OPTIMIZE_NOT_CALLED)
 end
 
-function next_node!(
-    solver::BnbSolver, 
-    node::Union{BnbNode,Nothing}, 
-    options::BnbOptions
-    )
+function next_node!(solver::BnbSolver, node::Union{BnbNode,Nothing}, options::BnbOptions)
     if options.exploration == DFS
         node = pop!(solver.queue)
         solver.node_count += 1
@@ -468,12 +464,7 @@ function prune!(solver::BnbSolver, node::BnbNode, options::BnbOptions)
     return pruning_test | perfect_test
 end
 
-function branch!(
-    problem::Problem,
-    solver::BnbSolver, 
-    node::BnbNode, 
-    options::BnbOptions
-    )
+function branch!(problem::Problem, solver::BnbSolver, node::BnbNode, options::BnbOptions)
     !any(node.Sb) && return nothing
     if options.branching == LARGEST
         jSb = argmax(abs.(node.x[node.Sb]))
@@ -559,14 +550,14 @@ and non-zero constraints directly in the root node. They must match `x0`.
 function optimize(
     solver::BnbSolver,
     problem::Problem;
-    x0::Union{Vector,Nothing}=nothing,
-    S0::Vector{Int}=Vector{Int}(),
-    S1::Vector{Int}=Vector{Int}(),
-    )
+    x0::Union{Vector,Nothing} = nothing,
+    S0::Vector{Int} = Vector{Int}(),
+    S1::Vector{Int} = Vector{Int}(),
+)
 
     !isa(x0, Nothing) && @assert (length(x0) == problem.n)
-    !isa(x0, Nothing) && @assert all(x0[S0] .== 0.)
-    !isa(x0, Nothing) && @assert all(x0[S1] .!= 0.)
+    !isa(x0, Nothing) && @assert all(x0[S0] .== 0.0)
+    !isa(x0, Nothing) && @assert all(x0[S1] .!= 0.0)
     initialize!(solver, problem, x0, S0, S1)
 
     node = nothing
@@ -575,7 +566,7 @@ function optimize(
 
     options.verbosity && display_head()
     while true
-        update_status!(solver, options) 
+        update_status!(solver, options)
         is_terminated(solver) && break
         node = next_node!(solver, node, options)
         bound!(options.lb_solver, problem, solver, node, options)
@@ -594,4 +585,3 @@ function optimize(
 
     return BnbResult(solver, trace)
 end
-

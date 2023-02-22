@@ -22,14 +22,15 @@ end
 [`L1L2norm`](@ref) constructor.
 """
 function L1L2norm(α::Float64, β::Float64)
-    (α > 0.) || error("Parameter α must be positive")
-    (β > 0.) || error("Parameter β must be positive")
-    τ =  α + sqrt(4. * β)
-    μ = sqrt(1. / β)
+    (α > 0.0) || error("Parameter α must be positive")
+    (β > 0.0) || error("Parameter β must be positive")
+    τ = α + sqrt(4.0 * β)
+    μ = sqrt(1.0 / β)
     return L1L2norm(α, β, τ, μ)
 end
 
 Base.show(io::IO, h::L1L2norm) = print(io, "L1L2-norm")
 value_1d(h::L1L2norm, x::Float64) = h.α * abs(x) + h.β * x^2
-conjugate_1d(h::L1L2norm, v::Float64) = max(abs(v) - h.α, 0.)^2 / (4. * h.β)
-prox_1d(h::L1L2norm, x::Float64, η::Float64) = (sign(x) / (1. + 2. * η * h.β)) * max(abs(x) - η * h.α, 0.)
+conjugate_1d(h::L1L2norm, v::Float64) = max(abs(v) - h.α, 0.0)^2 / (4.0 * h.β)
+prox_1d(h::L1L2norm, x::Float64, η::Float64) =
+    (sign(x) / (1.0 + 2.0 * η * h.β)) * max(abs(x) - η * h.α, 0.0)

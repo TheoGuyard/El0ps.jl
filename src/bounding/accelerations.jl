@@ -2,20 +2,20 @@ function l0screening!(
     f::AbstractDatafit,
     A::Matrix,
     λ::Float64,
-    x::Vector, 
-    w::Vector, 
-    u::Vector, 
-    p::Vector, 
+    x::Vector,
+    w::Vector,
+    u::Vector,
+    p::Vector,
     ub::Float64,
-    dv::Float64, 
+    dv::Float64,
     tolprune::Float64,
     S0::BitArray,
     S1::BitArray,
     Sb::BitArray,
-    Sbi::BitArray, 
-    Sbb::BitArray, 
+    Sbi::BitArray,
+    Sbb::BitArray,
     S1i::BitArray,
-    )
+)
 
     idx_to_test = findall(@. Sb & (!isnan(p)))
     for i in idx_to_test
@@ -53,25 +53,25 @@ function l1screening!(
     α::Float64,
     τ::Float64,
     gap::Float64,
-    Sb0::BitArray, 
-    Sbi::BitArray, 
-    Sbb::BitArray, 
-    )
+    Sb0::BitArray,
+    Sbi::BitArray,
+    Sbb::BitArray,
+)
 
     radius = sqrt(2.0 * gap * α)
     idx_to_test = findall(@. Sbi & !isnan(v))
     for i in idx_to_test
         vi = v[i]
-        if abs(vi) + radius < τ * λ           
+        if abs(vi) + radius < τ * λ
             # Move i from Sbi to Sb0
-            if x[i] != 0.
-                axpy!(-x[i], A[:, i], w)  
+            if x[i] != 0.0
+                axpy!(-x[i], A[:, i], w)
                 copy!(u, -gradient(f, w))
-                x[i] = 0.
+                x[i] = 0.0
             end
             Sbi[i] = false
             Sb0[i] = true
-        elseif abs(vi) - radius > τ * λ        
+        elseif abs(vi) - radius > τ * λ
             # Move i from Sbi to Sbb
             Sbi[i] = false
             Sbb[i] = true

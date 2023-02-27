@@ -3,7 +3,7 @@ using Documenter, El0ps
 
 makedocs(
     sitename = "El0ps.jl",
-    pages    = [
+    pages = [
         "Home" => "index.md",
         "Manual" => [
             "Quick start" => "manual/quickstart.md",
@@ -18,10 +18,8 @@ makedocs(
             "Perturbations" => "library/perturbations.md",
             "Solver" => "library/solver.md",
             "Path" => "library/path.md",
-        ]
-    ]
+        ],
+    ],
 )
 
-deploydocs(
-    repo = "github.com/TheoGuyard/El0ps.jl.git",
-)
+deploydocs(repo = "github.com/TheoGuyard/El0ps.jl.git")

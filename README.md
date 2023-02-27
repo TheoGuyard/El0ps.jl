@@ -55,6 +55,10 @@ The package implements by default the following functions
 In the above table, $\mathbb{I}(\mathcal{C})$ denotes the convex indicator of the constraint $\mathcal{C}$ and $\odot$ denotes the Hadamard product.
 Please refer to the [docs](https://theoguyard.github.io/El0ps.jl/dev) for more details.
 
+## License
+
+This software is distributed under the [GNU AGPL-3](https://www.gnu.org/licenses/agpl-3.0.en.html) license.
+
 ## Citation
 
 To cite this package, please refer to the following [paper](https://hal.science/hal-03960204/document) (in french):

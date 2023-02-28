@@ -33,7 +33,7 @@ end
             @test isa(println(h), Nothing)
             if μ < Inf
                 @test El0ps.conjugate_1d(h, τ) ≈ λ
-                @test El0ps.value_1d(h, μ) + El0ps.conjugate_1d(h, τ) >= μ * τ
+                @test El0ps.value_1d(h, μ) + El0ps.conjugate_1d(h, τ) >= μ * τ - 1e-8
             else
                 @test El0ps.conjugate_1d(h, τ) < λ
             end

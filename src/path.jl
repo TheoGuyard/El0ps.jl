@@ -1,7 +1,7 @@
 """
     Path
 
-Regularization path of a [`Problem`](@ref), i.e., solutions for different 
+Regularization path of a [`Problem`](@ref), i.e., solutions for different
 values of `λ`.
 """
 Base.@kwdef mutable struct Path
@@ -22,19 +22,19 @@ end
 """
     PathOptions
 
-Options for a [`Path`](@ref). The path is computed over a 
-logarithmically-spaced grid `λ ∈ [λratio_max, λratio_min] * λmax` of 
-`λratio_num` different values. The value of `λmax` is computed using 
-[`compute_λmax`](@ref). 
+Options for a [`Path`](@ref). The path is computed over a
+logarithmically-spaced grid `λ ∈ [λratio_max, λratio_min] * λmax` of
+`λratio_num` different values. The value of `λmax` is computed using
+[`compute_λmax`](@ref).
 
-# Arguments 
+# Arguments
 
 - `λratio_max::Float64` : Maximum value of `λ/λmax`.
 - `λratio_min::Float64` : Minimum value of `λ/λmax`.
 - `λratio_num::Int` : Number of values of `λ` in the regularization path.
-- `max_support_size::Int` : Stop the path fitting when a solution with support 
+- `max_support_size::Int` : Stop the path fitting when a solution with support
 size `max_support_size` is recovered.
-- `stop_if_unsolved::Bool` : If `true`, stop the path fitting if the 
+- `stop_if_unsolved::Bool` : If `true`, stop the path fitting if the
 [`Problem`](@ref) at some `λ` is unsolved.
 - `compute_cv::Bool` : If `true`, compute the cross-validation error over
 `nb_folds` folds for each solution obtained in the [`Path`](@ref).

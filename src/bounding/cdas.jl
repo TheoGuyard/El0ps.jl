@@ -1,7 +1,7 @@
 """
     CDAS
 
-Coordinate Descent with Active-Set strategy solver for the lower and upper 
+Coordinate Descent with Active-Set strategy solver for the lower and upper
 bounding steps in the [`BnbSolver`](@ref).
 
 # Arguments
@@ -73,17 +73,17 @@ function compute_primal_value(
     S::BitArray,
     Sb::BitArray,
 )
-    Fval = value(f, w)                   # O(m)
+    fval = value(f, w)                      # O(m)
     hval = 0.0
     for i in findall(S)
         xi = x[i]
         if Sb[i] & (abs(xi) <= μ)
             hval += τ * abs(xi)             # O(1)
         else
-            hval += value_1d(h, xi) + 1.0    # O(1)
+            hval += value_1d(h, xi) + λ     # O(1)
         end
     end
-    return Fval + λ * hval
+    return fval + hval
 end
 
 function compute_dual_value(
@@ -99,13 +99,13 @@ function compute_dual_value(
 )
     nz = findall(S)
     v[nz] = A[:, nz]' * u                               # O(m|nz|)
-    p[nz] = [conjugate_1d(h, v[i] / λ) .- 1.0 for i in nz]
-    cFval = conjugate(f, -u)
+    p[nz] = [conjugate_1d(h, v[i]) .- λ for i in nz]
+    cfval = conjugate(f, -u)
     chval = 0.0
     for i in nz
         chval += Sb[i] ? max(p[i], 0.0) : p[i]           # O(1)
     end
-    return -cFval - λ * chval
+    return -cfval - chval
 end
 
 function update_active_set!(
@@ -119,13 +119,13 @@ function update_active_set!(
     S::BitArray,
     Sbi::BitArray,
 )
-    # Only indices in Sbi may be added to S since indices of S1/Sbb ones are 
+    # Only indices in Sbi may be added to S since indices of S1/Sbb ones are
     # forced in S and indices of S0/Sb0 are excluded from S.
     violations = Vector{Int}()
     for i in findall(@. !S & Sbi)
         v[i] = A[:, i]' * u
-        p[i] = conjugate_1d(h, v[i] / λ) .- 1.0
-        if abs(v[i]) > τ * λ
+        p[i] = conjugate_1d(h, v[i]) .- λ
+        if abs(v[i]) > τ
             push!(violations, i)
             S[i] = true
         end
@@ -142,6 +142,8 @@ function bound!(bounding_solver::CDAS, problem::Problem, solver, node, options)
     h = problem.h
     A = problem.A
     λ = problem.λ
+    τ = problem.τ
+    μ = problem.μ
     a = problem.a
     m = problem.m
     n = problem.n
@@ -179,12 +181,10 @@ function bound!(bounding_solver::CDAS, problem::Problem, solver, node, options)
     maxiter_as = bounding_solver.maxiter_as
 
     # Constants and working values
-    τ = h.τ
-    μ = h.μ
     α = lipschitz_constant(f)
     κ = α .* a
     ν = 1.0 ./ κ
-    ρ = λ ./ κ
+    ρ = 1.0 ./ κ
     η = τ .* ρ
     δ = η .+ μ
     v = Vector{Float64}(undef, n)

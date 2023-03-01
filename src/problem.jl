@@ -66,16 +66,21 @@ objective(problem::Problem, x::Vector) = objective(problem, x, problem.A * x)
 
 Return a value of `λ` such that the all-zero vector is a solution of a [`Problem`](@ref).
 """
-function compute_λmax(f::AbstractDatafit, h::AbstractPerturbation, A::Matrix; ϵ::Float64=1e-8)
+function compute_λmax(
+    f::AbstractDatafit,
+    h::AbstractPerturbation,
+    A::Matrix;
+    ϵ::Float64 = 1e-8,
+)
 
     g = norm(A' * gradient(f, zeros(dim_input(f))), Inf)
 
-    (compute_τ(h, 0.) >= g) && return 0.
+    (compute_τ(h, 0.0) >= g) && return 0.0
 
     # Find λa and λb such that (τ(λa) - g) * (τ(λb) - g) < 0
-    λa = 1.
+    λa = 1.0
     τa = compute_τ(h, λa)
-    λf = (τa <= g) ? 10. : 0.1
+    λf = (τa <= g) ? 10.0 : 0.1
     λb = λf * λa
     τb = compute_τ(h, λb)
     while (τa - g) * (τb - g) >= 0.0

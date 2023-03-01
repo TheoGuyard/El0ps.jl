@@ -21,7 +21,8 @@ struct BigmL2norm <: AbstractPerturbation
 end
 
 Base.show(io::IO, h::BigmL2norm) = print(io, "Bigm + L2-norm")
-compute_τ(h::BigmL2norm, λ::Float64) = sqrt(λ / h.α) < h.M ? sqrt(4.0 * λ * h.α) : (λ / h.M) + h.α * h.M
+compute_τ(h::BigmL2norm, λ::Float64) =
+    sqrt(λ / h.α) < h.M ? sqrt(4.0 * λ * h.α) : (λ / h.M) + h.α * h.M
 compute_μ(h::BigmL2norm, λ::Float64) = sqrt(1.0 / h.α) < h.M ? sqrt(λ / h.α) : h.M
 value_1d(h::BigmL2norm, x::Float64) = abs(x) <= h.M ? h.α * x^2 : Inf
 function conjugate_1d(h::BigmL2norm, v::Float64)

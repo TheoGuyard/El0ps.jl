@@ -29,7 +29,8 @@ include("perturbations/l1norm.jl")
 include("perturbations/l1l2norm.jl")
 include("perturbations/l2norm.jl")
 export AbstractPerturbation
-export compute_τ, compute_μ, value_1d, value, conjugate_1d, conjugate, prox_1d, prox, params_to_dict
+export compute_τ,
+    compute_μ, value_1d, value, conjugate_1d, conjugate, prox_1d, prox, params_to_dict
 export Bigm, BigmL1norm, BigmL2norm, L1norm, L1L2norm, L2norm
 
 include("problem.jl")

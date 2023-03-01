@@ -8,8 +8,8 @@ Exploration strategy of a [`BnbSolver`](@ref).
 
 - `BFS` : Breadth-First Search
 - `DFS` : Depth-First Search
-- `MIXED` : Mixed exploration strategy where the k-top layers of nodes are 
-explored in a `DFS` fashion and where the below ones are explored in a `BFS` 
+- `MIXED` : Mixed exploration strategy where the k-top layers of nodes are
+explored in a `DFS` fashion and where the below ones are explored in a `BFS`
 fashion. The parameter `k` is specified in [`BnbOptions`](@ref).
 """
 @enum ExplorationStrategy begin
@@ -23,7 +23,7 @@ end
 
 Branching strategy of a [`BnbSolver`](@ref).
 
-- `LARGEST` : Select the largest index in absolute value in the relaxation 
+- `LARGEST` : Select the largest index in absolute value in the relaxation
 solution.
 - `RESIDUAL` : Select the largest index in absolute value in the dual residual.
 """
@@ -84,13 +84,13 @@ Instantiate a [`BnbOptions`](@ref).
 - `ub_solver::AbstractBoundingSolver` : Solver for the upper-bounding step.
 - `exploration::ExplorationStrategy` : Tree exploration strategy.
 - `depthswitch::Int` : The depth where the `MIXED` [`ExplorationStrategy`](@ref)
-is switched. 
+is switched.
 - `branching::BranchingStrategy` : Tree branching strategy.
 - `maxtime::Float64` : Maximum solution time in seconds.
 - `maxnode::Int` : Maximum number of nodes.
 - `tolgap::Float64` : Relative MIP gap tolerance.
 - `tolint::Float64` : Integer tolerance, i.e., `x = 0` when `|x| < tolint`.
-- `tolprune::Float64` : Prune a `node` in the `bnb` tree when `bnb.ub + 
+- `tolprune::Float64` : Prune a `node` in the `bnb` tree when `bnb.ub +
 tolprune < node.lb`.
 - `dualpruning::Bool` : Toogle the dual-pruning acceleration.
 - `l0screening::Bool` : Toogle the L0-screening acceleration.
@@ -152,8 +152,8 @@ end
 Tyep of a [`BnbNode`](@ref).
 
 - `ROOT` : Root node.
-- `ZERO` : Created by setting an entry to zero. 
-- `ONE` : Created by setting an entry to non-zero. 
+- `ZERO` : Created by setting an entry to zero.
+- `ONE` : Created by setting an entry to non-zero.
 """
 @enum BnbNodeType begin
     ROOT

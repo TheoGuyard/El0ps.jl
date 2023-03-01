@@ -15,31 +15,38 @@ pkg> add "https://github.com/TheoGuyard/El0ps.jl"
 
 ## Summary
 
-This package provides solution methods to address problems of the form
+This package provides solution methods to address L0-penalized problems of the form
 
-$$\min_{\mathbf{x}} \ f(\mathbf{A}\mathbf{x}) + \lambda g(\mathbf{x})$$
+$$\min_{\mathbf{x}} \ f(\mathbf{A}\mathbf{x}) + \lambda \|\|\mathbf{x}\|\|_0 + h(\mathbf{x})$$
 
-where $g(\mathbf{x}) = \|\|\mathbf{x}\|\|_0 + h(\mathbf{x})$.
-Such problems aim to minimize a loss function $f$ of some linear model $\mathbf{Ax}$.
-It also enforces sparsity in the optimizers with the $\ell_0$-norm, which counts the number of non-zero entries in its input.
-The function $h$ is a perturbation term required to build-up efficient numerical procedures.
+They aim to minimize a loss function $f$ of some linear model $\mathbf{Ax}$.
+It also enforces sparsity in the optimizers with the $\ell_0$-norm, which counts the number of non-zero entries in its argument.
+The function $h$ allows to enforce hard or soft constraints in the problem to construct solution with better statistical properties. 
+It also allows to build-up efficient numerical procedures.
 In particular, this package implements a Branch-and-Bound algorithm that exploits the structure of the problem to achieve competitive performances.
 It it designed to be robust to dimensionality scaling and flexible with respect to the choice of the functions $f$ and $h$.
 
-## Project status
+## Features
 
-The package is still in beta version and is not accessible through Julia's [general registry](https://github.com/JuliaRegistries/General) yet.
-An alpha version will be released soon.
-The current version is tested against Julia `1.7` and `1.8` on Linux architectures.
-Please report any problem on the [issue](https://github.com/TheoGuyard/El0ps.jl/issues) page.
-Feel free to suggest improvements via a [pull request](https://github.com/TheoGuyard/El0ps.jl/pulls) !
+**🖥 Interfaces**
+* Simple problem instantiation
+* Popular choices of functions $f$ and $h$ already implemented
+* Flexibility to user-defined functions $f$ and $h$
+* Regularization path fitting
+  
+**🚀 Solution methods**
+* Branch-and-Bound algorithm
+* Specialized exploration strategies
+* Specialized branching strategies
+* Efficient bounding solver
+* Structure-exploiting acceleration methods
+* Many tunable parameters
+* Robust to dimensionality scaling
 
-## Loss and perturbation functions
 
-Our package is designed to be flexible regarding to the expression of the functions $f$ and $h$.
-The user can define his own.
-It is only necessary to specify how to evaluate some of the operators associated with these functions.
-The package implements by default the following functions
+## Problem data
+
+To easy the usage of the package, classical choices of function $f$ and $h$ are already provided.
 
 | Loss / Perturbation        | Expression | Parameters
 |:--------------|:-----|:---|
@@ -52,8 +59,18 @@ The package implements by default the following functions
 | $\ell_2$-norm      |  $h(\mathbf{x}) = \beta\|\|\mathbf{x}\|\|_2^2$ | Scalar $\beta > 0$ |
 | $\ell_1\ell_2$-norm      |  $h(\mathbf{x}) = \alpha\|\|\mathbf{x}\|\|_1 + \beta\|\|\mathbf{x}\|\|_2^2$ | Scalars $\alpha,\beta > 0$ |
 
-In the above table, $\mathbb{I}(\mathcal{C})$ denotes the convex indicator of the constraint $\mathcal{C}$ and $\odot$ denotes the Hadamard product.
+Above, $\mathbb{I}(\mathcal{C})$ denotes the convex indicator of the constraint $\mathcal{C}$ and $\odot$ denotes the Hadamard product.
+In addition, user-defined functions $f$ and $h$ can be used.
 Please refer to the [docs](https://theoguyard.github.io/El0ps.jl/dev) for more details.
+
+
+## Project status
+
+The package is still in beta version and is not accessible through Julia's [general registry](https://github.com/JuliaRegistries/General) yet.
+An alpha version will be released soon.
+The current version is tested against Julia `1.7` and `1.8` on Linux architectures.
+Please report any problem on the [issue](https://github.com/TheoGuyard/El0ps.jl/issues) page.
+Feel free to suggest improvements via a [pull request](https://github.com/TheoGuyard/El0ps.jl/pulls) !
 
 ## License
 

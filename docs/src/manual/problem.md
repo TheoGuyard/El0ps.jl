@@ -1,7 +1,7 @@
 # Creating problems
 
 This package is designed to solve L0-penalized problems.
-The different components of this type of problems are: the loss function $f$, the perturbation function $h$, the feature matrix $\mathbf{A}$, and the hyperparameter $\lambda$.
+The different components of this type of problems are: the function, $f$, the function $h$, the matrix $\mathbf{A}$ and the hyperparameter $\lambda$.
 Here is an example on how a [`Problem`](@ref) can be instantiated.
 ```@example problems
 using El0ps
@@ -10,14 +10,14 @@ Random.seed!(42)
 
 # Problem data
 y = randn(10)
-f = LeastSquares(y)
+f = LeastSquares(y)     # f(Ax) = norm(Ax - y, 2)^2 / length(y)
 M = 1.
-h = Bigm(M)
+h = Bigm(M)             # h(x) = norm(x, Inf) <= M ? 0. : Inf
 A = randn(10, 30)
 λ = 0.1
 
 # Problem instantiation
-problem = Problem(f, h, A, λ)
+problem = Problem(f, h, A, λ);
 ```
 Here, the functions `f` and `h` are defined via structures provided by default in our package. 
 The function `f` must derive from the [`AbstractDatafit`](@ref) structure and the function `h` must derive from the [`AbstractPerturbation`](@ref) structure.
@@ -26,7 +26,13 @@ It columns needs not to be normalized but all-zero columns are not allowed.
 These latter can be removed safely without modifying the problem solutions and optimal value.
 Finally, the parameter `λ` must be strictly positive.
 
-When displaying a [`Problem`](@ref), `λmax` is a value of `λ` above which the solution is always the all-zero vector.
+The problem can be pretty-printed as follows.
+
+```@example problems
+println(problem)
+```
+
+The value of `λmax` is such that the all-zero vector is always solution of the problem when `λ >= λmax`.
 It can be computed from the problem data as follows:
 ```@example problems
 λmax = compute_λmax(f, h, A)

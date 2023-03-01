@@ -6,6 +6,21 @@ Abstract supertype for the function `h` in a [`Problem`](@ref).
 abstract type AbstractPerturbation end
 
 """
+    compute_τ(h::AbstractPerturbation, λ::Float64)
+
+Compute the `τ` value of the funtion `g(x) = λ * norm(x, 0) + h(x)`.
+"""
+compute_τ(h::AbstractPerturbation, λ::Float64) = error("Not implemented")
+
+"""
+    compute_μ(h::AbstractPerturbation, λ::Float64)
+
+Compute the `μ` value of the funtion `g(x) = λ * norm(x, 0) + h(x)`.
+"""
+compute_μ(h::AbstractPerturbation, λ::Float64) = error("Not implemented")
+
+
+"""
     value_1d(h::AbstractPerturbation, x::Float64)
 
 Value of a splitting term of `h` at `x`.

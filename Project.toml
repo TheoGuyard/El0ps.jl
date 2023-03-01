@@ -1,7 +1,7 @@
 name = "El0ps"
 uuid = "9590c647-f8cc-4a3a-9258-b60891aa68ee"
 authors = ["Theo Guyard"]
-version = "0.2.0"
+version = "0.3.0"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"

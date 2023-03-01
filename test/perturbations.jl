@@ -5,7 +5,10 @@
     h = NewH()
     x = randn()
     η = rand()
+    λ = rand()
 
+    @test_throws ErrorException El0ps.compute_τ(h, λ)
+    @test_throws ErrorException El0ps.compute_μ(h, λ)
     @test_throws ErrorException El0ps.value_1d(h, x)
     @test_throws ErrorException El0ps.conjugate_1d(h, x)
     @test_throws ErrorException El0ps.prox_1d(h, x, η)
@@ -23,12 +26,20 @@ end
     for (test_type, test_params) in candidates
         @testset "$test_type utilities" begin
             h = test_type(test_params...)
-            n = 100
-            m = x = randn(n)
-            z = zeros(n)
-            r = randn(n)
+            λ = rand()
+            τ = El0ps.compute_τ(h, λ)
+            μ = El0ps.compute_μ(h, λ)
+            x = randn(100)
+            z = zeros(100)
+            r = randn(100)
             η = randn()
             @test isa(println(h), Nothing)
+            if μ < Inf
+                @test El0ps.conjugate_1d(h, τ) ≈ λ
+                @test El0ps.value_1d(h, μ) + El0ps.conjugate_1d(h, τ) >= μ * τ - 1e-8
+            else
+                @test El0ps.conjugate_1d(h, τ) < λ
+            end
             @test El0ps.value(h, x) >= 0.0
             @test El0ps.value(h, z) == 0.0
             @test El0ps.value(h, x) ≈ El0ps.value(h, -x)

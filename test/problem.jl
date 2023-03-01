@@ -13,3 +13,14 @@
     @test_throws AssertionError El0ps.Problem(El0ps.LeastSquares(randn(n)), h, A, λ)
     @test El0ps.compute_τ(h, El0ps.compute_λmax(f, h, A)) >= g - 1e-8
 end
+
+@testset "Side effects λmax" begin
+    m = 10
+    n = 30
+    A = randn(m, n)
+    f = El0ps.LeastSquares(randn(m))
+    g = norm(A' * gradient(f, zeros(dim_input(f))), Inf)
+    h = El0ps.L1norm(100. * g)
+    λ = El0ps.compute_λmax(f, h, A)
+    @test λ == 0.
+end

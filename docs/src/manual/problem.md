@@ -37,8 +37,7 @@ It can be computed from the problem data as follows:
 ```@example problems
 λmax = compute_λmax(f, h, A)
 ```
-When the function `h` does not allows to compute `λmax` in closed form, then [`compute_λmax`](@ref) returns `nothing`.
-In this case, the method [`approximate_λmax`](@ref) can be used to approximate `λmax` using a bisection method.
+When the function `h` does not allows to compute `λmax` in closed form, then [`approximate_λmax`](@ref) is used to approximate `λmax` using a bisection method.
 Note that setting `λ < λmax` does not necessarily ensure to obtain a solution with some non-zero elements.
 However, we observe that it is almost always the case in practice.
 

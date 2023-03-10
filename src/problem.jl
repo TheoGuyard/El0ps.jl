@@ -31,9 +31,6 @@ function Problem(f::AbstractDatafit, h::AbstractPenalty, A::Matrix, λ::Float64)
     τ = compute_τ(h, λ)
     μ = compute_μ(h, λ)
     λmax = compute_λmax(f, h, A)
-    if isa(λmax, Nothing)
-        λmax = approximate_λmax(f, h, A)
-    end
     return Problem(f, h, A, λ, τ, μ, a, m, n, λmax)
 end
 

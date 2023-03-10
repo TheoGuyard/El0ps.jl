@@ -24,10 +24,10 @@ compute_μ(h::AbstractPenalty, λ::Float64) = error("Not implemented")
 
 Compute the value of `λmax` such that the all-zero vector is a solution of a
 [`Problem`](@ref) as soon as `λ >= λmax`. If this value does not admit a closed form for
-the function `h`, `nothing` is returned. See [`approximate_λmax`](@ref) to approximate the
-value of `λmax` in this case.
+the function `h`, the function [`approximate_λmax`](@ref) is rather used to approximate the
+value of `λmax`.
 """
-compute_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix) = nothing
+compute_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix) = error("Not implemented")
 
 """
     value_1d(h::AbstractPenalty, x::Float64)

@@ -14,8 +14,8 @@ using Statistics
     @test true
 end
 
-include("datafits.jl")
-include("perturbations.jl")
+include("datafit.jl")
+include("penalty.jl")
 include("problem.jl")
 include("bounding.jl")
 include("solver.jl")

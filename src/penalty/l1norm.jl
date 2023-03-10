@@ -1,5 +1,5 @@
 """
-    L1norm <: AbstractPerturbation
+    L1norm <: AbstractPenalty
 
 L1-norm function `h(x) = h.α * norm(x, 1)`, where `h.α > 0`.
 
@@ -7,7 +7,7 @@ L1-norm function `h(x) = h.α * norm(x, 1)`, where `h.α > 0`.
 
 - `α::Float64` : L1 regularization strength.
 """
-struct L1norm <: AbstractPerturbation
+struct L1norm <: AbstractPenalty
     α::Float64
     function L1norm(α::Float64)
         (α > 0.0) || error("Parameter α must be positive")

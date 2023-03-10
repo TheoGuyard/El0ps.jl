@@ -20,7 +20,7 @@ A = randn(10, 30)
 problem = Problem(f, h, A, λ);
 ```
 Here, the functions `f` and `h` are defined via structures provided by default in our package. 
-The function `f` must derive from the [`AbstractDatafit`](@ref) structure and the function `h` must derive from the [`AbstractPerturbation`](@ref) structure.
+The function `f` must derive from the [`AbstractDatafit`](@ref) structure and the function `h` must derive from the [`AbstractPenalty`](@ref) structure.
 The number of rows in `A` must match the input dimension of `f`.
 It columns needs not to be normalized but all-zero columns are not allowed.
 These latter can be removed safely without modifying the problem solutions and optimal value.

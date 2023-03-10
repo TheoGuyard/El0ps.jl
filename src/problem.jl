@@ -5,7 +5,7 @@ Structure for L0-penalized problems.
 """
 struct Problem
     f::AbstractDatafit
-    h::AbstractPerturbation
+    h::AbstractPenalty
     A::Matrix
     λ::Float64
     τ::Float64
@@ -17,11 +17,11 @@ struct Problem
 end
 
 """
-    Problem(f::AbstractDatafit, h::AbstractPerturbation, A::Matrix, λ::Float64)
+    Problem(f::AbstractDatafit, h::AbstractPenalty, A::Matrix, λ::Float64)
 
 Instantiate a [`Problem`](@ref) of the form `min f(Ax) + λ * norm(x,0) + h(x)`.
 """
-function Problem(f::AbstractDatafit, h::AbstractPerturbation, A::Matrix, λ::Float64)
+function Problem(f::AbstractDatafit, h::AbstractPenalty, A::Matrix, λ::Float64)
     m = size(A, 1)
     n = size(A, 2)
     a = [norm(ai, 2)^2 for ai in eachcol(A)]
@@ -62,13 +62,13 @@ Value of the objective of a [`Problem`](@ref).
 objective(problem::Problem, x::Vector) = objective(problem, x, problem.A * x)
 
 """
-    compute_λmax(f::AbstractDatafit, h::AbstractPerturbation, A::Matrix)
+    compute_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix)
 
 Return a value of `λ` such that the all-zero vector is a solution of a [`Problem`](@ref).
 """
 function compute_λmax(
     f::AbstractDatafit,
-    h::AbstractPerturbation,
+    h::AbstractPenalty,
     A::Matrix;
     ϵ::Float64 = 1e-8,
 )

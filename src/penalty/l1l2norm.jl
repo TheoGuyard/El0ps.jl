@@ -1,5 +1,5 @@
 """
-    L1L2norm <: AbstractPerturbation
+    L1L2norm <: AbstractPenalty
 
 L1L2-norm function `h(x) = h.α * norm(x, 1) + h.β * norm(x, 2)^2`, where
 `h.α > 0` and `h.β > 0`.
@@ -9,7 +9,7 @@ L1L2-norm function `h(x) = h.α * norm(x, 1) + h.β * norm(x, 2)^2`, where
 - `α::Float64` : L1 regularization strength.
 - `β::Float64` : L2 regularization strength.
 """
-struct L1L2norm <: AbstractPerturbation
+struct L1L2norm <: AbstractPenalty
     α::Float64
     β::Float64
     function L1L2norm(α::Float64, β::Float64)

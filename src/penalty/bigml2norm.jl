@@ -1,5 +1,5 @@
 """
-    BigmL2norm <: AbstractPerturbation
+    BigmL2norm <: AbstractPenalty
 
 Big-M constraint plus L2-norm function
 `h(x) = h.α * norm(x, 2)^2 + (norm(x, Inf) < h.M ? 0. : Inf)`, where `h.α > 0`
@@ -10,7 +10,7 @@ and `h.M > 0`.
 - `M::Float64` : Big-M value.
 - `α::Float64` : L2 regularization strength.
 """
-struct BigmL2norm <: AbstractPerturbation
+struct BigmL2norm <: AbstractPenalty
     M::Float64
     α::Float64
     function BigmL2norm(M::Float64, α::Float64)

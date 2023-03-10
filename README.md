@@ -48,7 +48,7 @@ It it designed to be robust to dimensionality scaling and flexible with respect 
 
 To easy the usage of the package, classical choices of function $f$ and $h$ are already provided.
 
-| Loss / Perturbation        | Expression | Parameters
+| Loss / Penalty        | Expression | Parameters
 |:--------------|:-----|:---|
 | Least-Squares |  $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{2}\|\|\mathbf{y} - \mathbf{A}\mathbf{x}\|\|_2^2$ | Vector $\mathbf{y}$ |
 | Logistic      |  $f(\mathbf{A}\mathbf{x}) = \mathbf{1}^{\top}\log(\mathbf{1} + \exp(-\mathbf{y}\odot\mathbf{A}\mathbf{x}))$ | Vector $\mathbf{y}$ |

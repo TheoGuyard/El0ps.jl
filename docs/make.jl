@@ -14,8 +14,8 @@ makedocs(
         ],
         "Library" => [
             "Problem" => "library/problem.md",
-            "Datafits" => "library/datafits.md",
-            "Perturbations" => "library/perturbations.md",
+            "Datafits" => "library/datafit.md",
+            "Penalty" => "library/penalty.md",
             "Solver" => "library/solver.md",
             "Path" => "library/path.md",
         ],

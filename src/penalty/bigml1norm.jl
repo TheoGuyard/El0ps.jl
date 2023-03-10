@@ -23,6 +23,10 @@ end
 Base.show(io::IO, h::BigmL1norm) = print(io, "Bigm + L1-norm")
 compute_τ(h::BigmL1norm, λ::Float64) = (λ / h.M) + h.α
 compute_μ(h::BigmL1norm, λ::Float64) = h.M
+function compute_λmax(f::AbstractDatafit, h::BigmL1norm, A::Matrix)
+    v = norm(A' * gradient(f, zeros(dim_input(f))), Inf)
+    return max((v - h.α) / h.M, 0.)
+end
 value_1d(h::BigmL1norm, x::Float64) = abs(x) <= h.M ? h.α * abs(x) : Inf
 conjugate_1d(h::BigmL1norm, v::Float64) = h.M * max(abs(v) - h.α, 0.0)
 prox_1d(h::BigmL1norm, x::Float64, η::Float64) = sign(x) * clamp(abs(x) - η * h.α, 0.0, h.M)

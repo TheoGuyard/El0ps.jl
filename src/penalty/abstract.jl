@@ -19,6 +19,15 @@ Compute the `μ` value of the funtion `g(x) = λ * norm(x, 0) + h(x)`.
 """
 compute_μ(h::AbstractPenalty, λ::Float64) = error("Not implemented")
 
+"""
+    compute_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix)
+
+Compute the value of `λmax` such that the all-zero vector is a solution of a
+[`Problem`](@ref) as soon as `λ >= λmax`. If this value does not admit a closed form for
+the function `h`, `nothing` is returned. See [`approximate_λmax`](@ref) to approximate the
+value of `λmax` in this case.
+"""
+compute_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix) = nothing
 
 """
     value_1d(h::AbstractPenalty, x::Float64)

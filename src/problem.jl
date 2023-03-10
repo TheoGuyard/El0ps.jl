@@ -62,33 +62,39 @@ Value of the objective of a [`Problem`](@ref).
 objective(problem::Problem, x::Vector) = objective(problem, x, problem.A * x)
 
 """
-    compute_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix)
+    approximate_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix)
 
-Return a value of `λ` such that the all-zero vector is a solution of a [`Problem`](@ref).
+Approximate the value of `λmax` when `compute_λmax(f, h, A)` is not available (i.e., returns
+nothing) for the penalty `h`.
 """
-function compute_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix; ϵ::Float64 = 1e-8)
+function approximate_λmax(
+    f::AbstractDatafit,
+    h::AbstractPenalty,
+    A::Matrix;
+    ϵ::Float64 = 1e-8,
+)
 
-    g = norm(A' * gradient(f, zeros(dim_input(f))), Inf)
+    v = norm(A' * gradient(f, zeros(dim_input(f))), Inf)
 
-    (compute_τ(h, 0.0) >= g) && return 0.0
+    (compute_τ(h, 0.0) >= v) && return 0.0
 
-    # Find λa and λb such that (τ(λa) - g) * (τ(λb) - g) < 0
+    # Find λa and λb such that (τ(λa) - v) * (τ(λb) - v) < 0
     λa = 1.0
     τa = compute_τ(h, λa)
-    λf = (τa <= g) ? 10.0 : 0.1
+    λf = (τa <= v) ? 10.0 : 0.1
     λb = λf * λa
     τb = compute_τ(h, λb)
-    while (τa - g) * (τb - g) >= 0.0
+    while (τa - v) * (τb - v) >= 0.0
         λb = λf * λb
         τb = compute_τ(h, λb)
         (λb == Inf) && return Inf
     end
 
-    # Bisection method on to find λmax in [λa,λb] such that τ(λmax) ≈ g
+    # Bisection method on to find λmax in [λa,λb] such that τ(λmax) ≈ v
     while abs(λa - λb) > ϵ
         λc = (λa + λb) / 2.0
         τc = compute_τ(h, λc)
-        if (τa - g) * (τc - g) < 0.0
+        if (τa - v) * (τc - v) < 0.0
             λb = λc
             τb = compute_τ(h, λb)
         else

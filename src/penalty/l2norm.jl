@@ -18,6 +18,10 @@ end
 Base.show(io::IO, h::L2norm) = print(io, "L2-norm")
 compute_τ(h::L2norm, λ::Float64) = sqrt(4.0 * h.α * λ)
 compute_μ(h::L2norm, λ::Float64) = sqrt(λ / h.α)
+function compute_λmax(f::AbstractDatafit, h::L2norm, A::Matrix)
+    v = norm(A' * gradient(f, zeros(dim_input(f))), Inf)
+    return max(v^2 / (4.0 * h.α), 0.0)
+end
 value_1d(h::L2norm, x::Float64) = h.α * x^2
 conjugate_1d(h::L2norm, v::Float64) = v^2 / (4.0 * h.α)
 prox_1d(h::L2norm, x::Float64, η::Float64) = x / (1.0 + 2.0 * η * h.α)

@@ -2,13 +2,16 @@
 
     struct NewH <: El0ps.AbstractPenalty end
 
+    f = El0ps.LeastSquares(randn(1))
     h = NewH()
+    A = randn(1, 1)
     x = randn()
     η = rand()
     λ = rand()
 
     @test_throws ErrorException El0ps.compute_τ(h, λ)
     @test_throws ErrorException El0ps.compute_μ(h, λ)
+    @test_throws ErrorException El0ps.compute_λmax(f, h, A)
     @test_throws ErrorException El0ps.value_1d(h, x)
     @test_throws ErrorException El0ps.conjugate_1d(h, x)
     @test_throws ErrorException El0ps.prox_1d(h, x, η)
@@ -25,14 +28,19 @@ end
     ]
     for (test_type, test_params) in candidates
         @testset "$test_type utilities" begin
+            m = 50
+            n = 100
+            f = El0ps.LeastSquares(randn(m))
+            A = randn(m, n)
             h = test_type(test_params...)
             λ = rand()
             τ = El0ps.compute_τ(h, λ)
             μ = El0ps.compute_μ(h, λ)
-            x = randn(100)
-            z = zeros(100)
-            r = randn(100)
+            x = randn(n)
+            z = zeros(n)
+            r = randn(n)
             η = randn()
+            λmax = El0ps.compute_λmax(f, h, A)
             @test isa(println(h), Nothing)
             if μ < Inf
                 @test El0ps.conjugate_1d(h, τ) ≈ λ

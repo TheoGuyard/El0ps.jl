@@ -27,7 +27,8 @@ end
 compute_μ(h::BigmL2norm, λ::Float64) = sqrt(1.0 / h.α) < h.M ? sqrt(λ / h.α) : h.M
 function compute_λmax(f::AbstractDatafit, h::BigmL2norm, A::Matrix)
     v = norm(A' * gradient(f, zeros(dim_input(f))), Inf)
-    return sqrt(λ / h.α) < h.M ? max(v^2 / (4. * h.α), 0.) : max(h.M * (v - h.α * h.M), 0.)
+    return sqrt(λ / h.α) < h.M ? max(v^2 / (4.0 * h.α), 0.0) :
+           max(h.M * (v - h.α * h.M), 0.0)
 end
 value_1d(h::BigmL2norm, x::Float64) = abs(x) <= h.M ? h.α * x^2 : Inf
 function conjugate_1d(h::BigmL2norm, v::Float64)

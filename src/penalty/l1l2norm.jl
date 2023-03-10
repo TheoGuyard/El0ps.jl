@@ -24,7 +24,7 @@ compute_τ(h::L1L2norm, λ::Float64) = h.α + sqrt(4.0 * h.β * λ)
 compute_μ(h::L1L2norm, λ::Float64) = sqrt(λ / h.β)
 function compute_λmax(f::AbstractDatafit, h::L1L2norm, A::Matrix)
     v = norm(A' * gradient(f, zeros(dim_input(f))), Inf)
-    return max((v - h.α)^2 / (4. * h.β), 0.)
+    return max((v - h.α)^2 / (4.0 * h.β), 0.0)
 end
 value_1d(h::L1L2norm, x::Float64) = h.α * abs(x) + h.β * x^2
 conjugate_1d(h::L1L2norm, v::Float64) = max(abs(v) - h.α, 0.0)^2 / (4.0 * h.β)

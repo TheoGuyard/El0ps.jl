@@ -67,7 +67,12 @@ objective(problem::Problem, x::Vector) = objective(problem, x, problem.A * x)
 Approximate the value of `λmax` when `compute_λmax(f, h, A)` is not available (i.e., returns
 nothing) for the penalty `h`.
 """
-function approximate_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix; ϵ::Float64 = 1e-8)
+function approximate_λmax(
+    f::AbstractDatafit,
+    h::AbstractPenalty,
+    A::Matrix;
+    ϵ::Float64 = 1e-8,
+)
 
     v = norm(A' * gradient(f, zeros(dim_input(f))), Inf)
 

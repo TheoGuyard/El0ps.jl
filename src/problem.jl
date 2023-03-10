@@ -66,12 +66,7 @@ objective(problem::Problem, x::Vector) = objective(problem, x, problem.A * x)
 
 Return a value of `λ` such that the all-zero vector is a solution of a [`Problem`](@ref).
 """
-function compute_λmax(
-    f::AbstractDatafit,
-    h::AbstractPenalty,
-    A::Matrix;
-    ϵ::Float64 = 1e-8,
-)
+function compute_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix; ϵ::Float64 = 1e-8)
 
     g = norm(A' * gradient(f, zeros(dim_input(f))), Inf)
 

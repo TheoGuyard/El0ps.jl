@@ -33,7 +33,7 @@ bounding_type(bounding_solver::CDAS) = bounding_solver.bounding_type
 
 function cd_loop!(
     f::AbstractDatafit,
-    h::AbstractPerturbation,
+    h::AbstractPenalty,
     A::Matrix,
     x::Vector,
     w::Vector,
@@ -64,7 +64,7 @@ end
 
 function compute_primal_value(
     f::AbstractDatafit,
-    h::AbstractPerturbation,
+    h::AbstractPenalty,
     λ::Float64,
     x::Vector,
     w::Vector,
@@ -88,7 +88,7 @@ end
 
 function compute_dual_value(
     f::AbstractDatafit,
-    h::AbstractPerturbation,
+    h::AbstractPenalty,
     A::Matrix,
     λ::Float64,
     u::Vector,
@@ -109,7 +109,7 @@ function compute_dual_value(
 end
 
 function update_active_set!(
-    h::AbstractPerturbation,
+    h::AbstractPenalty,
     A::Matrix,
     λ::Float64,
     u::Vector,

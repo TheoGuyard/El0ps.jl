@@ -1,5 +1,5 @@
 """
-    L2norm <: AbstractPerturbation
+    L2norm <: AbstractPenalty
 
 L2-norm function `h(x) = h.α * norm(x, 2)^2`, where `h.α > 0`.
 
@@ -7,7 +7,7 @@ L2-norm function `h(x) = h.α * norm(x, 2)^2`, where `h.α > 0`.
 
 - `α::Float64` : L2 regularization strength.
 """
-struct L2norm <: AbstractPerturbation
+struct L2norm <: AbstractPenalty
     α::Float64
     function L2norm(α::Float64)
         (α > 0.0) || error("Parameter α must be positive")

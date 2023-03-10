@@ -13,7 +13,7 @@ Base.@kwdef mutable struct Path
     node_count::Vector{Int} = Vector{Int}()
     objective_value::Vector = Vector()
     datafit_value::Vector = Vector()
-    perturbation_value::Vector = Vector()
+    penalty_value::Vector = Vector()
     support_size::Vector{Int} = Vector{Int}()
     cv_mean::Vector{Float64} = Vector{Float64}()
     cv_std::Vector{Float64} = Vector{Float64}()
@@ -98,7 +98,7 @@ function display_path_info(path::Path, i::Union{Int,Nothing} = nothing)
     @printf "   %s" string(path.converged[i])
     @printf "  %7.2f" path.solve_time[i]
     @printf "  %7.2f" path.datafit_value[i]
-    @printf "  %7.2f" path.perturbation_value[i]
+    @printf "  %7.2f" path.penalty_value[i]
     @printf "  %4d" path.support_size[i]
     if isnan(path.cv_mean[i])
         print("      NaN ±     NaN")
@@ -111,7 +111,7 @@ end
 function fill_path!(
     path::Path,
     f::AbstractDatafit,
-    h::AbstractPerturbation,
+    h::AbstractPenalty,
     A::Matrix,
     λ::Float64,
     λratio::Float64,
@@ -131,7 +131,7 @@ function fill_path!(
     push!(path.node_count, result.node_count)
     push!(path.objective_value, result.objective_value)
     push!(path.datafit_value, value(f, A * result.x))
-    push!(path.perturbation_value, value(h, result.x))
+    push!(path.penalty_value, value(h, result.x))
     push!(path.support_size, norm(result.x, 0))
     push!(path.cv_mean, cv_mean)
     push!(path.cv_std, cv_std)
@@ -162,7 +162,7 @@ end
     fit_path(
         solver::AbstractSolver,
         f::AbstractDatafit,
-        h::AbstractPerturbation,
+        h::AbstractPenalty,
         A::Matrix,
         kwargs...
     )
@@ -173,7 +173,7 @@ arguments in `kwargs` are passed to a [`PathOptions`](@ref) instance.
 function fit_path(
     solver::AbstractSolver,
     f::AbstractDatafit,
-    h::AbstractPerturbation,
+    h::AbstractPenalty,
     A::Matrix;
     kwargs...,
 )

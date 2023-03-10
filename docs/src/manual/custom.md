@@ -1,4 +1,4 @@
-# Loss and perturbation functions
+# Loss and penalty functions
 
 This package is designed to be flexible regarding the choice of the functions $f$ and $h$.
 It provides a simple way to define them.
@@ -8,7 +8,7 @@ It provides a simple way to define them.
 
 The package already implements by default the following functions:
 
-| Loss / Perturbation        | Expression | Parameters
+| Loss / Penalty        | Expression | Parameters
 |:--------------|:-----|:---|
 | Least-Squares |  $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{2}\|\|\mathbf{y} - \mathbf{A}\mathbf{x}\|\|_2^2$ | Vector $\mathbf{y}$ |
 | Logistic      |  $f(\mathbf{A}\mathbf{x}) = \mathbf{1}^{\top}\log(\mathbf{1} + \exp(-\mathbf{y}\odot\mathbf{A}\mathbf{x}))$ | Vector $\mathbf{y}$ |
@@ -33,7 +33,7 @@ h = L2norm(β)
 h = L1L2norm(α, β)
 ```
 
-The function `f` and `h` respectively derive from the [`AbstractDatafit`](@ref) and [`AbstractPerturbation`](@ref) structures.
+The function `f` and `h` respectively derive from the [`AbstractDatafit`](@ref) and [`AbstractPenalty`](@ref) structures.
 
 ## Defining new loss functions
 
@@ -63,7 +63,7 @@ So that the [`BnbSolver`](@ref) can run, it is also require to define the follow
 
 Once these functions have been overloaded, the [`BnbSolver`](@ref) is able to handle losses that are instances of `MyNewF` on his own.
 
-## Defining new perturbation terms
+## Defining new penalty terms
 
 To define new functions $h$, one must verify the following hypotheses:
 * the function splits
@@ -74,10 +74,10 @@ To define new functions $h$, one must verify the following hypotheses:
 * the splitting terms are non-negative and equal zero at zero
 
 The above hypotheses are verified for norms or for bound constraints, among many others.
-If they are fulfilled, a new perturbation term can be defined as follow.
+If they are fulfilled, a new penalty term can be defined as follow.
 
 ```julia
-struct MyNewH <: AbstractPerturbation end
+struct MyNewH <: AbstractPenalty end
 ```
 
 For instance, the user can specify how it is pretty-printed with
@@ -90,7 +90,7 @@ So that the [`BnbSolver`](@ref) can run, it is also require to define the follow
 * `conjugate_1d(h::MyNewH, x::Float64)`: returns the value of the conjugate function of a splitting term evaluated at `x` as a `Float64` 
 * `prox_1d(h::MyNewH, x::Float64, η::Float64)`: returns the proximity operator of `η` times a splitting term evaluated at `x` as a `Float64` 
 
-Once these functions have been overloaded, the [`BnbSolver`](@ref) is able to handle perturbation terms that are instances of `MyNewH` on his own.
+Once these functions have been overloaded, the [`BnbSolver`](@ref) is able to handle penalty terms that are instances of `MyNewH` on his own.
 
 ## Examples
 
@@ -116,16 +116,16 @@ conjugate(f::QuadLoss, w::Vector) = inv(Q) * (w - f.y)
 
 Note that computations can be saved by computing and storing the value of the Lipschitz constant and of $\mathbf{Q}^{-1}$ once for all when initializing the `QuadLoss` structure.
 
-### Perturbation term
+### Penalty term
 
-The following portion of code shows how to implement a p-norm perturbation term $h(\mathbf{x}) = \tfrac{1}{p}\|\mathbf{x}\|^p_p$ for some integer $p \geq 1$.
+The following portion of code shows how to implement a p-norm penalty term $h(\mathbf{x}) = \tfrac{1}{p}\|\mathbf{x}\|^p_p$ for some integer $p \geq 1$.
 
 ```julia
 # Required for the prox operation
 using Roots
 
 # Definition of the new struct 
-struct LpNorm <: AbstractPerturbation
+struct LpNorm <: AbstractPenalty
     p::Int
     q::Int
     LpNorm(p::Int) = new(p, p/(p-1))

@@ -24,5 +24,5 @@ Pages = ["manual/quickstart.md", "manual/problem.md", "manual/optimize.md", "man
 ## Library outline
 
 ```@contents
-Pages = ["library/problem.md", "library/datafits.md", "library/perturbations.md", "library/solver.md", "library/path.md"]
+Pages = ["library/problem.md", "library/datafit.md", "library/penalty.md", "library/solver.md", "library/path.md"]
 ```

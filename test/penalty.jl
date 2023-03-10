@@ -1,6 +1,6 @@
 @testset "Abstract" begin
 
-    struct NewH <: El0ps.AbstractPerturbation end
+    struct NewH <: El0ps.AbstractPenalty end
 
     h = NewH()
     x = randn()
@@ -14,7 +14,7 @@
     @test_throws ErrorException El0ps.prox_1d(h, x, η)
 end
 
-@testset "Perturbations" begin
+@testset "Penalty" begin
     candidates = [
         (El0ps.Bigm, (1.0)),
         (El0ps.L1norm, (1.0)),

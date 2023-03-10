@@ -1,5 +1,5 @@
 """
-    Bigm <: AbstractPerturbation
+    Bigm <: AbstractPenalty
 
 Convex indicator of a Big-M constraint `abs.(x) .<= h.M`, where `h.M > 0`.
 
@@ -7,7 +7,7 @@ Convex indicator of a Big-M constraint `abs.(x) .<= h.M`, where `h.M > 0`.
 
 - `M::Float64` : Big-M value.
 """
-struct Bigm <: AbstractPerturbation
+struct Bigm <: AbstractPenalty
     M::Float64
     function Bigm(M::Float64)
         (M > 0.0) || error("Parameter M must be positive")

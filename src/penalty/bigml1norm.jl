@@ -1,5 +1,5 @@
 """
-    BigmL1norm <: AbstractPerturbation
+    BigmL1norm <: AbstractPenalty
 
 Big-M constraint plus L1-norm function
 `h(x) = h.α * norm(x, 1) + (norm(x, Inf) < h.M ? 0. : Inf)`, where `h.α > 0` and
@@ -10,7 +10,7 @@ Big-M constraint plus L1-norm function
 - `M::Float64` : Big-M value.
 - `α::Float64` : L1 regularization strength.
 """
-struct BigmL1norm <: AbstractPerturbation
+struct BigmL1norm <: AbstractPenalty
     M::Float64
     α::Float64
     function BigmL1norm(M::Float64, α::Float64)

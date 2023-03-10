@@ -14,21 +14,21 @@ contact() = "guyard.theo@gmail.com"
 license() = "AGPL 3.0"
 export version, authors, contact, license
 
-include("datafits/abstract.jl")
-include("datafits/leastsquares.jl")
-include("datafits/logistic.jl")
+include("datafit/abstract.jl")
+include("datafit/leastsquares.jl")
+include("datafit/logistic.jl")
 export AbstractDatafit
 export dim_input, lipschitz_constant, value, gradient, conjugate, params_to_dict
 export LeastSquares, Logistic
 
-include("perturbations/abstract.jl")
-include("perturbations/bigm.jl")
-include("perturbations/bigml1norm.jl")
-include("perturbations/bigml2norm.jl")
-include("perturbations/l1norm.jl")
-include("perturbations/l1l2norm.jl")
-include("perturbations/l2norm.jl")
-export AbstractPerturbation
+include("penalty/abstract.jl")
+include("penalty/bigm.jl")
+include("penalty/bigml1norm.jl")
+include("penalty/bigml2norm.jl")
+include("penalty/l1norm.jl")
+include("penalty/l1l2norm.jl")
+include("penalty/l2norm.jl")
+export AbstractPenalty
 export compute_τ,
     compute_μ, value_1d, value, conjugate_1d, conjugate, prox_1d, prox, params_to_dict
 export Bigm, BigmL1norm, BigmL2norm, L1norm, L1L2norm, L2norm

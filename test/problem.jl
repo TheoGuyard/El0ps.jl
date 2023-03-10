@@ -20,7 +20,7 @@ end
     A = randn(m, n)
     f = El0ps.LeastSquares(randn(m))
     g = norm(A' * gradient(f, zeros(dim_input(f))), Inf)
-    h = El0ps.L1norm(100. * g)
+    h = El0ps.L1norm(100.0 * g)
     λ = El0ps.compute_λmax(f, h, A)
-    @test λ == 0.
+    @test λ == 0.0
 end

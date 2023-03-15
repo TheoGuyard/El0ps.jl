@@ -26,7 +26,8 @@ end
 
 Base.show(io::IO, f::SquaredHinge) = print(io, "Squared-Hinge")
 dim_input(f::SquaredHinge) = f.m
-lipschitz_constant(f::SquaredHinge) = 1. / f.m
-value(f::SquaredHinge, x::Vector) = norm(max.(1. .- f.y .* x, 0.), 2)^2 / (2.0 * f.m)
-gradient(f::SquaredHinge, x::Vector) = -f.y .* max.(1. .- f.y .* x, 0.) / f.m
-conjugate(f::SquaredHinge, x::Vector) = f.m * (x' * x) + f.y' * x - norm(max.(-f.m * (f.y .* x), 0.), 2)^2 / (2.0 * f.m)
+lipschitz_constant(f::SquaredHinge) = 2.0 / f.m
+value(f::SquaredHinge, x::Vector) = norm(max.(1.0 .- f.y .* x, 0.0), 2)^2 / f.m
+gradient(f::SquaredHinge, x::Vector) = -f.y .* max.(1.0 .- f.y .* x, 0.0) / (0.5 * f.m)
+conjugate(f::SquaredHinge, x::Vector) =
+    (0.5 * f.m) * (x' * x) + f.y' * x - norm(max.(-0.5 * f.m * (f.y .* x), 0.0), 2)^2 / f.m

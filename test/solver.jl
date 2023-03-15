@@ -8,7 +8,7 @@
     A = randn(m, n)
     w = A * x
     ϵ = randn(m)
-    ϵ *= norm(w, 2) / (sqrt(10.) * norm(ϵ, 2))
+    ϵ *= norm(w, 2) / (sqrt(10.0) * norm(ϵ, 2))
     y = w + ϵ
     f = El0ps.LeastSquares(y)
     h = El0ps.Bigm(1.0)

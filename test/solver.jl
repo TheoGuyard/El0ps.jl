@@ -7,10 +7,12 @@
     x[1:k] .= 1.0
     A = randn(m, n)
     w = A * x
-    y = w + (0.01 * norm(w)) * randn(m)
+    ϵ = randn(m)
+    ϵ *= norm(w, 2) / (sqrt(10.) * norm(ϵ, 2))
+    y = w + ϵ
     f = El0ps.LeastSquares(y)
     h = El0ps.Bigm(1.0)
-    λ = 0.01 * El0ps.compute_λmax(f, h, A)
+    λ = 0.05 * El0ps.compute_λmax(f, h, A)
     problem = El0ps.Problem(f, h, A, λ)
     maxtime = 60.0
 

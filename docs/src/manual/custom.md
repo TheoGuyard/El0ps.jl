@@ -10,8 +10,9 @@ The package already implements by default the following functions:
 
 | Loss / Penalty        | Expression | Parameters
 |:--------------|:-----|:---|
-| Least-Squares |  $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{2}\|\|\mathbf{y} - \mathbf{A}\mathbf{x}\|\|_2^2$ | Vector $\mathbf{y}$ |
-| Logistic      |  $f(\mathbf{A}\mathbf{x}) = \mathbf{1}^{\top}\log(\mathbf{1} + \exp(-\mathbf{y}\odot\mathbf{A}\mathbf{x}))$ | Vector $\mathbf{y}$ |
+| Least-Squares |  $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{2m}\|\|\mathbf{y} - \mathbf{A}\mathbf{x}\|\|_2^2$ | Vector $\mathbf{y} \in \mathrm{R}^{m}$ |
+| Logistic      |  $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{m}\mathbf{1}^{\top}\log(\mathbf{1} + \exp(-\mathbf{y}\odot\mathbf{A}\mathbf{x}))$ | Vector $\mathbf{y} \in \mathrm{R}^{m}$ |
+| Squared-Hinge      | $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{2m}\|\|\max(\mathbf{1} - \mathbf{y}\odot\mathbf{A}\mathbf{x},\mathbf{0})\|\|_2^2$ | Vector $\mathbf{y} \in \mathrm{R}^{m}$ |
 | Big-M |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M)$ | Scalar $M > 0$ |
 | Big-M + $\ell_1$-norm      |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M) + \alpha\|\|\mathbf{x}\|\|_1$ | Scalars $M,\alpha > 0$ |
 | Big-M + $\ell_2$-norm      |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M) + \beta\|\|\mathbf{x}\|\|_2^2$ | Scalars $M,\beta > 0$ |
@@ -25,6 +26,7 @@ They can be instantiated as follows:
 ```julia
 f = LeastSquares(y)
 f = Logistic(y)
+f = SquaredHinge(y)
 h = Bigm(M)
 h = BigmL1norm(M, α)
 h = BigmL2norm(M, β)
@@ -55,7 +57,7 @@ Base.show(io::IO, f::MyNewF) = print(io, "MyNewF")
 ```
 
 So that the [`BnbSolver`](@ref) can run, it is also require to define the following functions:
-* `dim_input(f::LeastSquares)` : the dimension of the function input as an `Int`
+* `dim_input(f::MyNewF)` : the dimension of the function input as an `Int`
 * `lipschitz_constant(f::MyNewF)` : returns the value of the Lipschitz constant of the gradient of `f` as a `Float64` 
 * `value(f::MyNewF, w::Vector)` : returns the value of `f` at `w` as a `Float64` 
 * `gradient(f::MyNewF, w::Vector)` : returns the gradient of `f` at `w` as a `Vector` 

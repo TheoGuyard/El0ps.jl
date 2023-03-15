@@ -15,6 +15,7 @@
         candidates = [
             (El0ps.LeastSquares, m -> randn(m)),
             (El0ps.Logistic, m -> 2.0 .* (randn(m) .<= 0.5) .- 1.0),
+            (El0ps.SquaredHinge, m -> 2.0 .* (randn(m) .<= 0.5) .- 1.0),
         ]
         for (test_type, y_generation) in candidates
             @testset "$test_type" begin

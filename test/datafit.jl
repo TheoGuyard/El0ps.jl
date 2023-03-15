@@ -26,7 +26,8 @@
                 @test isa(println(f), Nothing)
                 @test El0ps.dim_input(f) == m
                 @test El0ps.lipschitz_constant(f) >= 0.0
-                @test El0ps.value(f, w) >= El0ps.value(f, u) + El0ps.gradient(f, u)' * (w - u)
+                @test El0ps.value(f, w) >=
+                      El0ps.value(f, u) + El0ps.gradient(f, u)' * (w - u)
                 if !isa(f, El0ps.Logistic)
                     @test El0ps.value(f, w) + El0ps.conjugate(f, u) >= w' * u
                 end

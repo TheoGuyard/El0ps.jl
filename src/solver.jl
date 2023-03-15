@@ -413,7 +413,8 @@ end
 depth(node::BnbNode) = sum(node.S0 .| node.S1)
 elapsed_time(solver::BnbSolver) = Dates.time() - solver.start_time
 global_gap(solver::BnbSolver) = abs(solver.ub - solver.lb) / (abs(solver.ub) + 1e-10)
-local_gap(solver::BnbSolver, node::BnbNode) = abs(solver.ub - node.lb) / (abs(solver.ub) + 1e-10)
+local_gap(solver::BnbSolver, node::BnbNode) =
+    abs(solver.ub - node.lb) / (abs(solver.ub) + 1e-10)
 is_terminated(solver::BnbSolver) = (solver.status != OPTIMIZE_NOT_CALLED)
 
 function update_status!(solver::BnbSolver, options::BnbOptions)
@@ -455,7 +456,8 @@ end
 
 function prune!(problem::Problem, solver::BnbSolver, node::BnbNode, options::BnbOptions)
     pruning_test = (node.lb > solver.ub + options.tolprune)
-    perfrlx_test = !any(options.tolint .<= abs.(node.x[node.Sb]) .<= problem.μ - options.tolint)
+    perfrlx_test =
+        !any(options.tolint .<= abs.(node.x[node.Sb]) .<= problem.μ - options.tolint)
     perfgap_test = (options.tolprune <= local_gap(solver, node) < options.tolgap)
     perfect_test = perfrlx_test | perfgap_test
     if pruning_test
@@ -499,7 +501,12 @@ function fixto!(node::BnbNode, j::Int, jval::Int, problem::Problem)
     return nothing
 end
 
-function update_bounds!(problem::Problem, solver::BnbSolver, node::BnbNode, options::BnbOptions)
+function update_bounds!(
+    problem::Problem,
+    solver::BnbSolver,
+    node::BnbNode,
+    options::BnbOptions,
+)
     if (node.ub ≈ solver.ub) & (norm(node.x_ub, 0) < norm(solver.x, 0))
         solver.ub = copy(node.ub)
         solver.x = copy(node.x_ub)

@@ -1,4 +1,4 @@
-@testset "Solvers" begin
+@testset "Solver" begin
 
     k = 2
     m = 30
@@ -11,7 +11,6 @@
     f = El0ps.LeastSquares(y)
     h = El0ps.Bigm(1.0)
     λ = 0.01 * El0ps.compute_λmax(f, h, A)
-
     problem = El0ps.Problem(f, h, A, λ)
     maxtime = 60.0
 

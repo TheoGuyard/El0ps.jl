@@ -354,7 +354,7 @@ function initialize!(
     solver.status = OPTIMIZE_NOT_CALLED
     solver.ub = isa(x0, Nothing) ? Inf : objective(problem, x0)
     solver.lb = -Inf
-    solver.x = isa(x0, Nothing) ? zeros(problem.m) : x0
+    solver.x = isa(x0, Nothing) ? zeros(problem.n) : x0
     root = BnbNode(problem)
     for i in S0
         fixto!(root, i, 0, problem)

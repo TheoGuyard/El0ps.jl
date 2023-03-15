@@ -1,10 +1,10 @@
 """
     Logistic <: AbstractDatafit
 
-Logistic function `f(w) = sum(log.(1.0 .+ exp.(-f.y .* x))) / f.m` where 
+Logistic function `f(w) = sum(log.(1.0 .+ exp.(-f.y .* x))) / f.m` where
 `f.m = length(f.y)`.
 
-# Attributes 
+# Attributes
 
 - `y::Vector` : Target data vector.
 - `m::Int` : Size of `y`.
@@ -20,7 +20,10 @@ end
 
 [`Logistic`](@ref) constructor.
 """
-Logistic(y::Vector) = Logistic(y, length(y))
+function Logistic(y::Vector)
+    @assert all(yi in [-1.0, 1.0] for yi in y)
+    return Logistic(y, length(y))
+end
 
 Base.show(io::IO, f::Logistic) = print(io, "Logistic")
 dim_input(f::Logistic) = f.m

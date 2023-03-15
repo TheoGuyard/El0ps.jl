@@ -7,7 +7,9 @@
     x[1:k] .= 1.0
     A = randn(m, n)
     w = A * x
-    y = w + (0.01 * norm(w)) * randn(m)
+    ϵ = randn(m)
+    ϵ *= norm(w, 2) / (sqrt(10.0) * norm(ϵ, 2))
+    y = w + ϵ
     f = El0ps.LeastSquares(y)
     h = El0ps.Bigm(1.0)
 
@@ -18,7 +20,7 @@
             f,
             h,
             A,
-            λratio_min = 1e-2,
+            λratio_min = 5. * 1e-2,
             verbosity = true,
             max_support_size = k + 1,
             stop_if_unsolved = true,

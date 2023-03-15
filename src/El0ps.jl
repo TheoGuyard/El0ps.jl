@@ -17,9 +17,10 @@ export version, authors, contact, license
 include("datafit/abstract.jl")
 include("datafit/leastsquares.jl")
 include("datafit/logistic.jl")
+include("datafit/squaredhinge.jl")
 export AbstractDatafit
 export dim_input, lipschitz_constant, value, gradient, conjugate, params_to_dict
-export LeastSquares, Logistic
+export LeastSquares, Logistic, SquaredHinge
 
 include("penalty/abstract.jl")
 include("penalty/bigm.jl")

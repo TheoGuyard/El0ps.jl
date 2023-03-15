@@ -1,10 +1,10 @@
 """
     LeastSquares <: AbstractDatafit
 
-Least-squares function `f(w) = norm(f.y - w, 2)^2 / f.m` where 
+Least-squares function `f(w) = norm(f.y - w, 2)^2 / (2 * f.m)` where
 `f.m = length(f.y)`.
 
-# Attributes 
+# Attributes
 
 - `y::Vector` : Target data vector.
 - `m::Int` : Size of `y`.

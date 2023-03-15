@@ -14,9 +14,11 @@ using Statistics
     @test true
 end
 
-include("datafit.jl")
-include("penalty.jl")
-include("problem.jl")
-include("bounding.jl")
-include("solver.jl")
-include("path.jl")
+@testset "El0ps" begin
+    include("datafit.jl")
+    include("penalty.jl")
+    include("problem.jl")
+    include("bounding.jl")
+    include("solver.jl")
+    include("path.jl")
+end

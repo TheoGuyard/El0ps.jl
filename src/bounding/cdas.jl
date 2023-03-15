@@ -38,7 +38,6 @@ function cd_loop!(
     x::Vector,
     w::Vector,
     u::Vector,
-    ν::Vector,
     ρ::Vector,
     η::Vector,
     δ::Vector,
@@ -48,7 +47,7 @@ function cd_loop!(
     for i in findall(S)
         ai = A[:, i]
         xi = x[i]
-        ci = xi + ν[i] * (ai' * u)          # O(m)
+        ci = xi + ρ[i] * (ai' * u)          # O(m)
         if Sb[i] & (abs(ci) <= δ[i])
             x[i] = prox_l1_1d(ci, η[i])     # O(1)
         else
@@ -137,6 +136,14 @@ function bound!(bounding_solver::CDAS, problem::Problem, solver, node, options)
 
     # ----- Initialization ----- #
 
+    # Avoid recomputing the same upper bound two times
+    if (bounding_solver.bounding_type == UPPER_BOUNDING) && (node.type == ZERO)
+        node.ub = node.parent.ub
+        node.x_ub = copy(node.parent.x_ub)
+        node.status = SOLVED
+        return nothing
+    end
+
     # Problem data
     f = problem.f
     h = problem.h
@@ -176,14 +183,13 @@ function bound!(bounding_solver::CDAS, problem::Problem, solver, node, options)
     l0screening = options.l0screening
     l1screening = options.l1screening
     reltol = bounding_solver.reltol
-    cdltol = 0.1 * reltol
+    cdltol = 0.5 * reltol
     maxiter_cd = bounding_solver.maxiter_cd
     maxiter_as = bounding_solver.maxiter_as
 
     # Constants and working values
     α = lipschitz_constant(f)
     κ = α .* a
-    ν = 1.0 ./ κ
     ρ = 1.0 ./ κ
     η = τ .* ρ
     δ = η .+ μ
@@ -220,7 +226,7 @@ function bound!(bounding_solver::CDAS, problem::Problem, solver, node, options)
         while true
             it_cd += 1
             pv_old = pv
-            cd_loop!(f, h, A, x, w, u, ν, ρ, η, δ, S, Sb)
+            cd_loop!(f, h, A, x, w, u, ρ, η, δ, S, Sb)
             pv = compute_primal_value(f, h, λ, x, w, τ, μ, S, Sb)
             if bounding_solver.bounding_type == LOWER_BOUNDING
                 (abs(pv - pv_old) / (abs(pv) + 1e-10) < cdltol) && break
@@ -291,6 +297,7 @@ function bound!(bounding_solver::CDAS, problem::Problem, solver, node, options)
     elseif bounding_solver.bounding_type == UPPER_BOUNDING
         node.ub = pv
         node.x_ub = copy(x)
+        node.status = SOLVED
     end
 
     return nothing

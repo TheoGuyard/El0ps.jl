@@ -328,7 +328,7 @@ function BnbResult(solver::BnbSolver, trace::BnbTrace)
         elapsed_time(solver),
         solver.node_count,
         solver.ub,
-        gap(solver),
+        global_gap(solver),
         solver.x,
         trace,
     )
@@ -397,7 +397,7 @@ function display_trace(solver::BnbSolver, node)
     @printf " %6.2f" elapsed_time(solver)
     @printf " %7.2f" solver.lb
     @printf " %7.2f" solver.ub
-    @printf "  %5.2f%%" 100 * gap(solver)
+    @printf "  %5.2f%%" 100 * global_gap(solver)
     @printf "   %.0e" abs(solver.ub - solver.lb)
     @printf " %3d%%" 100 * sum(node.S0) / length(node.S0)
     @printf " %3d%%" 100 * sum(node.S1) / length(node.S1)
@@ -412,8 +412,8 @@ end
 
 depth(node::BnbNode) = sum(node.S0 .| node.S1)
 elapsed_time(solver::BnbSolver) = Dates.time() - solver.start_time
-gap(solver::BnbSolver) = abs(solver.ub - solver.lb) / (abs(solver.ub) + 1e-10)
-gap(node::BnbNode) = abs(node.ub - node.lb) / (abs(node.ub) + 1e-10)
+global_gap(solver::BnbSolver) = abs(solver.ub - solver.lb) / (abs(solver.ub) + 1e-10)
+local_gap(solver::BnbSolver, node::BnbNode) = abs(solver.ub - node.lb) / (abs(solver.ub) + 1e-10)
 is_terminated(solver::BnbSolver) = (solver.status != OPTIMIZE_NOT_CALLED)
 
 function update_status!(solver::BnbSolver, options::BnbOptions)
@@ -421,7 +421,7 @@ function update_status!(solver::BnbSolver, options::BnbOptions)
         solver.status = MOI.TIME_LIMIT
     elseif solver.node_count >= options.maxnode
         solver.status = MOI.ITERATION_LIMIT
-    elseif gap(solver) <= options.tolgap
+    elseif global_gap(solver) <= options.tolgap
         solver.status = MOI.OPTIMAL
     elseif isempty(solver.queue)
         solver.status = MOI.OPTIMAL
@@ -455,7 +455,7 @@ end
 
 function prune!(solver::BnbSolver, node::BnbNode, options::BnbOptions)
     pruning_test = (node.lb > solver.ub + options.tolprune)
-    perfect_test = (options.tolprune <= gap(node) < options.tolgap)
+    perfect_test = (options.tolprune <= local_gap(solver, node) < options.tolgap)
     if pruning_test
         node.status = PRUNED
     elseif perfect_test
@@ -570,7 +570,6 @@ function optimize(
         is_terminated(solver) && break
         node = next_node!(solver, node, options)
         bound!(options.lb_solver, problem, solver, node, options)
-        node.status = SOLVED
         if !(prune!(solver, node, options))
             bound!(options.ub_solver, problem, solver, node, options)
             branch!(problem, solver, node, options)

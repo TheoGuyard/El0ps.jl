@@ -412,9 +412,9 @@ end
 
 depth(node::BnbNode) = sum(node.S0 .| node.S1)
 elapsed_time(solver::BnbSolver) = Dates.time() - solver.start_time
-global_gap(solver::BnbSolver) = abs(solver.ub - solver.lb) / (abs(solver.ub) + 1e-10)
+global_gap(solver::BnbSolver) = abs(solver.ub - solver.lb) / (abs(solver.ub) + 1e-16)
 local_gap(solver::BnbSolver, node::BnbNode) =
-    abs(solver.ub - node.lb) / (abs(solver.ub) + 1e-10)
+    abs(solver.ub - node.lb) / (abs(solver.ub) + 1e-16)
 is_terminated(solver::BnbSolver) = (solver.status != OPTIMIZE_NOT_CALLED)
 
 function update_status!(solver::BnbSolver, options::BnbOptions)

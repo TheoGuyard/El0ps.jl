@@ -229,10 +229,10 @@ function bound!(bounding_solver::CDAS, problem::Problem, solver, node, options)
             cd_loop!(f, h, A, x, w, u, ρ, η, δ, S, Sb)
             pv = compute_primal_value(f, h, λ, x, w, τ, μ, S, Sb)
             if bounding_solver.bounding_type == LOWER_BOUNDING
-                (abs(pv - pv_old) / (abs(pv) + 1e-10) < cdltol) && break
+                (abs(pv - pv_old) / (abs(pv) + 1e-16) < cdltol) && break
             elseif bounding_solver.bounding_type == UPPER_BOUNDING
                 dv = compute_dual_value(f, h, A, λ, u, v, p, S, Sb)
-                (abs(pv - dv) / (abs(pv) + 1e-10) < tolgap) && break
+                (abs(pv - dv) / (abs(pv) + 1e-16) < tolgap) && break
             end
             (it_cd >= maxiter_cd) && break
         end
@@ -245,7 +245,7 @@ function bound!(bounding_solver::CDAS, problem::Problem, solver, node, options)
         (elapsed_time(solver) >= maxtime) && break
         if length(V) == 0
             dv = compute_dual_value(f, h, A, λ, u, v, p, S, Sb)
-            (abs(pv - dv) / (abs(pv) + 1e-10) < reltol) && break
+            (abs(pv - dv) / (abs(pv) + 1e-16) < reltol) && break
             (cdltol <= 1e-8) && break
             cdltol *= 1e-2
         end

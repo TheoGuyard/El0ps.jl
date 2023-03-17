@@ -455,7 +455,7 @@ end
 
 function prune!(problem::Problem, solver::BnbSolver, node::BnbNode, options::BnbOptions)
     pruning_test = (node.lb > solver.ub + options.tolprune)
-    perfrlx_test = !any(0.0 .< abs.(node.x[node.Sb]) .< problem.μ)
+    perfrlx_test = false #!any(0.0 .< abs.(node.x[node.Sb]) .< problem.μ)
     perfgap_test = (options.tolprune <= gap(node) < options.tolgap)
     perfect_test = perfrlx_test | perfgap_test
     if pruning_test

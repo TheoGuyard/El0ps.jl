@@ -21,10 +21,10 @@ end
 
 Base.show(io::IO, h::NegLogSymtri) = print(io, "Neg-Log of sym-tri. distrib.")
 compute_τ(h::NegLogSymtri) = approximate_τ(h)
-compute_μ(h::NegLogSymtri) = (σ / α) - 1.0 / compute_τ(h)
+compute_μ(h::NegLogSymtri) = (h.σ / h.α) - 1.0 / compute_τ(h)
 value_1d(h::NegLogSymtri, x::Float64) = abs(x) <= h.σ ? -h.α * log(1. - abs(x) / h.σ) : Inf
 function conjugate_1d(h::NegLogSymtri, v::Float64)
-    u = max((σ / α) * abs(v) - 1.0, 0.0)
+    u = max((h.σ / h.α) * abs(v) - 1.0, 0.0)
     return h.α * (u - log(u + 1.0))
 end
 function prox_1d(h::NegLogSymtri, x::Float64, η::Float64)

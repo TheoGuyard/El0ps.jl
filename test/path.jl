@@ -20,7 +20,7 @@
             f,
             h,
             A,
-            λratio_min = 5. * 1e-2,
+            λratio_min = 5.0 * 1e-2,
             verbosity = true,
             max_support_size = k + 1,
             stop_if_unsolved = true,

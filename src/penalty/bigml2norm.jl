@@ -21,14 +21,9 @@ struct BigmL2norm <: AbstractPenalty
 end
 
 Base.show(io::IO, h::BigmL2norm) = print(io, "Bigm + L2-norm")
-function compute_τ(h::BigmL2norm, λ::Float64)
-    return sqrt(λ / h.α) < h.M ? sqrt(4.0 * λ * h.α) : (λ / h.M) + h.α * h.M
-end
-compute_μ(h::BigmL2norm, λ::Float64) = sqrt(1.0 / h.α) < h.M ? sqrt(λ / h.α) : h.M
-function compute_λmax(f::AbstractDatafit, h::BigmL2norm, A::Matrix)
-    v = norm(A' * gradient(f, zeros(dim_input(f))), Inf)
-    return (v / (2.0 * h.α) < h.M) ? v^2 / (4.0 * h.α) : max(h.M * (v - h.α * h.M), 0.0)
-end
+compute_τ(h::BigmL2norm) =
+    (sqrt(1.0 / h.α) < h.M) ? sqrt(4.0 * h.α) : (1.0 / h.M) + h.α * h.M
+compute_μ(h::BigmL2norm) = (sqrt(1.0 / h.α) < h.M) ? sqrt(1.0 / h.α) : h.M
 value_1d(h::BigmL2norm, x::Float64) = abs(x) <= h.M ? h.α * x^2 : Inf
 function conjugate_1d(h::BigmL2norm, v::Float64)
     r = clamp(v / (2.0 * h.α), -h.M, h.M)

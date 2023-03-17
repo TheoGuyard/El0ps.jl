@@ -38,6 +38,7 @@ function cd_loop!(
     x::Vector,
     w::Vector,
     u::Vector,
+    ν::Vector,
     ρ::Vector,
     η::Vector,
     δ::Vector,
@@ -47,15 +48,15 @@ function cd_loop!(
     for i in findall(S)
         ai = A[:, i]
         xi = x[i]
-        ci = xi + ρ[i] * (ai' * u)          # O(m)
+        ci = xi + ν[i] * (ai' * u)
         if Sb[i] & (abs(ci) <= δ[i])
-            x[i] = prox_l1_1d(ci, η[i])     # O(1)
+            x[i] = prox_l1_1d(ci, η[i])
         else
-            x[i] = prox_1d(h, ci, ρ[i])     # O(1)
+            x[i] = prox_1d(h, ci, ρ[i])
         end
         if x[i] != xi
-            axpy!(x[i] - xi, ai, w)         # O(m)
-            copy!(u, -gradient(f, w))       # O(m)
+            axpy!(x[i] - xi, ai, w)
+            copy!(u, -gradient(f, w))
         end
     end
     return nothing
@@ -72,17 +73,17 @@ function compute_primal_value(
     S::BitArray,
     Sb::BitArray,
 )
-    fval = value(f, w)                      # O(m)
+    fval = value(f, w)
     hval = 0.0
     for i in findall(S)
         xi = x[i]
         if Sb[i] & (abs(xi) <= μ)
-            hval += τ * abs(xi)             # O(1)
+            hval += τ * abs(xi)
         else
-            hval += value_1d(h, xi) + λ     # O(1)
+            hval += value_1d(h, xi) + 1.0
         end
     end
-    return fval + hval
+    return fval + λ * hval
 end
 
 function compute_dual_value(
@@ -97,14 +98,14 @@ function compute_dual_value(
     Sb::BitArray;
 )
     nz = findall(S)
-    v[nz] = A[:, nz]' * u                               # O(m|nz|)
-    p[nz] = [conjugate_1d(h, v[i]) .- λ for i in nz]
+    v[nz] = A[:, nz]' * u
+    p[nz] = [conjugate_1d(h, v[i] / λ) .- 1.0 for i in nz]
     cfval = conjugate(f, -u)
     chval = 0.0
     for i in nz
-        chval += Sb[i] ? max(p[i], 0.0) : p[i]           # O(1)
+        chval += Sb[i] ? max(p[i], 0.0) : p[i]
     end
-    return -cfval - chval
+    return -cfval - λ * chval
 end
 
 function update_active_set!(
@@ -123,8 +124,8 @@ function update_active_set!(
     violations = Vector{Int}()
     for i in findall(@. !S & Sbi)
         v[i] = A[:, i]' * u
-        p[i] = conjugate_1d(h, v[i]) .- λ
-        if abs(v[i]) > τ
+        p[i] = conjugate_1d(h, v[i] / λ) .- 1.0
+        if abs(v[i]) > λ * τ
             push!(violations, i)
             S[i] = true
         end
@@ -190,7 +191,8 @@ function bound!(bounding_solver::CDAS, problem::Problem, solver, node, options)
     # Constants and working values
     α = lipschitz_constant(f)
     κ = α .* a
-    ρ = 1.0 ./ κ
+    ν = 1.0 ./ κ
+    ρ = λ ./ κ
     η = τ .* ρ
     δ = η .+ μ
     v = Vector{Float64}(undef, n)
@@ -226,7 +228,7 @@ function bound!(bounding_solver::CDAS, problem::Problem, solver, node, options)
         while true
             it_cd += 1
             pv_old = pv
-            cd_loop!(f, h, A, x, w, u, ρ, η, δ, S, Sb)
+            cd_loop!(f, h, A, x, w, u, ν, ρ, η, δ, S, Sb)
             pv = compute_primal_value(f, h, λ, x, w, τ, μ, S, Sb)
             if bounding_solver.bounding_type == LOWER_BOUNDING
                 (abs(pv - pv_old) / (abs(pv) + 1e-16) < cdltol) && break

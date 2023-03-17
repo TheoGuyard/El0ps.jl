@@ -6,28 +6,18 @@ Abstract supertype for the function `h` in a [`Problem`](@ref).
 abstract type AbstractPenalty end
 
 """
-    compute_τ(h::AbstractPenalty, λ::Float64)
+    compute_τ(h::AbstractPenalty)
 
-Compute the `τ` value of the funtion `g(x) = λ * norm(x, 0) + h(x)`.
+Compute the `τ` value of the funtion `g(x) = norm(x, 0) + h(x)`.
 """
-compute_τ(h::AbstractPenalty, λ::Float64) = error("Not implemented")
-
-"""
-    compute_μ(h::AbstractPenalty, λ::Float64)
-
-Compute the `μ` value of the funtion `g(x) = λ * norm(x, 0) + h(x)`.
-"""
-compute_μ(h::AbstractPenalty, λ::Float64) = error("Not implemented")
+compute_τ(h::AbstractPenalty) = error("Not implemented")
 
 """
-    compute_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix)
+    compute_μ(h::AbstractPenalty)
 
-Compute the value of `λmax` such that the all-zero vector is a solution of a
-[`Problem`](@ref) as soon as `λ >= λmax`. If this value does not admit a closed form for
-the function `h`, the function [`approximate_λmax`](@ref) is rather used to approximate the
-value of `λmax`.
+Compute the `μ` value of the funtion `g(x) = norm(x, 0) + h(x)`.
 """
-compute_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix) = error("Not implemented")
+compute_μ(h::AbstractPenalty) = error("Not implemented")
 
 """
     value_1d(h::AbstractPenalty, x::Float64)

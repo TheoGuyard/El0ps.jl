@@ -7,9 +7,8 @@
         A = randn(1, 1)
         x = randn()
         η = rand()
-        λ = rand()
-        @test_throws ErrorException El0ps.compute_τ(h, λ)
-        @test_throws ErrorException El0ps.compute_μ(h, λ)
+        @test_throws ErrorException El0ps.compute_τ(h)
+        @test_throws ErrorException El0ps.compute_μ(h)
         @test_throws ErrorException El0ps.compute_λmax(f, h, A)
         @test_throws ErrorException El0ps.value_1d(h, x)
         @test_throws ErrorException El0ps.conjugate_1d(h, x)
@@ -32,9 +31,8 @@
                 f = El0ps.LeastSquares(randn(m))
                 A = randn(m, n)
                 h = test_type(test_params...)
-                λ = rand()
-                τ = El0ps.compute_τ(h, λ)
-                μ = El0ps.compute_μ(h, λ)
+                τ = El0ps.compute_τ(h)
+                μ = El0ps.compute_μ(h)
                 x = randn(n)
                 z = zeros(n)
                 r = randn(n)
@@ -42,10 +40,10 @@
                 λmax = El0ps.compute_λmax(f, h, A)
                 @test isa(println(h), Nothing)
                 if μ < Inf
-                    @test El0ps.conjugate_1d(h, τ) ≈ λ
+                    @test El0ps.conjugate_1d(h, τ) ≈ 1.0
                     @test El0ps.value_1d(h, μ) + El0ps.conjugate_1d(h, τ) >= μ * τ - 1e-8
                 else
-                    @test El0ps.conjugate_1d(h, τ) < λ
+                    @test El0ps.conjugate_1d(h, τ) < 1.0
                 end
                 @test El0ps.value(h, x) >= 0.0
                 @test El0ps.value(h, z) == 0.0

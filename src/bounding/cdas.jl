@@ -142,11 +142,11 @@ function bound!(bounding_solver::CDAS, problem::Problem, solver, node, options)
             node.x_ub = zeros(problem.n)
             node.status = SOLVED
             return nothing
-        # elseif node.type == ZERO
-        #     node.ub = node.parent.ub
-        #     node.x_ub = copy(node.parent.x_ub)
-        #     node.status = SOLVED
-        #     return nothing
+        elseif node.type == ZERO
+            node.ub = node.parent.ub
+            node.x_ub = copy(node.parent.x_ub)
+            node.status = SOLVED
+            return nothing
         end
     end
 

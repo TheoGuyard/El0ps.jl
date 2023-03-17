@@ -12,20 +12,19 @@ Negative-Loglikelihood of the symmetric triangular distributions.
 struct NegLogSymtri <: AbstractPenalty
     α::Float64
     σ::Float64
-    κ::Float64
     function NegLogSymtri(α::Float64, σ::Float64)
         (α > 0.0) || error("Parameter α must be positive")
         (σ > 0.0) || error("Parameter σ must be positive")
-        return new(α, σ, σ / α)
+        return new(α, σ)
     end
 end
 
 Base.show(io::IO, h::NegLogSymtri) = print(io, "Neg-Log of sym-tri. distrib.")
 compute_τ(h::NegLogSymtri) = approximate_τ(h)
-compute_μ(h::NegLogSymtri) = h.κ - 1.0 / compute_τ(h)
+compute_μ(h::NegLogSymtri) = (σ / α) - 1.0 / compute_τ(h)
 value_1d(h::NegLogSymtri, x::Float64) = abs(x) <= h.σ ? -h.α * log(1. - abs(x) / h.σ) : Inf
 function conjugate_1d(h::NegLogSymtri, v::Float64)
-    u = max(h.κ * abs(v) - 1.0, 0.0)
+    u = max((σ / α) * abs(v) - 1.0, 0.0)
     return h.α * (u - log(u + 1.0))
 end
 function prox_1d(h::NegLogSymtri, x::Float64, η::Float64)

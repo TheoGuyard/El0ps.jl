@@ -19,7 +19,7 @@ end
 """
     Problem(f::AbstractDatafit, h::AbstractPenalty, A::Matrix, λ::Float64)
 
-Instantiate a [`Problem`](@ref) of the form `min f(Ax) + λ * norm(x,0) + h(x)`.
+Instantiate a [`Problem`](@ref) of the form `min f(Ax) + λ * (norm(x,0) + h(x))`.
 """
 function Problem(f::AbstractDatafit, h::AbstractPenalty, A::Matrix, λ::Float64)
     m = size(A, 1)
@@ -28,8 +28,8 @@ function Problem(f::AbstractDatafit, h::AbstractPenalty, A::Matrix, λ::Float64)
     @assert dim_input(f) == m
     @assert λ >= 0.0
     @assert !any(a .≈ 0.0)
-    τ = compute_τ(h, λ)
-    μ = compute_μ(h, λ)
+    τ = compute_τ(h)
+    μ = compute_μ(h)
     λmax = compute_λmax(f, h, A)
     return Problem(f, h, A, λ, τ, μ, a, m, n, λmax)
 end
@@ -37,9 +37,9 @@ end
 function Base.show(io::IO, problem::Problem)
     println(io, "L0-penalized problem")
     println(io, "  Datafit : $(problem.f)")
-    println(io, "  Perturb : $(problem.h)")
+    println(io, "  Penalty : $(problem.h)")
     println(io, "  Dims    : $(problem.m) x $(problem.n)")
-    println(io, "  λ       : $(round(problem.λ, digits=4))")
+    println(io, "  λ       : $(round(problem.λ, digits=8))")
     @printf "  λ/λmax  : %.1e" problem.λ / problem.λmax
 end
 
@@ -51,7 +51,7 @@ Value of the objective of a [`Problem`](@ref) when `Ax` is already computed.
 function objective(problem::Problem, x::Vector, Ax::Vector)
     fval = value(problem.f, Ax)
     hval = value(problem.h, x)
-    return fval + problem.λ * norm(x, 0) + hval
+    return fval + problem.λ * (norm(x, 0) + hval)
 end
 
 """
@@ -62,48 +62,11 @@ Value of the objective of a [`Problem`](@ref).
 objective(problem::Problem, x::Vector) = objective(problem, x, problem.A * x)
 
 """
-    approximate_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix)
+    compute_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix)
 
-Approximate the value of `λmax` when `compute_λmax(f, h, A)` is not available (i.e., returns
-nothing) for the penalty `h`.
+Return a value of `λ` such that the all-zero vector is a solution of a [`Problem`](@ref).
 """
-function approximate_λmax(
-    f::AbstractDatafit,
-    h::AbstractPenalty,
-    A::Matrix;
-    ϵ::Float64 = 1e-8,
-)
-
-    v = norm(A' * gradient(f, zeros(dim_input(f))), Inf)
-
-    (compute_τ(h, 0.0) >= v) && return 0.0
-
-    # Find λa and λb such that (τ(λa) - v) * (τ(λb) - v) < 0
-    λa = 1.0
-    τa = compute_τ(h, λa)
-    λf = (τa <= v) ? 10.0 : 0.1
-    λb = λf * λa
-    τb = compute_τ(h, λb)
-    while (τa - v) * (τb - v) >= 0.0
-        λb = λf * λb
-        τb = compute_τ(h, λb)
-        (λb == Inf) && return Inf
-    end
-
-    # Bisection method on to find λmax in [λa,λb] such that τ(λmax) ≈ v
-    while abs(λa - λb) > ϵ
-        λc = (λa + λb) / 2.0
-        τc = compute_τ(h, λc)
-        if (τa - v) * (τc - v) < 0.0
-            λb = λc
-            τb = compute_τ(h, λb)
-        else
-            λa = λc
-            τa = compute_τ(h, λa)
-        end
-    end
-
-    λmax = (λa + λb) / 2.0
-
-    return λmax
+function compute_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix)
+    τ = compute_τ(h)
+    return norm(A' * gradient(f, zeros(dim_input(f))), Inf) / τ
 end

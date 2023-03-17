@@ -10,7 +10,7 @@ Random.seed!(42)
 
 # Problem data
 y = randn(10)
-f = LeastSquares(y)     # f(Ax) = norm(Ax - y, 2)^2 / length(y)
+f = LeastSquares(y)     # f(Ax) = 0.5 * norm(Ax - y, 2)^2 / length(y)
 M = 1.
 h = Bigm(M)             # h(x) = norm(x, Inf) <= M ? 0. : Inf
 A = randn(10, 30)

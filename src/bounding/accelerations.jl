@@ -19,7 +19,7 @@ function l0screening!(
 
     idx_to_test = findall(@. Sb & (!isnan(p)))
     for i in idx_to_test
-        if dv + max(-p[i], 0.0) > ub + tolprune
+        if dv + λ * max(-p[i], 0.0) > ub + tolprune
             # Move i from Sbi or Sbb to S0
             Sbi[i] = false
             Sbb[i] = false
@@ -30,7 +30,7 @@ function l0screening!(
                 copy!(u, -gradient(f, w))
                 x[i] = 0.0
             end
-        elseif dv + max(p[i], 0.0) > ub + tolprune
+        elseif dv + λ * max(p[i], 0.0) > ub + tolprune
             # Move i from Sbi or Sbb to S1i
             Sbi[i] = false
             Sbb[i] = false
@@ -62,7 +62,7 @@ function l1screening!(
     idx_to_test = findall(@. Sbi & !isnan(v))
     for i in idx_to_test
         vi = v[i]
-        if abs(vi) + radius < τ
+        if abs(vi) + radius < λ * τ
             # Move i from Sbi to Sb0
             if x[i] != 0.0
                 axpy!(-x[i], A[:, i], w)
@@ -71,7 +71,7 @@ function l1screening!(
             end
             Sbi[i] = false
             Sb0[i] = true
-        elseif abs(vi) - radius > τ
+        elseif abs(vi) - radius > λ * τ
             # Move i from Sbi to Sbb
             Sbi[i] = false
             Sbb[i] = true

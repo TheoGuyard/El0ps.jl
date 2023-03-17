@@ -30,8 +30,8 @@ include("penalty/l1norm.jl")
 include("penalty/l1l2norm.jl")
 include("penalty/l2norm.jl")
 export AbstractPenalty
-export compute_τ,
-    compute_μ, value_1d, value, conjugate_1d, conjugate, prox_1d, prox, params_to_dict
+export value, conjugate, prox, params_to_dict
+export compute_τ, compute_μ, value_1d, conjugate_1d, prox_1d
 export Bigm, BigmL1norm, BigmL2norm, L1norm, L1L2norm, L2norm
 
 include("problem.jl")

@@ -1,5 +1,6 @@
 function bisection(f::Function, a::Float64, b::Float64; ϵ::Float64=1e-8, maxit::Int=100)
     it = 1
+    c = 0.0
     while it <= maxit
         c = (a + b) / 2.0
         fa = f(a)

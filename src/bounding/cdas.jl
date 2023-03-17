@@ -74,16 +74,16 @@ function compute_primal_value(
     Sb::BitArray,
 )
     fval = value(f, w)
-    hval = 0.0
+    rval = 0.0
     for i in findall(S)
         xi = x[i]
         if Sb[i] & (abs(xi) <= μ)
-            hval += τ * abs(xi)
+            rval += τ * abs(xi)
         else
-            hval += value_1d(h, xi) + 1.0
+            rval += value_1d(h, xi) + 1.0
         end
     end
-    return fval + λ * hval
+    return fval + λ * rval
 end
 
 function compute_dual_value(
@@ -101,11 +101,11 @@ function compute_dual_value(
     v[nz] = A[:, nz]' * u
     p[nz] = [conjugate_1d(h, v[i] / λ) .- 1.0 for i in nz]
     cfval = conjugate(f, -u)
-    chval = 0.0
+    crval = 0.0
     for i in nz
-        chval += Sb[i] ? max(p[i], 0.0) : p[i]
+        crval += Sb[i] ? max(p[i], 0.0) : p[i]
     end
-    return -cfval - λ * chval
+    return -cfval - λ * crval
 end
 
 function update_active_set!(
@@ -135,20 +135,19 @@ end
 
 function bound!(bounding_solver::CDAS, problem::Problem, solver, node, options)
 
-    # Handle the ROOT upper bounding case
-    if (bounding_solver.bounding_type == UPPER_BOUNDING) && (node.type == ROOT)
-        node.ub = objective(problem, zeros(problem.n), zeros(problem.m))
-        node.x_ub = zeros(problem.n)
-        node.status = SOLVED
-        return nothing
-    end
-
-    # Avoid recomputing the same upper bound two times
-    if (bounding_solver.bounding_type == UPPER_BOUNDING) && (node.type == ZERO)
-        node.ub = node.parent.ub
-        node.x_ub = copy(node.parent.x_ub)
-        node.status = SOLVED
-        return nothing
+    if bounding_solver.bounding_type == UPPER_BOUNDING
+        # Handle the ROOT upper bounding case
+        if node.type == ROOT
+            node.ub = objective(problem, zeros(problem.n), zeros(problem.m))
+            node.x_ub = zeros(problem.n)
+            node.status = SOLVED
+            return nothing
+        # elseif node.type == ZERO
+        #     node.ub = node.parent.ub
+        #     node.x_ub = copy(node.parent.x_ub)
+        #     node.status = SOLVED
+        #     return nothing
+        end
     end
 
     # ----- Initialization ----- #

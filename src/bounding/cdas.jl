@@ -135,7 +135,13 @@ end
 
 function bound!(bounding_solver::CDAS, problem::Problem, solver, node, options)
 
-    # ----- Initialization ----- #
+    # Handle the ROOT upper bounding case
+    if (bounding_solver.bounding_type == UPPER_BOUNDING) && (node.type == ROOT)
+        node.ub = objective(problem, zeros(problem.n), zeros(problem.m))
+        node.x_ub = zeros(problem.n)
+        node.status = SOLVED
+        return nothing
+    end
 
     # Avoid recomputing the same upper bound two times
     if (bounding_solver.bounding_type == UPPER_BOUNDING) && (node.type == ZERO)
@@ -144,6 +150,8 @@ function bound!(bounding_solver::CDAS, problem::Problem, solver, node, options)
         node.status = SOLVED
         return nothing
     end
+
+    # ----- Initialization ----- #
 
     # Problem data
     f = problem.f

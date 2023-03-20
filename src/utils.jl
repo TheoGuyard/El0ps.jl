@@ -6,7 +6,7 @@ function bisection(f::Function, a::Float64, b::Float64; ϵ::Float64=1e-8, maxit:
         fa = f(a)
         fc = f(c)
         (fc ≈ 0.0) && return c
-        (b - a < ϵ) && return c
+        (b - a < 0.5 * ϵ) && return c
         it += 1
         if fc * fa >= 0.
             a = c
@@ -17,11 +17,11 @@ function bisection(f::Function, a::Float64, b::Float64; ϵ::Float64=1e-8, maxit:
     return c
 end
 
-function approximate_τ(h::AbstractPenalty)
+function approximate_τ(h::AbstractPenalty; ϵ::Float64=1e-8, maxit::Int=100)
     a = 0.0
     b = 1.0
     while conjugate_1d(h, b) < 1.0
         b *= 2.0
     end
-    return bisection(v -> conjugate_1d(h, v) - 1.0, a, b)
+    return bisection(v -> conjugate_1d(h, v) - 1.0, a, b, ϵ=ϵ, maxit=maxit)
 end

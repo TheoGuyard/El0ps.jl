@@ -29,10 +29,11 @@ include("penalty/bigml2norm.jl")
 include("penalty/l1norm.jl")
 include("penalty/l1l2norm.jl")
 include("penalty/l2norm.jl")
+include("penalty/neglog_symtri.jl")
 export AbstractPenalty
 export value, conjugate, prox, params_to_dict
 export compute_τ, compute_μ, value_1d, conjugate_1d, prox_1d
-export Bigm, BigmL1norm, BigmL2norm, L1norm, L1L2norm, L2norm
+export Bigm, BigmL1norm, BigmL2norm, L1norm, L1L2norm, L2norm, NegLogSymtri
 
 include("problem.jl")
 export Problem, objective, compute_λmax
@@ -55,5 +56,7 @@ export optimize
 
 include("path.jl")
 export Path, PathOptions, fit_path
+
+include("utils.jl")
 
 end

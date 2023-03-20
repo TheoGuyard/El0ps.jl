@@ -21,4 +21,5 @@ end
     include("bounding.jl")
     include("solver.jl")
     include("path.jl")
+    include("utils.jl")
 end

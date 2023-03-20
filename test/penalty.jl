@@ -17,12 +17,13 @@
 
     @testset "Candidates" begin
         candidates = [
-            (El0ps.Bigm, (1.0)),
-            (El0ps.L1norm, (1.0)),
-            (El0ps.L2norm, (1.0)),
-            (El0ps.L1L2norm, (1.0, 1.0)),
-            (El0ps.BigmL1norm, (1.0, 1.0)),
-            (El0ps.BigmL2norm, (1.0, 1.0)),
+            (El0ps.Bigm, (1.1)),
+            (El0ps.L1norm, (1.1)),
+            (El0ps.L2norm, (1.1)),
+            (El0ps.L1L2norm, (1.1, 1.2)),
+            (El0ps.BigmL1norm, (1.1, 1.2)),
+            (El0ps.BigmL2norm, (1.1, 1.2)),
+            (El0ps.NegLogSymtri, (1.1, 1.2)),
         ]
         for (test_type, test_params) in candidates
             @testset "$test_type utilities" begin
@@ -36,7 +37,7 @@
                 x = randn(n)
                 z = zeros(n)
                 r = randn(n)
-                η = randn()
+                η = rand()
                 λmax = El0ps.compute_λmax(f, h, A)
                 @test isa(println(h), Nothing)
                 if μ < Inf

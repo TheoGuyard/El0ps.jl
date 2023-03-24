@@ -91,7 +91,7 @@
         λ = 0.05 * El0ps.compute_λmax(f, h, A)
         problem = El0ps.Problem(f, h, A, λ)
         maxtime = 60.0
-        solver = El0ps.BnbSolver(maxtime = maxtime, keeptrace = true, verbosity=true)
+        solver = El0ps.BnbSolver(maxtime = maxtime, keeptrace = true, verbosity = true)
         result = El0ps.optimize(solver, problem)
         @test result.termination_status == MOI.OPTIMAL
         @test all(result.trace.lb .> -Inf)

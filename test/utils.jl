@@ -3,9 +3,9 @@
     @testset "Bisection" begin
         f = x -> 3.0 * x^3 - 4.0 * x^2 + 2.0 * x - 1.0
         ϵ = 1e-8
-        c = El0ps.bisection(f, 0.0, 2.0, ϵ=ϵ)
+        c = El0ps.bisection(f, 0.0, 2.0, ϵ = ϵ)
         @assert abs(c - 1.0) < ϵ
-        @assert f(c) ≈ 0.
+        @assert f(c) ≈ 0.0
     end
 
     @testset "Approximate τ" begin
@@ -23,7 +23,7 @@
                 h = test_type(test_params...)
                 ϵ = 1e-8
                 τ1 = El0ps.compute_τ(h)
-                τ2 = El0ps.approximate_τ(h, ϵ=ϵ)
+                τ2 = El0ps.approximate_τ(h, ϵ = ϵ)
                 @assert abs(τ1 - τ2) < ϵ
             end
         end
@@ -32,7 +32,7 @@
 
 end
 
-function bisection(f::Function, a::Float64, b::Float64; ϵ::Float64=1e-8, maxit::Int=100)
+function bisection(f::Function, a::Float64, b::Float64; ϵ::Float64 = 1e-8, maxit::Int = 100)
 
 end
 

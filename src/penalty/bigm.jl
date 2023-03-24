@@ -21,4 +21,4 @@ compute_μ(h::Bigm) = h.M
 value_1d(h::Bigm, x::Float64) = abs(x) <= h.M ? 0.0 : Inf
 conjugate_1d(h::Bigm, v::Float64) = h.M * abs(v)
 prox_1d(h::Bigm, x::Float64, η::Float64) = clamp(x, -h.M, h.M)
-dual_scaling_factor(h::Bigm, v::Vector) = 1.
+dual_scaling_factor(h::Bigm, v::Vector) = 1.0

@@ -27,4 +27,4 @@ conjugate_1d(h::L1L2norm, v::Float64) = max(abs(v) - h.α, 0.0)^2 / (4.0 * h.β)
 function prox_1d(h::L1L2norm, x::Float64, η::Float64)
     return (sign(x) / (1.0 + 2.0 * η * h.β)) * max(abs(x) - η * h.α, 0.0)
 end
-dual_scaling_factor(h::L1L2norm, v::Vector) = 1.
+dual_scaling_factor(h::L1L2norm, v::Vector) = 1.0

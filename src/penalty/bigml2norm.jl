@@ -30,3 +30,4 @@ function conjugate_1d(h::BigmL2norm, v::Float64)
     return v * r - h.α * r^2
 end
 prox_1d(h::BigmL2norm, x::Float64, η::Float64) = clamp(x / (1.0 + 2.0 * η * h.α), -h.M, h.M)
+dual_scaling_factor(h::BigmL2norm, v::Vector) = 1.0

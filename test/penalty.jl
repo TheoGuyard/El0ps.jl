@@ -38,6 +38,7 @@
                 z = zeros(n)
                 r = randn(n)
                 η = rand()
+                s = El0ps.dual_scaling_factor(h, x)
                 λmax = El0ps.compute_λmax(f, h, A)
                 @test isa(println(h), Nothing)
                 if μ < Inf
@@ -55,6 +56,7 @@
                 @test El0ps.value(h, x) + El0ps.conjugate(h, r) >= x' * r
                 @test length(El0ps.prox(h, x, η)) == length(x)
                 @test El0ps.conjugate(h, x) <= Inf
+                @test El0ps.conjugate(h, s .* x) < Inf
                 @test isa(El0ps.params_to_dict(h), OrderedDict)
             end
         end

@@ -21,3 +21,4 @@ compute_μ(h::L1norm) = Inf
 value_1d(h::L1norm, x::Float64) = h.α * abs(x)
 conjugate_1d(h::L1norm, v::Float64) = (abs.(v) <= h.α) ? 0.0 : Inf
 prox_1d(h::L1norm, x::Float64, η::Float64) = sign(x) * max(abs(x) - η * h.α, 0.0)
+dual_scaling_factor(h::L1norm, v::Vector) = h.α / (norm(v, Inf) + 1e-8)

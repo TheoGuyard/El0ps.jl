@@ -64,6 +64,13 @@ Proximal mapping of `ηh` evaluated at `x`.
 prox(h::AbstractPenalty, x::Vector, η::Float64) = [prox_1d(h, xi, η) for xi in x]
 
 """
+    dual_scaling_factor(h::AbstractPenalty, v::Vector)
+
+Returns a scalar s so that `s .* v` lies within the domain of the conjugate of `h`.
+"""
+dual_scaling_factor(h::AbstractPenalty, v::Vector) = error("Not implemented")
+
+"""
     params_to_dict(h::AbstractPenalty)
 
 Returns a dictionary with the parameters name and value of the function `h`.

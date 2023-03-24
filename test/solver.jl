@@ -84,4 +84,16 @@
         result = El0ps.optimize(solver, problem)
         @test result.termination_status == MOI.OPTIMAL
     end
+
+    @testset "Dual-scaling" begin
+        f = El0ps.LeastSquares(y)
+        h = El0ps.L1norm(1.0)
+        λ = 0.05 * El0ps.compute_λmax(f, h, A)
+        problem = El0ps.Problem(f, h, A, λ)
+        maxtime = 60.0
+        solver = El0ps.BnbSolver(maxtime = maxtime, keeptrace = true, verbosity = true)
+        result = El0ps.optimize(solver, problem)
+        @test result.termination_status == MOI.OPTIMAL
+        @test all(result.trace.lb .> -Inf)
+    end
 end

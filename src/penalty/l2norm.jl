@@ -21,3 +21,4 @@ compute_μ(h::L2norm) = sqrt(1.0 / h.α)
 value_1d(h::L2norm, x::Float64) = h.α * x^2
 conjugate_1d(h::L2norm, v::Float64) = v^2 / (4.0 * h.α)
 prox_1d(h::L2norm, x::Float64, η::Float64) = x / (1.0 + 2.0 * η * h.α)
+dual_scaling_factor(h::L2norm, v::Vector) = 1.

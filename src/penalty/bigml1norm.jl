@@ -26,3 +26,4 @@ compute_μ(h::BigmL1norm) = h.M
 value_1d(h::BigmL1norm, x::Float64) = abs(x) <= h.M ? h.α * abs(x) : Inf
 conjugate_1d(h::BigmL1norm, v::Float64) = h.M * max(abs(v) - h.α, 0.0)
 prox_1d(h::BigmL1norm, x::Float64, η::Float64) = sign(x) * clamp(abs(x) - η * h.α, 0.0, h.M)
+dual_scaling_factor(h::BigmL1norm, v::Vector) = 1.

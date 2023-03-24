@@ -31,3 +31,4 @@ function prox_1d(h::NegLogSymtri, x::Float64, η::Float64)
     z = h.σ - sqrt((h.σ - abs(x))^2 + 4.0 * η * h.α)
     return clamp(0.5 * (x + sign(x) * z), -h.σ, h.σ)
 end
+dual_scaling_factor(h::NegLogSymtri, v::Vector) = 1.

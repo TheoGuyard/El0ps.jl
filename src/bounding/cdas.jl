@@ -99,6 +99,9 @@ function compute_dual_value(
 )
     nz = findall(S)
     v[nz] = A[:, nz]' * u
+    s = dual_scaling_factor(h, v[nz] / λ)
+    u *= s
+    v[nz] *= s
     p[nz] = [conjugate_1d(h, v[i] / λ) .- 1.0 for i in nz]
     cfval = conjugate(f, -u)
     crval = 0.0

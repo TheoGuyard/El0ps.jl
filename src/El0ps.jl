@@ -32,7 +32,7 @@ include("penalty/l2norm.jl")
 include("penalty/neglog_symtri.jl")
 export AbstractPenalty
 export value, conjugate, prox, params_to_dict
-export compute_τ, compute_μ, value_1d, conjugate_1d, prox_1d
+export compute_τ, compute_μ, value_1d, conjugate_1d, prox_1d, dual_scaling_factor
 export Bigm, BigmL1norm, BigmL2norm, L1norm, L1L2norm, L2norm, NegLogSymtri
 
 include("problem.jl")

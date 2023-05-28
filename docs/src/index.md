@@ -6,15 +6,9 @@
 
 This package provides solution methods to address L0-penalized problems of the form
 
-$$\min_{\mathbf{x}} \ f(\mathbf{A}\mathbf{x}) + \lambda g(\mathbf{x})$$
+$$\min_{\mathbf{x}} \ f(\mathbf{A}\mathbf{x}) + \lambda \big(\|\mathbf{x}\|_0 + h(\mathbf{x})\big)$$
 
-where $g(\mathbf{x}) = \|\mathbf{x}\|_0 + h(\mathbf{x})$.
-They aim to minimize a loss function $f$ of some linear model $\mathbf{Ax}$.
-It also enforces sparsity in the optimizers with the $\ell_0$-norm, which counts the number of non-zero entries in its argument.
-The function $h$ allows to promote other properties than sparsity to obtain solutions with desirable statistical properties. 
-It also allows to build-up efficient numerical procedures.
-In particular, this package implements a Branch-and-Bound algorithm that exploits the structure of the problem to achieve competitive performances.
-It it designed to be robust to dimensionality scaling and flexible with respect to the choice of the functions $f$ and $h$.
+where $f(\cdot)$ is a convex and differentiable function, where $h(\cdot)$ is a convex and seprable function and where $\lambda>0$ is an hyper-parameter.
 
 ## Manual outline
 

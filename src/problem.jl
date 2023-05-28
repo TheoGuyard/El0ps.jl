@@ -19,7 +19,8 @@ end
 """
     Problem(f::AbstractDatafit, h::AbstractPenalty, A::Matrix, λ::Float64)
 
-Instantiate a [`Problem`](@ref) of the form `min f(Ax) + λ * (norm(x,0) + h(x))`.
+Instantiate a [`Problem`](@ref) of the form
+`min f(Ax) + λ * (norm(x,0) + h(x))`.
 """
 function Problem(f::AbstractDatafit, h::AbstractPenalty, A::Matrix, λ::Float64)
     m = size(A, 1)
@@ -64,7 +65,8 @@ objective(problem::Problem, x::Vector) = objective(problem, x, problem.A * x)
 """
     compute_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix)
 
-Return a value of `λ` such that the all-zero vector is a solution of a [`Problem`](@ref).
+Return a value of `λ` such that the all-zero vector is a solution of a
+[`Problem`](@ref).
 """
 function compute_λmax(f::AbstractDatafit, h::AbstractPenalty, A::Matrix)
     τ = compute_τ(h)

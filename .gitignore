@@ -1,7 +1,6 @@
 .DS_Store
 .vscode
 
-
 # Julia .gitignore
 *.jl.cov
 *.jl.*.cov

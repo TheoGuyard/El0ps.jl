@@ -9,7 +9,7 @@ Exploration strategy of a [`BnbSolver`](@ref).
 - `BFS` : Breadth-First Search
 - `DFS` : Depth-First Search
 - `MIXED` : Mixed exploration strategy where the k-top layers of nodes are
-explored in a `DFS` fashion and where the below ones are explored in a `BFS`
+explored in a `DFS` fashion and where the other nodes are explored in a `BFS`
 fashion. The parameter `k` is specified in [`BnbOptions`](@ref).
 """
 @enum ExplorationStrategy begin

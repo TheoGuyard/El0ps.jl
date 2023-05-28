@@ -1,6 +1,6 @@
-# Quick start
+# Installation
 
-The package can be installed through Julia's [Pkg](https://docs.julialang.org/en/v1/stdlib/Pkg/) manager as
+`El0ps.jl` can be installed through Julia's [Pkg](https://docs.julialang.org/en/v1/stdlib/Pkg/) manager as follows:
 
 ```julia
 pkg> add "https://github.com/TheoGuyard/El0ps.jl"
@@ -14,7 +14,7 @@ To make sure that everything went properly, you can run
 pkg> test El0ps
 ```
 
-The package can then be loaded with 
+The package can then be loaded into a Julia script as follows: 
 
 ```@example quickstart
 using El0ps

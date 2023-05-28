@@ -1,8 +1,8 @@
 """
     Path
 
-Regularization path of a [`Problem`](@ref), i.e., solutions for different
-values of `λ`.
+Regularization path of a [`Problem`](@ref), i.e., optimization of the problem
+for different values of `λ`.
 """
 Base.@kwdef mutable struct Path
     λ::Vector = Vector()
@@ -22,18 +22,17 @@ end
 """
     PathOptions
 
-Options for a [`Path`](@ref). The path is computed over a
-logarithmically-spaced grid `λ ∈ [λratio_max, λratio_min] * λmax` of
-`λratio_num` different values. The value of `λmax` is computed using
-[`compute_λmax`](@ref).
+[`Path`](@ref) options. The path is computed over a logarithmically-spaced grid
+`λ ∈ [λratio_max, λratio_min] * λmax` of `λratio_num` different values. The
+value of `λmax` is computed using [`compute_λmax`](@ref).
 
 # Arguments
 
-- `λratio_max::Float64` : Maximum value of `λ/λmax`.
-- `λratio_min::Float64` : Minimum value of `λ/λmax`.
+- `λratio_max::Float64` : Maximum value of `λ/λmax` in the path.
+- `λratio_min::Float64` : Minimum value of `λ/λmax` in the path.
 - `λratio_num::Int` : Number of values of `λ` in the regularization path.
 - `max_support_size::Int` : Stop the path fitting when a solution with support
-size `max_support_size` is recovered.
+size larger or equal to `max_support_size` is recovered.
 - `stop_if_unsolved::Bool` : If `true`, stop the path fitting if the
 [`Problem`](@ref) at some `λ` is unsolved.
 - `compute_cv::Bool` : If `true`, compute the cross-validation error over
@@ -184,8 +183,7 @@ function fit_path(
     @assert 0 < options.λratio_num
     @assert options.nb_folds > 0
 
-    λratio_sep =
-        (log10(options.λratio_min) - log10(options.λratio_max)) / (options.λratio_num - 1)
+    λratio_sep = log10(options.λratio_min / options.λratio_max) / (options.λratio_num - 1)
     λratio_val = 10 .^ (log10(options.λratio_max):λratio_sep:log10(options.λratio_min))
     λmax = compute_λmax(f, h, A)
     x0 = zeros(size(A)[2])

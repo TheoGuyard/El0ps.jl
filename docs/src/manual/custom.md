@@ -1,16 +1,16 @@
 # Loss and penalty functions
 
-This package is designed to be flexible regarding the choice of the functions $f$ and $h$.
-It provides a simple way to define them.
+This package is designed to be flexible regarding the choice of the functions $f(\cdot)$ and $h(\cdot)$.
+The user can either use some instances provided by default in our package or defined these functions on its own.
 
 
-## Default support
+## Default instances
 
 The package already implements by default the following functions:
 
 | Loss / Penalty        | Expression | Parameters
 |:--------------|:-----|:---|
-| Least-Squares |  $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{2m}\|\|\mathbf{y} - \mathbf{A}\mathbf{x}\|\|_2^2$ | Vector $\mathbf{y} \in \mathrm{R}^{m}$ |
+| Least-squares |  $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{2m}\|\|\mathbf{y} - \mathbf{A}\mathbf{x}\|\|_2^2$ | Vector $\mathbf{y} \in \mathrm{R}^{m}$ |
 | Logistic      |  $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{m}\mathbf{1}^{\top}\log(\mathbf{1} + \exp(-\mathbf{y}\odot\mathbf{A}\mathbf{x}))$ | Vector $\mathbf{y} \in \mathrm{R}^{m}$ |
 | Squared-Hinge      | $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{m}\|\|\max(\mathbf{1} - \mathbf{y}\odot\mathbf{A}\mathbf{x},\mathbf{0})\|\|_2^2$ | Vector $\mathbf{y} \in \mathrm{R}^{m}$ |
 | Big-M |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M)$ | Scalar $M > 0$ |
@@ -35,48 +35,50 @@ h = L2norm(β)
 h = L1L2norm(α, β)
 ```
 
-The function `f` and `h` respectively derive from the [`AbstractDatafit`](@ref) and [`AbstractPenalty`](@ref) structures.
+## User-defined functions
 
-## Defining new loss functions
+New functions $f(\cdot)$ and $h(\cdot)$ can be defined by the user hand handled automatically by our solver.
+They must derive from the [`AbstractDatafit`](@ref) and [`AbstractPenalty`](@ref) structures, respectively.
 
-To define new functions $f$, one must verify the following hypotheses:
+### Loss function
+The function $f(\cdot)$ must fulfill the following hypotheses:
 * the function is convex, proper and lower-semicontinuous
 * the function is differentiable
-* the function gradient is Lipschitz-continuous
+* the function has a  Lipschitz-continuous gradient
 
-If so, then a new function $f$ can be defined as follow.
+If so, then a new instance can be defined as follow:
 
 ```julia
 struct MyNewF <: AbstractDatafit end
 ```
 
-For instance, the user can specify how it is pretty-printed with
+The user can specify how it is pretty-printed with
 
 ```julia
 Base.show(io::IO, f::MyNewF) = print(io, "MyNewF")
 ```
 
-So that the [`BnbSolver`](@ref) can run, it is also require to define the following functions:
-* `dim_input(f::MyNewF)` : the dimension of the function input as an `Int`
+So that the [`BnbSolver`](@ref) can handle this new instance, it is also require to define the following functions:
+* `dim_input(f::MyNewF)` : returns the dimension of the function input as an `Int`
 * `lipschitz_constant(f::MyNewF)` : returns the value of the Lipschitz constant of the gradient of `f` as a `Float64` 
 * `value(f::MyNewF, w::Vector)` : returns the value of `f` at `w` as a `Float64` 
 * `gradient(f::MyNewF, w::Vector)` : returns the gradient of `f` at `w` as a `Vector` 
 * `conjugate(f::MyNewF, w::Vector)` : returns the value of the convex conjugate of `f` at `w` as a `Float64` 
 
-Once these functions have been overloaded, the [`BnbSolver`](@ref) is able to handle losses that are instances of `MyNewF` on his own.
+Once these functions have been defined, the [`BnbSolver`](@ref) is able to handle losses that are instances of `MyNewF` on its own.
 
-## Defining new penalty terms
+### Penalty function
 
-To define new functions $h$, one must verify the following hypotheses:
-* the function splits
+The function $h(\cdot)$ must fulfill the following hypotheses:
+* the function is separable
 * the splitting terms are proper, convex and lower-semicontinuous
-* the splitting terms are equals
+* the splitting terms are identical
 * the splitting terms are even
 * the splitting terms are coercive
 * the splitting terms are non-negative and equal zero at zero
 
 The above hypotheses are verified for norms or for bound constraints, among many others.
-If they are fulfilled, a new penalty term can be defined as follow.
+If they are fulfilled, a new penalty function can be defined as follow.
 
 ```julia
 struct MyNewH <: AbstractPenalty end
@@ -92,11 +94,9 @@ So that the [`BnbSolver`](@ref) can run, it is also require to define the follow
 * `conjugate_1d(h::MyNewH, x::Float64)`: returns the value of the conjugate function of a splitting term evaluated at `x` as a `Float64` 
 * `prox_1d(h::MyNewH, x::Float64, η::Float64)`: returns the proximity operator of `η` times a splitting term evaluated at `x` as a `Float64` 
 
-Once these functions have been overloaded, the [`BnbSolver`](@ref) is able to handle penalty terms that are instances of `MyNewH` on his own.
+Once these functions have been defined, the [`BnbSolver`](@ref) is able to handle losses that are instances of `MyNewF` on its own.
 
 ## Examples
-
-### Loss function
 
 The following portion of code shows how to implement a quadratic loss function $f(\mathbf{w}) = \tfrac{1}{2}\mathbf{w}^{\top}\mathbf{Q}\mathbf{w} + \mathbf{w}^{\top}\mathbf{y}$.
 
@@ -139,4 +139,4 @@ conjugate_1d(h::LpNorm, x::Float64) = abs(x)^(h.q) / h.q
 prox_1d(h::LpNorm, x::Float64, η::Float64) = sign(x) * find_zero(r -> ηr^(h.p-1) + r - abs(x), 0) 
 ```
 
-See the [prox-website](http://proximity-operator.net) for more details.
+See the [prox-website](http://proximity-operator.net) for more details on the proximity operation.

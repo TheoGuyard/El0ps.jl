@@ -19,7 +19,7 @@ problem = Problem(f, h, A, λ)
 
 ## Running the solver
 
-The problem can be addressed with a [`BnbSolver`](@ref) that can be instantiated as follows 
+The problem can be solved with a [`BnbSolver`](@ref) that can be instantiated as follows:
 
 ```@example optimize
 solver = BnbSolver()
@@ -52,7 +52,7 @@ result.x
 
 ## Specifying parameters
 
-When creating a [`BnbSolver`](@ref), different parameters can be specified.
+When creating a [`BnbSolver`](@ref), different parameters can be specified as arguments.
 First, there exists parameters to control and limit the execution of the solver:
 * `exploration` : the BnB exploration strategy (`BFS`, `DFS` or `MIXED`)
 * `branching` : the BnB branching strategy (`LARGEST` or `RESIDUAL`)
@@ -64,8 +64,8 @@ First, there exists parameters to control and limit the execution of the solver:
   
 Moreover, the use can toggle different acceleration strategies using the boolean parameters. 
 All these acceleration do not impact the correctness of the BnB process.
-* `dualpruning` : allows to detect prunable nodes early
-* `l0screening` : enable the node-screening methodology to avoid uninteresting nodes in the BnB
+* `dualpruning` : allows to detect prunable nodes early-on
+* `l0screening` : enable the node-screening methodology to avoid uninteresting nodes during the tree exploration
 * `l1screening` : enable the screening methodology to accelerate the node bounding process
 
 Finally, the BnB displays and logs can also be controlled via:
@@ -88,19 +88,19 @@ x0 = rand(30)
 optimize(solver, problem, x0=x0)
 ```
 The BnB algorithm will construct its first upper bound based on the evaluation of `x0` in the objective of the problem.
-Moreover, it is also possible to force indices of the problem variable to zero or non-zero from the beginning of the algorithm.
+It is also possible to force indices of the problem variable to zero or non-zero from the beginning of the algorithm.
 This can be done with
 ```@example optimize
-force_zer = [1,2,3]
-force_nnz = [4,5,6]
-result = optimize(solver, problem, S0=force_zer, S1=force_nnz)
+S0 = [1,2,3]
+S1 = [4,5,6]
+result = optimize(solver, problem, S0=S0, S1=S1)
 ```
 One notices that
 ```@example optimize
-result.x[force_zer]
+result.x[S0]
 ```
 and
 ```@example optimize
-result.x[force_nnz]
+result.x[S1]
 ```
-indeed correspond to zero and non-zero values, respectively.
+indeed correspond to zero and non-zero values.

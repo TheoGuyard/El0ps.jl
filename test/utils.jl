@@ -16,7 +16,6 @@
             (El0ps.L1L2norm, (1.1, 1.2)),
             (El0ps.BigmL1norm, (1.1, 1.2)),
             (El0ps.BigmL2norm, (1.1, 1.2)),
-            (El0ps.NegLogSymtri, (1.1, 1.2)),
         ]
         for (test_type, test_params) in candidates
             @testset "With $test_type" begin

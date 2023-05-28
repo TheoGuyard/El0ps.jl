@@ -137,12 +137,7 @@ function fill_path!(
     return nothing
 end
 
-function compute_cv_statistics(
-    x::Vector,
-    f::AbstractDatafit,
-    A::Matrix,
-    nb_folds::Int
-)
+function compute_cv_statistics(x::Vector, f::AbstractDatafit, A::Matrix, nb_folds::Int)
     m, n = size(A)
     @assert nb_folds <= m
     m_fold = Int(ceil(m / nb_folds))

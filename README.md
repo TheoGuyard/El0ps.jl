@@ -7,32 +7,22 @@
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://theoguyard.github.io/El0ps.jl/dev)
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 
-## Installation
-
-```julia
-pkg> add "https://github.com/TheoGuyard/El0ps.jl"
-```
-
 ## Summary
 
 This package provides solution methods to address L0-penalized problems of the form
 
-$$\min_{\mathbf{x}} \ f(\mathbf{A}\mathbf{x}) + \lambda g(\mathbf{x})$$
+$$\min_{\mathbf{x}} \ f(\mathbf{A}\mathbf{x}) + \lambda \big(\|\|\mathbf{x}\|\|_0 + h(\mathbf{x})\big)$$
 
-where $g(\mathbf{x}) = \|\|\mathbf{x}\|\|_0 + h(\mathbf{x})$.
-They aim to minimize a loss function $f$ of some linear model $\mathbf{Ax}$.
-It also enforces sparsity in the optimizers with the $\ell_0$-norm, which counts the number of non-zero entries in its argument.
-The function $h$ allows to promote other properties than sparsity to obtain solutions with desirable statistical properties. 
-It also allows to build-up efficient numerical procedures.
-In particular, this package implements a Branch-and-Bound algorithm that exploits the structure of the problem to achieve competitive performances.
-It it designed to be robust to dimensionality scaling and flexible with respect to the choice of the functions $f$ and $h$.
+where $f(\cdot)$ is a convex and differentiable function, where $h(\cdot)$ is a convex and seprable function and where $\lambda>0$ is an hyper-parameter.
+
 
 ## Features
 
 **🖥 Interfaces**
 * Simple problem instantiation
-* Popular choices of functions $f$ and $h$ already implemented
-* Flexibility to user-defined functions $f$ and $h$
+* Allows user-defined functions $f(\cdot)$ and $h(\cdot)$
+* Popular choices of $f(\cdot)$ and $h(\cdot)$ already implemented
+
 * Regularization path fitting
   
 **🚀 Solution methods**
@@ -41,30 +31,16 @@ It it designed to be robust to dimensionality scaling and flexible with respect 
 * Specialized branching strategies
 * Efficient bounding solver
 * Structure-exploiting acceleration methods
-* Many tunable parameters
 * Robust to dimensionality scaling
 
 
-## Problem data
+## Installation
 
-To easy the usage of the package, classical choices of function $f$ and $h$ are already provided.
+Our package can be installed through Julia's `Pkg` manager as follows:
 
-| Loss / Penalty        | Expression | Parameters
-|:--------------|:-----|:---|
-| Least-Squares |  $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{2m}\|\|\mathbf{y} - \mathbf{A}\mathbf{x}\|\|_2^2$ | Vector $\mathbf{y \in \mathrm{R}^{m}}$ |
-| Logistic      |  $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{m}\mathbf{1}^{\top}\log(\mathbf{1} + \exp(-\mathbf{y}\odot\mathbf{A}\mathbf{x}))$ | Vector $\mathbf{y} \in \mathrm{R}^{m}$ |
-| Squared-Hinge      | $f(\mathbf{A}\mathbf{x}) = \tfrac{1}{m}\|\|\max(\mathbf{1} - \mathbf{y}\odot\mathbf{A}\mathbf{x},\mathbf{0})\|\|_2^2$ | Vector $\mathbf{y} \in \mathrm{R}^{m}$ |
-| Big-M |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M)$ | Scalar $M > 0$ |
-| Big-M + $\ell_1$-norm      |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M) + \alpha\|\|\mathbf{x}\|\|_1$ | Scalars $M,\alpha > 0$ |
-| Big-M + $\ell_2$-norm      |  $h(\mathbf{x}) = \mathbb{I}(\|\|\mathbf{x}\|\|_{\infty} \leq M) + \beta\|\|\mathbf{x}\|\|_2^2$ | Scalars $M,\beta > 0$ |
-| $\ell_1$-norm      |  $h(\mathbf{x}) = \alpha\|\|\mathbf{x}\|\|_1$ | Scalar $\alpha > 0$ |
-| $\ell_2$-norm      |  $h(\mathbf{x}) = \beta\|\|\mathbf{x}\|\|_2^2$ | Scalar $\beta > 0$ |
-| $\ell_1\ell_2$-norm      |  $h(\mathbf{x}) = \alpha\|\|\mathbf{x}\|\|_1 + \beta\|\|\mathbf{x}\|\|_2^2$ | Scalars $\alpha,\beta > 0$ |
-
-Above, $\mathbb{I}(\mathcal{C})$ denotes the convex indicator of the constraint $\mathcal{C}$ and $\odot$ denotes the Hadamard product.
-In addition, user-defined functions $f$ and $h$ can be used.
-Please refer to the [docs](https://theoguyard.github.io/El0ps.jl/dev) for more details.
-
+```julia
+pkg> add "https://github.com/TheoGuyard/El0ps.jl"
+```
 
 ## Project status
 

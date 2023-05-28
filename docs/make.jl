@@ -6,7 +6,7 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "Manual" => [
-            "Quick start" => "manual/quickstart.md",
+            "Installation" => "manual/installation.md",
             "Creating problems" => "manual/problem.md",
             "Solving problems" => "manual/optimize.md",
             "Fitting paths" => "manual/path.md",

@@ -41,7 +41,7 @@ Note that setting `λ < λmax` does not necessarily ensure to obtain a solution 
 However, we observe that it is almost always the case in practice.
 
 !!! note 
-When the function `h` does not allows to compute `λmax` in closed form, then [`approximate_λmax`](@ref) is used to approximate `λmax` using a bisection method.
+    When the function `h` does not allows to compute `λmax` in closed form, then [`approximate_λmax`](@ref) is used to approximate `λmax` using a bisection method.
 
 The objective value of a [`Problem`](@ref) can be evaluated as follows:
 ```@example problems
